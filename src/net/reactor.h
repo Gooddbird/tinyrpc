@@ -2,7 +2,7 @@
 #define TINYRPC_NET_EVENT_LOOP_H
 
 #include <sys/socket.h>
-#include <vector.h>
+#include <vector>
 #include "fd_event.h"
 #include "mutex.h"
 
@@ -30,6 +30,8 @@ class Reactor {
   MutexLock lock;                    // mutex
 
   std::vector<tinyrpc::FdEvent::ptr> m_fds;        // care events
+  std::atomic<int> m_fd_size; 
+  std::vector<std::function<void()>> m_pending_task;
 
 };
 

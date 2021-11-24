@@ -36,6 +36,21 @@ private:
   pthread_mutex_t m_mutex;
   bool m_is_lock {false};
 };
+
+
+class MutexLockGuard {
+ public:
+  explicit MutexLockGuard(MutexLock& mutex) : m_mutex(mutex) {
+    m_mutex.lock();
+  }
+
+  ~MutexLockGuard() {
+    m_mutex.unlock();
+  }
+
+ private:
+  MutexLock& m_mutex;
+}
  
 
 }
