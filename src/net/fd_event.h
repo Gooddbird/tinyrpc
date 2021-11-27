@@ -5,7 +5,7 @@
 #include <memory>
 #include <sys/socket.h>
 #include "reactor.h"
-#include "../log/log.h"
+#include "../comm/log.h"
 
 namespace tinyrpc {
 
@@ -47,16 +47,38 @@ class FdEvent {
     }
   }
 
-  void setListenEvents(int flag) {
-    m_listen_events = flag;
+  std::function<void()> getCallBack(IOEvent flag) const {
+    if (flag == READ) {
+      return m_read_callback;
+    } else if (flag == WRITE) {
+      return m_write_callback;
+    }
+    return nullptr;
   }
+
+  void addListenEvents(IOEvent event) {
+    if (m_listen_events | event) {
+      LOG << "already has this event, skip";
+      return;
+    }
+    m_listen_events |= event;
+  }
+
+  int getFd() const {
+    return m_fd;
+  }
+
+  int getListenEvents() const {
+    return m_listen_events; 
+  }
+
 
  private:
   int m_fd {-1};
   std::function<void()> m_read_callback;
   std::function<void()> m_write_callback;
 
-  int m_listen_events;
+  int m_listen_events {0};
 
 };
 

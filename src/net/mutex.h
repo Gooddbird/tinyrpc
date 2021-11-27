@@ -42,6 +42,11 @@ class MutexLockGuard {
  public:
   explicit MutexLockGuard(MutexLock& mutex) : m_mutex(mutex) {
     m_mutex.lock();
+    m_is_lock = true;
+  }
+
+  void unlock() {
+
   }
 
   ~MutexLockGuard() {
@@ -50,7 +55,8 @@ class MutexLockGuard {
 
  private:
   MutexLock& m_mutex;
-}
+  bol m_is_lock;
+};
  
 
 }
