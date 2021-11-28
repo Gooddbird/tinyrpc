@@ -45,6 +45,7 @@ int main(int argc, char* argv[]) {
 
 	tinyrpc::Reactor reactor;
 	reactor.addEvent(fd_event);
+	LOG << "begin to loop!" << std::endl;
 	reactor.loop();
 
 	return 0;
