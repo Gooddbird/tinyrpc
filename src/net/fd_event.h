@@ -4,6 +4,7 @@
 #include <functional>
 #include <memory>
 #include <sys/socket.h>
+#include <sys/epoll.h>
 #include "reactor.h"
 #include "../comm/log.h"
 

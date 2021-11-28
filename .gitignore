@@ -2,3 +2,7 @@
 
 build/*
 bin/*
+lib/*
+
+*.swp
+*.swo

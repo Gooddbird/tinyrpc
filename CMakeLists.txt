@@ -7,16 +7,15 @@ set(LIB_SRC
     src/net/reactor.cc
 )
 
-add_library(tinyprc SHARED ${LIB_SRC})
+add_library(tinyrpc SHARED ${LIB_SRC})
 
 set(LIBS
-
     tinyrpc
 )
 
-# add_executable(test_log tests/test_log.cc)
-# add_dependencies(test_log charon)
-# target_link_libraries(test_log ${LIBS})
+add_executable(test_reactor testcases/test_reactor.cc)
+add_dependencies(test_reactor tinyrpc)
+target_link_libraries(test_reactor ${LIBS})
 
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)

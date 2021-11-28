@@ -1,5 +1,5 @@
-#ifndef TINYRPC_LOG_LOG_H
-#define TINYRPC_LOG_LOG_H
+#ifndef TINYRPC_COMM_LOG_H
+#define TINYRPC_COMM_LOG_H
 
 #include <sstream>
 #include <sstream>
@@ -9,12 +9,14 @@
 #include <pthread.h>
 #include <unistd.h>
 
+
+#define LOG tinyrpc::log()
+
 namespace tinyrpc {
 
 
 static thread_local int g_thread_id = 0;
 
-#define LOG log()
 
 pid_t gettid() {
   return syscall(SYS_gettid);

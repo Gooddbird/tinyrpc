@@ -24,24 +24,31 @@ class Reactor {
   
   void wakeup();
   
-
- private:
   void loop();
 
   void stop();
+ 
+ public:
+  static Reactor* GetReactor();
+  
 
-  bool init();
+ private:
 
-  void addEventInLoop(tinyrpc::FdEvent::ptr fd_event);
+  void addWakeupFd();
 
-  void delEventInLoop(tinyrpc::FdEvent::ptr fd_event);
+  bool isLoopThread() const;
+
+  void addEventInLoopThread(tinyrpc::FdEvent::ptr fd_event);
+
+  void delEventInLoopThread(tinyrpc::FdEvent::ptr fd_event);
 
 
  private:
   int m_epfd {-1};
   int m_wake_fd {-1};         // wakeup fd
   bool m_stop_flag {false};
-  pthread_t m_tid {0};        // thread id
+  bool m_is_looping {false};
+  pid_t m_tid {0};        // thread id
 
   MutexLock m_mutex;                    // mutex
   

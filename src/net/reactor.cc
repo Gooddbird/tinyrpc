@@ -1,5 +1,7 @@
 #include <sys/socket.h>
 #include <sys/epoll.h>
+#include <sys/eventfd.h>
+#include <assert.h>
 #include "../comm/log.h"
 #include "reactor.h"
 #include "mutex.h"
@@ -8,26 +10,47 @@
 
 namespace tinyrpc {
 
+static thread_local Reactor* t_reactor_ptr = nullptr;
+
 Reactor::Reactor() {
-	init();
+  
+  // one thread can't create more than one reactor object!!
+  assert(t_reactor_ptr == nullptr);
+  m_tid = gettid();
+
+  LOG << "thread[" << m_tid << "] succ create a reactor object" << std::endl;
+  t_reactor_ptr = this;
+
+  if((m_epfd = epoll_create(1)) <= 0 ) {
+		LOG << "epoll_create error" << std::endl;	
+	}
+  assert(m_epfd > 0);
+
+	if((m_wake_fd = eventfd(0, EFD_NONBLOCK)) <= 0 ) {
+		LOG << "eventfd error" << std::endl;	
+	}
+  assert(eventfd > 0);	
+	addWakeupFd();
+
 }
 
 Reactor::~Reactor() {
 	close(m_epfd);
 }
 
-bool Reactor::init() {		
-	if((m_epfd = epoll_create(1)) <= 0 ) {
-		LOG << "epoll_create error" << std::endl;	
-		return false;
-	}
 
-	return true;
+Reactor* Reactor::GetReactor() {
+  return t_reactor_ptr; 
 }
+
 
 
 // call by other threads, need lock
 void Reactor::addEvent(tinyrpc::FdEvent::ptr fd_event, bool is_wakeup/*=true*/) {
+  if (isLoopThread()) {
+    addEventInLoopThread(fd_event);
+    return;
+  }
 	{
 		MutexLockGuard lock(m_mutex);
 		m_pending_fds.insert(std::make_pair(fd_event, 1));
@@ -40,6 +63,11 @@ void Reactor::addEvent(tinyrpc::FdEvent::ptr fd_event, bool is_wakeup/*=true*/) 
 // call by other threads, need lock
 void Reactor::delEvent(tinyrpc::FdEvent::ptr fd_event, bool is_wakeup/*=true*/) {
 
+  if (isLoopThread()) {
+    delEventInLoopThread(fd_event);
+    return;
+  }
+
 	{
 		MutexLockGuard lock(m_mutex);
 		m_pending_fds.insert(std::make_pair(fd_event, 2));
@@ -50,11 +78,40 @@ void Reactor::delEvent(tinyrpc::FdEvent::ptr fd_event, bool is_wakeup/*=true*/) 
 }
 
 void Reactor::wakeup() {
-	
+
+  if (!m_is_looping) {
+    return;
+  }
+
+	uint64_t tmp = 1;
+	uint64_t* p = &tmp; 
+	if(write(m_wake_fd, p, 8) != 8) {
+		LOG << "write wakeupfd[" << m_wake_fd <<"] error" << std::endl;
+	}
+}
+
+// m_tid only can be writed in Reactor::Reactor, so it needn't to lock 
+bool Reactor::isLoopThread() const {
+
+	return (m_tid == gettid());
+}
+
+
+void Reactor::addWakeupFd() {
+	int op = EPOLL_CTL_ADD;
+	epoll_event event;
+	event.data.fd = m_wake_fd;
+	event.events = EPOLLIN;
+	if ((epoll_ctl(m_epfd, op, m_wake_fd, &event)) <= 0) {
+		LOG << "epoo_ctl error, fd[" << m_wake_fd << "]" << std::endl; 
+	}
+
 }
 
 // need't mutex, only this thread call
-void Reactor::addEventInLoop(tinyrpc::FdEvent::ptr fd_event) {
+void Reactor::addEventInLoopThread(tinyrpc::FdEvent::ptr fd_event) {
+
+  assert(isLoopThread());
 
 	int op = EPOLL_CTL_ADD;
 	int tmp_fd = fd_event->getFd();
@@ -67,7 +124,7 @@ void Reactor::addEventInLoop(tinyrpc::FdEvent::ptr fd_event) {
 	event.events = fd_event->getListenEvents();
 
 	if (epoll_ctl(m_epfd, op, tmp_fd, &event) != 0) {
-		LOG << "epoll_create error" << std::endl;	
+		LOG << "epoo_ctl error, fd[" << tmp_fd << "]" << std::endl; 
 		return;
 	}
 	m_fds.insert(std::make_pair(tmp_fd, fd_event));
@@ -78,7 +135,9 @@ void Reactor::addEventInLoop(tinyrpc::FdEvent::ptr fd_event) {
 
 
 // need't mutex, only this thread call
-void Reactor::delEventInLoop(tinyrpc::FdEvent::ptr fd_event) {
+void Reactor::delEventInLoopThread(tinyrpc::FdEvent::ptr fd_event) {
+
+  assert(isLoopThread());
 
 	int tmp_fd = fd_event->getFd();
 	if (m_fds.find(tmp_fd) == m_fds.end()) {
@@ -95,17 +154,12 @@ void Reactor::delEventInLoop(tinyrpc::FdEvent::ptr fd_event) {
 }
 
 void Reactor::loop() {
-	MutexLockGuard lock(m_lock);
-	if (m_tid == 0) {
-		m_tid = gettid();
-		LOG << "this loop now in thread [" << m_tid << "]" << std::endl;
-	} else {
-		LOG << "error, this loop has already in thread [" << m_tid << "]" << std::endl;
-		return;
-	}
+
+  assert(isLoopThread());
+  
+  m_is_looping = true;
 
 	while(!m_stop_flag) {
-
 		const int MAX_EVENTS = 10;
 		epoll_event re_events[MAX_EVENTS + 1];
 
@@ -116,6 +170,18 @@ void Reactor::loop() {
 		} else {
 			for (int i = 0; i < rt; ++i) {
 				epoll_event one_event = re_events[i];	
+
+				if (one_event.data.fd == m_wake_fd && (one_event.events & READ)) {
+					// wakeup
+					char buf[8];
+					while(1) {
+						if((read(m_wake_fd, buf, 8) == 0) && errno == EAGAIN) {
+							break;
+						}
+					}
+
+				}
+
 				tinyrpc::FdEvent::ptr ptr;
         ptr.reset((tinyrpc::FdEvent*)one_event.data.ptr);
 
@@ -129,11 +195,14 @@ void Reactor::loop() {
 					m_pending_tasks.push_back(ptr->getCallBack(WRITE));						
 				}
 			}
+			
+			// excute tasks
 			for (size_t i = 0; i < m_pending_tasks.size(); ++i) {
-				LOG << "begin to execute tasks" << std::endl;
+				LOG << "begin to excute tasks" << std::endl;
 				m_pending_tasks[i]();
-				LOG << "end execute tasks" << std::endl;
+				LOG << "end excute tasks" << std::endl;
 			}
+      m_pending_tasks.clear();
 
 			std::map<tinyrpc::FdEvent::ptr, int> tmp;
 
@@ -145,18 +214,20 @@ void Reactor::loop() {
 
 			for (auto i = tmp.begin(); i != tmp.end(); ++i) {
 				if ((*i).second == 1) {
-					addEventInLoop((*i).first);	
+					addEventInLoopThread((*i).first);	
 				} else {
-					delEventInLoop((*i).first);
+					delEventInLoopThread((*i).first);
 				}
 			}
 		}
 	}
+  m_is_looping = false;
 }
 
 void Reactor::stop() {
-  if (!m_stop_flag) {
+  if (!m_stop_flag && m_is_looping) {
     m_stop_flag = true;
+    wakeup();
   }
 }
 
