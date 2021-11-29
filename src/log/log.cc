@@ -13,6 +13,11 @@ namespace tinyrpc {
 static thread_local pid_t t_thread_id = 0;
 static pid_t g_pid = 0;
 
+pid_t gettid() {
+  return syscall(SYS_gettid);
+}
+
+
 LogEvent::LogEvent(LogLevel level, const char* file_name, int line, const char* func_name)
   : m_level(level),
     m_file_name(file_name),
@@ -64,9 +69,7 @@ std::stringstream& LogEvent::getStringStream() {
   char buf[128];
   strftime(buf, sizeof(buf), format, &time);
 
-  uint64_t m_ms = (m_timeval.tv_usec) / 1000; 
-
-  m_ss << "[" << buf << "." << m_ms << "]\t"; 
+  m_ss << "[" << buf << "." << m_timeval.tv_usec << "]\t"; 
 
   std::string s_level;
   levelToString(m_level, s_level);
@@ -82,8 +85,9 @@ std::stringstream& LogEvent::getStringStream() {
   }
   m_tid = t_thread_id;
   
-  m_ss << "[" << m_pid << "]\t" << "[" << m_tid << "]\t"
-    << "[" << m_file_name << ":" << m_line <<"]"
+  m_ss << "[" << m_pid << "]\t" 
+		<< "[" << m_tid << "]\t"
+    << "[" << m_file_name << ":" << m_line << "]\t"
     << "[" << m_func_name << "]\t";
   
   return m_ss;
@@ -91,6 +95,7 @@ std::stringstream& LogEvent::getStringStream() {
 
 void LogEvent::log() {
   MutexLockGuard lock(m_mutex);
+	m_ss << "\n";
   std::cout << m_ss.str();
 }
 
@@ -104,7 +109,6 @@ std::stringstream& LogTmp::getStringStream() {
 }
 
 LogTmp::~LogTmp() {
-  m_event->getStringStream() << "\n";
   m_event->log(); 
 }
 

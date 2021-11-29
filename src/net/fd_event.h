@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include "reactor.h"
-#include "../comm/log.h"
+#include "../log/log.h"
 
 namespace tinyrpc {
 
@@ -23,7 +23,7 @@ class FdEvent {
 
   FdEvent(int fd) : m_fd(fd) {
     if (m_fd == -1) {
-      LOG << "bad socketfd" << std::endl;
+      DebugLog << "bad socketfd";
     }
   }
   virtual ~FdEvent() {}
@@ -34,7 +34,7 @@ class FdEvent {
     } else if (flag == WRITE) {
       m_write_callback();
     } else {
-      LOG << "error flag" << std::endl;   
+      ErrorLog << "error flag";
     }
 
   }
@@ -44,7 +44,7 @@ class FdEvent {
     } else if (flag == WRITE) {
       m_write_callback = cb;
     } else {
-      LOG << "error flag" << std::endl;
+      ErrorLog << "error flag";
     }
   }
 
@@ -59,7 +59,7 @@ class FdEvent {
 
   void addListenEvents(IOEvent event) {
     if (m_listen_events | event) {
-      LOG << "already has this event, skip";
+      DebugLog << "already has this event, skip";
       return;
     }
     m_listen_events |= event;

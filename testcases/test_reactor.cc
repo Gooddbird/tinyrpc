@@ -6,14 +6,14 @@
 
 
 #include "../src/net/reactor.h"
-#include "../src/comm/log.h"
+#include "../src/log/log.h"
 
 
 
 int main(int argc, char* argv[]) {
 	int listenfd = -1;	
 	if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) <= 0) {
-		LOG << "socket error, exit!, errno=" << errno << ", err=" << strerror(errno) << std::endl;	
+		ErrorLog << "socket error, exit!, errno=" << errno << ", err=" << strerror(errno);
 		return -1;
 	}
 	sockaddr_in addr;
@@ -23,20 +23,20 @@ int main(int argc, char* argv[]) {
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	
 	if ((bind(listenfd, (sockaddr*)&addr, sizeof(addr))) != 0) {
-		LOG << "bind error, exit!, errno=" << errno << ", err=" << strerror(errno) << std::endl;	
+		ErrorLog << "bind error, exit!, errno=" << errno << ", err=" << strerror(errno);
 		return -1;
 	}
 	
 	if (listen(listenfd, 5) != 0) {
 
-		LOG << "listen error, exit!, errno=" << errno << ", err=" << strerror(errno) << std::endl;	
+		ErrorLog << "listen error, exit!, errno=" << errno << ", err=" << strerror(errno); 
 		return -1;
 	}
 	
 	tinyrpc::FdEvent::ptr fd_event(new tinyrpc::FdEvent(listenfd));
 
 	auto readcb = []() {
-		LOG << "read call back!" << std::endl;
+		DebugLog << "read call back!";
 		
 	};
 
@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
 
 	tinyrpc::Reactor reactor;
 	reactor.addEvent(fd_event);
-	LOG << "begin to loop!" << std::endl;
+	DebugLog << "begin to loop!";
 	reactor.loop();
 
 	return 0;

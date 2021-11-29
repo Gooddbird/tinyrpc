@@ -2,7 +2,7 @@
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
 #include <assert.h>
-#include "../comm/log.h"
+#include "../log/log.h"
 #include "reactor.h"
 #include "mutex.h"
 #include "fd_event.h"
@@ -18,16 +18,16 @@ Reactor::Reactor() {
   assert(t_reactor_ptr == nullptr);
   m_tid = gettid();
 
-  LOG << "thread[" << m_tid << "] succ create a reactor object" << std::endl;
+  DebugLog << "thread[" << m_tid << "] succ create a reactor object";
   t_reactor_ptr = this;
 
   if((m_epfd = epoll_create(1)) <= 0 ) {
-		LOG << "epoll_create error" << std::endl;	
+		ErrorLog << "epoll_create error";
 	}
   assert(m_epfd > 0);
 
 	if((m_wake_fd = eventfd(0, EFD_NONBLOCK)) <= 0 ) {
-		LOG << "eventfd error" << std::endl;	
+		ErrorLog << "eventfd error";
 	}
   assert(eventfd > 0);	
 	addWakeupFd();
@@ -86,7 +86,7 @@ void Reactor::wakeup() {
 	uint64_t tmp = 1;
 	uint64_t* p = &tmp; 
 	if(write(m_wake_fd, p, 8) != 8) {
-		LOG << "write wakeupfd[" << m_wake_fd <<"] error" << std::endl;
+		ErrorLog << "write wakeupfd[" << m_wake_fd <<"] error";
 	}
 }
 
@@ -103,7 +103,7 @@ void Reactor::addWakeupFd() {
 	event.data.fd = m_wake_fd;
 	event.events = EPOLLIN;
 	if ((epoll_ctl(m_epfd, op, m_wake_fd, &event)) <= 0) {
-		LOG << "epoo_ctl error, fd[" << m_wake_fd << "]" << std::endl; 
+		ErrorLog << "epoo_ctl error, fd[" << m_wake_fd << "]";
 	}
 
 }
@@ -124,12 +124,12 @@ void Reactor::addEventInLoopThread(tinyrpc::FdEvent::ptr fd_event) {
 	event.events = fd_event->getListenEvents();
 
 	if (epoll_ctl(m_epfd, op, tmp_fd, &event) != 0) {
-		LOG << "epoo_ctl error, fd[" << tmp_fd << "]" << std::endl; 
+		ErrorLog << "epoo_ctl error, fd[" << tmp_fd << "]";
 		return;
 	}
 	m_fds.insert(std::make_pair(tmp_fd, fd_event));
 
-	LOG << "add succ, fd[" << tmp_fd << "]" << std::endl;	
+	
 
 }
 
@@ -141,15 +141,15 @@ void Reactor::delEventInLoopThread(tinyrpc::FdEvent::ptr fd_event) {
 
 	int tmp_fd = fd_event->getFd();
 	if (m_fds.find(tmp_fd) == m_fds.end()) {
-		LOG << "fd[" << tmp_fd << "] not in this loop";
+		DebugLog << "fd[" << tmp_fd << "] not in this loop";
 	}
 	int op = EPOLL_CTL_DEL;
 
 	if ((epoll_ctl(m_epfd, op, tmp_fd, nullptr)) != 0) {
-		LOG << "epoo_ctl error, fd[" << tmp_fd << "]" << std::endl; 
+		ErrorLog << "epoo_ctl error, fd[" << tmp_fd << "]";
 	}
 	m_fds.erase(m_fds.find(fd_event->getFd()));
-	LOG << "del succ, fd[" << tmp_fd << "]" << std::endl;	
+	DebugLog << "del succ, fd[" << tmp_fd << "]"; 
 	
 }
 
@@ -166,7 +166,7 @@ void Reactor::loop() {
 		int rt = epoll_wait(m_epfd, re_events, MAX_EVENTS, 10000);
 
 		if (rt < 0) {
-			LOG << "epoll_wait error, skip" << std::endl;
+			DebugLog << "epoll_wait error, skip";
 		} else {
 			for (int i = 0; i < rt; ++i) {
 				epoll_event one_event = re_events[i];	
@@ -187,20 +187,20 @@ void Reactor::loop() {
 
 				int fd = ptr->getFd();
 				if (one_event.events & EPOLLIN) {
-					LOG << "socket [" << fd << "] occur read event" << std::endl;
+					DebugLog << "socket [" << fd << "] occur read event";
 					m_pending_tasks.push_back(ptr->getCallBack(READ));						
 				}
 				if (one_event.events & EPOLLOUT) {
-					LOG << "socket [" << fd << "] occur write event" << std::endl;
+					DebugLog << "socket [" << fd << "] occur write event";
 					m_pending_tasks.push_back(ptr->getCallBack(WRITE));						
 				}
 			}
 			
 			// excute tasks
 			for (size_t i = 0; i < m_pending_tasks.size(); ++i) {
-				LOG << "begin to excute tasks" << std::endl;
+				DebugLog << "begin to excute tasks";
 				m_pending_tasks[i]();
-				LOG << "end excute tasks" << std::endl;
+				DebugLog << "end excute tasks";
 			}
       m_pending_tasks.clear();
 

@@ -13,8 +13,6 @@
 #include "../net/mutex.h"
 
 
-#define LOG tinyrpc::log()
-
 #define DebugLog \
 	tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::DEBUG, __FILE__, __LINE__, __func__))).getStringStream()
 
@@ -34,11 +32,7 @@
 namespace tinyrpc {
 
 
-
-
-pid_t gettid() {
-  return syscall(SYS_gettid);
-}
+pid_t gettid();
 
 
 enum LogLevel {
