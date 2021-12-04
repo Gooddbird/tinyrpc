@@ -50,6 +50,10 @@ Reactor* Reactor::GetReactor() {
 
 // call by other threads, need lock
 void Reactor::addEvent(tinyrpc::FdEvent::ptr fd_event, bool is_wakeup/*=true*/) {
+  if (fd_event->getFd() == -1) {
+    ErrorLog << "add error. fd invalid, fd = -1";
+    return;
+  }
   if (isLoopThread()) {
     addEventInLoopThread(fd_event);
     return;
@@ -65,6 +69,11 @@ void Reactor::addEvent(tinyrpc::FdEvent::ptr fd_event, bool is_wakeup/*=true*/) 
 
 // call by other threads, need lock
 void Reactor::delEvent(tinyrpc::FdEvent::ptr fd_event, bool is_wakeup/*=true*/) {
+
+  if (fd_event->getFd() == -1) {
+    ErrorLog << "add error. fd invalid, fd = -1";
+    return;
+  }
 
   if (isLoopThread()) {
     delEventInLoopThread(fd_event);
@@ -188,19 +197,29 @@ void Reactor::loop() {
 					}
 
 				} else {
-					tinyrpc::FdEvent* ptr = (tinyrpc::FdEvent*)one_event.data.ptr;;
+					tinyrpc::FdEvent* ptr = (tinyrpc::FdEvent*)one_event.data.ptr;
 
-					int fd = ptr->getFd();
+          int fd;
+          std::function<void()> read_cb;
+          std::function<void()> write_cb;
+          {
+            MutexLockGuard lock(ptr->m_mutex);
+            fd = ptr->getFd();
+            read_cb = ptr->getCallBack(READ);
+            write_cb = ptr->getCallBack(WRITE);
+          }
+
 					if (one_event.events & EPOLLIN) {
 						DebugLog << "socket [" << fd << "] occur read event";
-						m_pending_tasks.push_back(ptr->getCallBack(READ));						
+            MutexLockGuard lock(m_mutex);
+						m_pending_tasks.push_back(read_cb);						
 					}
 					if (one_event.events & EPOLLOUT) {
 						DebugLog << "socket [" << fd << "] occur write event";
-						m_pending_tasks.push_back(ptr->getCallBack(WRITE));						
+            MutexLockGuard lock(m_mutex);
+						m_pending_tasks.push_back(write_cb);						
 					}
 				}
-
 				
 			}
 			
@@ -238,6 +257,33 @@ void Reactor::loop() {
 void Reactor::stop() {
   if (!m_stop_flag && m_is_looping) {
     m_stop_flag = true;
+    wakeup();
+  }
+}
+
+
+void Reactor::addTask(std::function<void()> task, bool is_wakeup /*=true*/) {
+
+  {
+    MutexLockGuard lock(m_mutex);
+    m_pending_tasks.push_back(task);
+  }
+  if (is_wakeup) {
+    wakeup();
+  }
+}
+
+void Reactor::addTask(std::vector<std::function<void()>> task, bool is_wakeup = true) {
+
+  if (task.size() == 0) {
+    return;
+  }
+
+  {
+    MutexLockGuard lock(m_mutex);
+    m_pending_tasks.insert(m_pending_tasks.end(), task.begin(), task.end());
+  }
+  if (is_wakeup) {
     wakeup();
   }
 }

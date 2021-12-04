@@ -7,6 +7,8 @@
 #include <sys/epoll.h>
 #include "reactor.h"
 #include "../log/log.h"
+#include "mutex.h"
+#include "reactor.h"
 
 namespace tinyrpc {
 
@@ -25,11 +27,16 @@ class FdEvent {
   
   typedef std::shared_ptr<FdEvent> ptr;
 
+  FdEvent() {
+
+  }
+
   FdEvent(int fd) : m_fd(fd) {
     if (m_fd == -1) {
       DebugLog << "bad socketfd";
     }
   }
+
   virtual ~FdEvent() {}
 
   void handleEvent(int flag) {
@@ -74,10 +81,17 @@ class FdEvent {
     return m_fd;
   }
 
+  void setFd(const int fd) {
+    m_fd = fd;
+  }
+
   int getListenEvents() const {
     return m_listen_events; 
   }
 
+
+ public:
+	MutexLock m_mutex;
 
  private:
   int m_fd {-1};

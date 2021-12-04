@@ -21,6 +21,10 @@ class Reactor {
   void addEvent(tinyrpc::FdEvent::ptr fd_event, bool is_wakeup = true);
 
   void delEvent(tinyrpc::FdEvent::ptr fd_event, bool is_wakeup = true);
+
+  void addTask(std::function<void()> task, bool is_wakeup = true);
+
+  void addTask(std::vector<std::function<void()>> task, bool is_wakeup = true);
   
   void wakeup();
   
