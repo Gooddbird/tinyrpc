@@ -2,6 +2,7 @@
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
 #include <assert.h>
+#include <string.h>
 #include "../log/log.h"
 #include "reactor.h"
 #include "mutex.h"
@@ -23,6 +24,8 @@ Reactor::Reactor() {
 
   if((m_epfd = epoll_create(1)) <= 0 ) {
 		ErrorLog << "epoll_create error";
+	} else {
+		DebugLog << "m_epfd = " << m_epfd;
 	}
   assert(m_epfd > 0);
 
@@ -102,8 +105,8 @@ void Reactor::addWakeupFd() {
 	epoll_event event;
 	event.data.fd = m_wake_fd;
 	event.events = EPOLLIN;
-	if ((epoll_ctl(m_epfd, op, m_wake_fd, &event)) <= 0) {
-		ErrorLog << "epoo_ctl error, fd[" << m_wake_fd << "]";
+	if ((epoll_ctl(m_epfd, op, m_wake_fd, &event)) != 0) {
+		ErrorLog << "epoo_ctl error, fd[" << m_wake_fd << "], errno=" << errno << ", err=" << strerror(errno) ;
 	}
 
 }
@@ -127,9 +130,9 @@ void Reactor::addEventInLoopThread(tinyrpc::FdEvent::ptr fd_event) {
 		ErrorLog << "epoo_ctl error, fd[" << tmp_fd << "]";
 		return;
 	}
-	m_fds.insert(std::make_pair(tmp_fd, fd_event));
 
-	
+	m_fds.insert(std::make_pair(tmp_fd, fd_event));
+	DebugLog << "add succ, fd[" << tmp_fd << "]"; 
 
 }
 
@@ -162,45 +165,51 @@ void Reactor::loop() {
 	while(!m_stop_flag) {
 		const int MAX_EVENTS = 10;
 		epoll_event re_events[MAX_EVENTS + 1];
+		DebugLog << "to epoll_wait";
+		int rt = epoll_wait(m_epfd, re_events, MAX_EVENTS, 3000);
 
-		int rt = epoll_wait(m_epfd, re_events, MAX_EVENTS, 10000);
+		DebugLog << "epoll_waiti back";
 
 		if (rt < 0) {
 			DebugLog << "epoll_wait error, skip";
 		} else {
+			DebugLog << "epoll_wait back, rt = " << rt;
 			for (int i = 0; i < rt; ++i) {
 				epoll_event one_event = re_events[i];	
 
 				if (one_event.data.fd == m_wake_fd && (one_event.events & READ)) {
 					// wakeup
+					DebugLog << "epoll wakeup, fd=[" << m_wake_fd << "]";
 					char buf[8];
 					while(1) {
-						if((read(m_wake_fd, buf, 8) == 0) && errno == EAGAIN) {
+						if((read(m_wake_fd, buf, 8) == -1) && errno == EAGAIN) {
 							break;
 						}
 					}
 
+				} else {
+					tinyrpc::FdEvent* ptr = (tinyrpc::FdEvent*)one_event.data.ptr;;
+
+					int fd = ptr->getFd();
+					if (one_event.events & EPOLLIN) {
+						DebugLog << "socket [" << fd << "] occur read event";
+						m_pending_tasks.push_back(ptr->getCallBack(READ));						
+					}
+					if (one_event.events & EPOLLOUT) {
+						DebugLog << "socket [" << fd << "] occur write event";
+						m_pending_tasks.push_back(ptr->getCallBack(WRITE));						
+					}
 				}
 
-				tinyrpc::FdEvent::ptr ptr;
-        ptr.reset((tinyrpc::FdEvent*)one_event.data.ptr);
-
-				int fd = ptr->getFd();
-				if (one_event.events & EPOLLIN) {
-					DebugLog << "socket [" << fd << "] occur read event";
-					m_pending_tasks.push_back(ptr->getCallBack(READ));						
-				}
-				if (one_event.events & EPOLLOUT) {
-					DebugLog << "socket [" << fd << "] occur write event";
-					m_pending_tasks.push_back(ptr->getCallBack(WRITE));						
-				}
+				
 			}
 			
+			// DebugLog << "task";
 			// excute tasks
 			for (size_t i = 0; i < m_pending_tasks.size(); ++i) {
-				DebugLog << "begin to excute tasks";
+				DebugLog << "begin to excute task[" << i << "]";
 				m_pending_tasks[i]();
-				DebugLog << "end excute tasks";
+				DebugLog << "end excute tasks[" << i << "]";
 			}
       m_pending_tasks.clear();
 
@@ -211,11 +220,13 @@ void Reactor::loop() {
 				tmp.swap(m_pending_fds);
 				m_pending_fds.clear();
 			}
-
+			// DebugLog << "tmp.size=" << tmp.size();
 			for (auto i = tmp.begin(); i != tmp.end(); ++i) {
 				if ((*i).second == 1) {
+					DebugLog << "need to add";
 					addEventInLoopThread((*i).first);	
-				} else {
+				} else if ((*i).second == 2) {
+					DebugLog << "need to del";
 					delEventInLoopThread((*i).first);
 				}
 			}

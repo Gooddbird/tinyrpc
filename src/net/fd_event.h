@@ -16,6 +16,10 @@ enum IOEvent {
   ETModel = EPOLLET,
 };
 
+// void toStringIO(IOEvent envnt) {
+  // swit
+// }
+
 class FdEvent {
  public:
   
@@ -58,11 +62,12 @@ class FdEvent {
   }
 
   void addListenEvents(IOEvent event) {
-    if (m_listen_events | event) {
+    if (m_listen_events & event) {
       DebugLog << "already has this event, skip";
       return;
     }
     m_listen_events |= event;
+    DebugLog << "add succ";
   }
 
   int getFd() const {
