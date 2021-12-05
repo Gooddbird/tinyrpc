@@ -7,10 +7,12 @@
 #include <sys/epoll.h>
 #include "reactor.h"
 #include "../log/log.h"
-#include "mutex.h"
 #include "reactor.h"
+#include "mutex.h"
 
 namespace tinyrpc {
+
+class Reactor;
 
 enum IOEvent {
   READ = EPOLLIN,
@@ -22,20 +24,20 @@ enum IOEvent {
   // swit
 // }
 
-class FdEvent {
+class FdEvent : public std::enable_shared_from_this<FdEvent> {
  public:
   
   typedef std::shared_ptr<FdEvent> ptr;
 
-  FdEvent() {
-
+  FdEvent(tinyrpc::Reactor* reactor) : m_reactor(reactor) {
+   
   }
 
-  FdEvent(int fd) : m_fd(fd) {
-    if (m_fd == -1) {
-      DebugLog << "bad socketfd";
-    }
-  }
+  // FdEvent(int fd) : m_fd(fd) {
+    // if (m_fd == -1) {
+      // DebugLog << "bad socketfd";
+    // }
+  // }
 
   virtual ~FdEvent() {}
 
@@ -49,6 +51,7 @@ class FdEvent {
     }
 
   }
+
   void setCallBack(IOEvent flag, std::function<void()> cb) {
     if (flag == READ) {
       m_read_callback = cb;
@@ -77,6 +80,25 @@ class FdEvent {
     DebugLog << "add succ";
   }
 
+  void delListenEvents(IOEvent event) {
+    if (m_listen_events & event) {
+
+      DebugLog << "delete succ";
+      m_listen_events &= ~event;
+      return;
+    }
+    DebugLog << "this event not exist, skip";
+
+  }
+
+  void updateToReactor(IOEvent event) {
+    m_reactor->addEvent(shared_from_this());
+  }
+
+  void unregisterFromReactor () {
+    m_reactor->delEvent(shared_from_this());
+  }
+
   int getFd() const {
     return m_fd;
   }
@@ -89,16 +111,18 @@ class FdEvent {
     return m_listen_events; 
   }
 
-
  public:
 	MutexLock m_mutex;
 
- private:
+ protected:
   int m_fd {-1};
   std::function<void()> m_read_callback;
   std::function<void()> m_write_callback;
-
+  
   int m_listen_events {0};
+	int m_current_events {0};
+
+  tinyrpc::Reactor* m_reactor;
 
 };
 

@@ -1,23 +1,29 @@
 #include <sys/timerfd.h>
 #include <assert.h>
 #include <time.h>
+#include <string.h>
 #include <vector>
 #include <functional>
 #include <map>
 #include "../log/log.h"
 #include "timer.h"
 #include "mutex.h"
+#include "fd_event.h"
 
 
 namespace tinyrpc {
 
 Timer::Timer() {
 
-  m_timerfd = timer_create(CLOCK_MONOTONIC, TFD_NONBLOCK|TFD_CLOEXEC);
-  if (m_timerfd == -1) {
+  m_fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK|TFD_CLOEXEC);
+  if (m_fd == -1) {
     DebugLog << "timerfd_create error";  
   } 
-	setFd(m_timerfd);
+	m_read_callback = std::bind(&Timer::onTimer, this);
+}
+
+Timer::~Timer() {
+	close(m_fd);
 }
 
 
@@ -59,13 +65,13 @@ void Timer::resetArriveTime() {
   itimerspec new_value;
   memset(&new_value, 0, sizeof(new_value));
   
-  timespec it;
-  memset(&it, 0, sizeof(it));
-  it.tv_sec = interval * 1000;
-  it.tv_usec = (interval % 1000) * 1000000;
-  new_value.it_value = it;
+  timespec ts;
+  memset(&ts, 0, sizeof(ts));
+  ts.tv_sec = interval * 1000;
+  ts.tv_nsec = (interval % 1000) * 1000000;
+  new_value.it_value = ts;
 
-  int rt = timer_settime(m_timerfd, 0, &new_value, nullptr);
+  int rt = timerfd_settime(m_fd, 0, &new_value, nullptr);
 
   if (rt != 0) {
     ErrorLog << "tiemr_settime error, interval=" << interval;
@@ -79,20 +85,22 @@ void Timer::onTimer() {
 	int64_t now = getNowMs();
 	auto it = m_pending_events.begin();
 	std::vector<TimerEvent::ptr> tmps;
+	std::vector<std::function<void()>> tasks;
 	for (it = m_pending_events.begin(); it != m_pending_events.end(); ++it) {
-		if ((*it).first <= now && !((*it)->second->m_is_cancled)) {
-			tmps.push_back((*it).second->m_task);
+		if ((*it).first <= now && !((*it).second->m_is_cancled)) {
+			tmps.push_back((*it).second);
+			tasks.push_back((*it).second->m_task);
 		}	else {
 			break;
 		}
 	}
 	assert(m_reactor != nullptr);
-	m_reactor->addTask(tmps);
+	m_reactor->addTask(tasks);
 	m_pending_events.erase(m_pending_events.begin(), it);
-	for (auto i = tmps.begin(); i != tmp, ++i) {
+	for (auto i = tmps.begin(); i != tmps.end(); ++i) {
 		if ((*i)->m_is_repeated) {
 			(*i)->resetTime();
-			addTimerEvent(*it, false);
+			addTimerEvent(*i, false);
 		}
 	}
 

@@ -273,7 +273,7 @@ void Reactor::addTask(std::function<void()> task, bool is_wakeup /*=true*/) {
   }
 }
 
-void Reactor::addTask(std::vector<std::function<void()>> task, bool is_wakeup = true) {
+void Reactor::addTask(std::vector<std::function<void()>> task, bool is_wakeup /* =true*/) {
 
   if (task.size() == 0) {
     return;
@@ -286,6 +286,11 @@ void Reactor::addTask(std::vector<std::function<void()>> task, bool is_wakeup = 
   if (is_wakeup) {
     wakeup();
   }
+}
+
+void Reactor::addTimerEvent(TimerEvent::ptr event) {
+  m_timer.setReactor(this);  
+  m_timer.addTimerEvent(event);
 }
 
 }

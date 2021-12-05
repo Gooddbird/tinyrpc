@@ -7,8 +7,11 @@
 #include <map>
 #include "fd_event.h"
 #include "mutex.h"
+#include "timer.h"
 
 namespace tinyrpc {
+
+class FdEvent;
 
 class Reactor {
 
@@ -45,7 +48,10 @@ class Reactor {
   void addEventInLoopThread(tinyrpc::FdEvent::ptr fd_event);
 
   void delEventInLoopThread(tinyrpc::FdEvent::ptr fd_event);
+  
+  void addTimerEvent(TimerEvent::ptr event);
 
+  void delTimerEvent(TimerEvent::ptr event);
 
  private:
   int m_epfd {-1};
@@ -64,6 +70,8 @@ class Reactor {
   // 2 -- to del from loop
   std::map<tinyrpc::FdEvent::ptr, int> m_pending_fds;
   std::vector<std::function<void()>> m_pending_tasks;
+
+  Timer m_timer;
 
 };
 

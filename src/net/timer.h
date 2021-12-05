@@ -5,8 +5,8 @@
 #include <memory>
 #include <map>
 #include <functional>
-#include "fd_event.h"
 #include "mutex.h"
+#include "reactor.h"
 
 
 namespace tinyrpc {
@@ -18,11 +18,11 @@ int64_t getNowMs() {
   return re;
 }
 
-class TimerEvent : public FdEvent {
+class TimerEvent {
 
  public:
 
-  typedef td::shared_ptr<TimerEvent> ptr;
+  typedef std::shared_ptr<TimerEvent> ptr;
   TimerEvent(int64_t interval, bool is_repeated, std::function<void()>task)
     : m_interval(interval), m_is_repeated(is_repeated), m_task(task) {
     m_arrive_time = getNowMs() + m_interval;  	
@@ -41,10 +41,10 @@ class TimerEvent : public FdEvent {
 
 };
 
-class Timer {
+class Timer : public FdEvent {
 
  public:
-
+  
   Timer();
 
 	~Timer();
@@ -57,6 +57,8 @@ class Timer {
 
 	void resetArriveTime();
 
+  void onTimer();
+
   void setReactor(Reactor* reactor) {
     m_reactor = reactor;
   }
@@ -68,11 +70,7 @@ class Timer {
 
  private:
 
-	int m_timerfd {-1};
-
  	std::multimap<int64_t, TimerEvent::ptr> m_pending_events;
-
-  Reactor* m_reactor;
 
 
 };
