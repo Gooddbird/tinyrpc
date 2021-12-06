@@ -5,6 +5,7 @@ set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -rdynamic -O3 -g -std=c++11 -lpthread -Wall 
 
 set(LIB_SRC
   src/log/log.cc  
+  src/net/fd_event.cc
   src/net/reactor.cc
   src/net/timer.cc
 )

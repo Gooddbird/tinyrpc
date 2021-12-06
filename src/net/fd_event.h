@@ -5,9 +5,9 @@
 #include <memory>
 #include <sys/socket.h>
 #include <sys/epoll.h>
+#include <assert.h>
 #include "reactor.h"
 #include "../log/log.h"
-#include "reactor.h"
 #include "mutex.h"
 
 namespace tinyrpc {
@@ -15,7 +15,7 @@ namespace tinyrpc {
 class Reactor;
 
 enum IOEvent {
-  READ = EPOLLIN,
+  READ = EPOLLIN,	
   WRITE = EPOLLOUT,  
   ETModel = EPOLLET,
 };
@@ -29,9 +29,7 @@ class FdEvent : public std::enable_shared_from_this<FdEvent> {
   
   typedef std::shared_ptr<FdEvent> ptr;
 
-  FdEvent(tinyrpc::Reactor* reactor) : m_reactor(reactor) {
-   
-  }
+  FdEvent(tinyrpc::Reactor* reactor);
 
   // FdEvent(int fd) : m_fd(fd) {
     // if (m_fd == -1) {
@@ -39,77 +37,29 @@ class FdEvent : public std::enable_shared_from_this<FdEvent> {
     // }
   // }
 
-  virtual ~FdEvent() {}
+  virtual ~FdEvent();
 
-  void handleEvent(int flag) {
-    if (flag == READ) {
-      m_read_callback();
-    } else if (flag == WRITE) {
-      m_write_callback();
-    } else {
-      ErrorLog << "error flag";
-    }
+  void handleEvent(int flaga);
 
-  }
+  void setCallBack(IOEvent flag, std::function<void()> cb);
 
-  void setCallBack(IOEvent flag, std::function<void()> cb) {
-    if (flag == READ) {
-      m_read_callback = cb;
-    } else if (flag == WRITE) {
-      m_write_callback = cb;
-    } else {
-      ErrorLog << "error flag";
-    }
-  }
+  std::function<void()> getCallBack(IOEvent flag) const;
 
-  std::function<void()> getCallBack(IOEvent flag) const {
-    if (flag == READ) {
-      return m_read_callback;
-    } else if (flag == WRITE) {
-      return m_write_callback;
-    }
-    return nullptr;
-  }
+  void addListenEvents(IOEvent event);
 
-  void addListenEvents(IOEvent event) {
-    if (m_listen_events & event) {
-      DebugLog << "already has this event, skip";
-      return;
-    }
-    m_listen_events |= event;
-    DebugLog << "add succ";
-  }
+  void delListenEvents(IOEvent event);
 
-  void delListenEvents(IOEvent event) {
-    if (m_listen_events & event) {
+  void updateToReactor(IOEvent even);
 
-      DebugLog << "delete succ";
-      m_listen_events &= ~event;
-      return;
-    }
-    DebugLog << "this event not exist, skip";
+  void unregisterFromReactor ();
 
-  }
+  int getFd() const;
 
-  void updateToReactor(IOEvent event) {
-    m_reactor->addEvent(shared_from_this());
-  }
+  void setFd(const int fd);
 
-  void unregisterFromReactor () {
-    m_reactor->delEvent(shared_from_this());
-  }
+  int getListenEvents() const;
 
-  int getFd() const {
-    return m_fd;
-  }
-
-  void setFd(const int fd) {
-    m_fd = fd;
-  }
-
-  int getListenEvents() const {
-    return m_listen_events; 
-  }
+	Reactor* getReactor() const;
 
  public:
 	MutexLock m_mutex;
@@ -122,11 +72,10 @@ class FdEvent : public std::enable_shared_from_this<FdEvent> {
   int m_listen_events {0};
 	int m_current_events {0};
 
-  tinyrpc::Reactor* m_reactor;
+  Reactor* m_reactor;
 
 };
 
 }
-
 
 #endif

@@ -3,6 +3,7 @@
 #include <time.h>
 #include <string.h>
 #include <vector>
+#include <sys/time.h>
 #include <functional>
 #include <map>
 #include "../log/log.h"
@@ -13,16 +14,20 @@
 
 namespace tinyrpc {
 
-Timer::Timer() {
+Timer::Timer(Reactor* reactor) : m_reactor(reactor) {
 
   m_fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK|TFD_CLOEXEC);
   if (m_fd == -1) {
     DebugLog << "timerfd_create error";  
   } 
 	m_read_callback = std::bind(&Timer::onTimer, this);
+  addListenEvents(READ);
+  updateToReactor();
+
 }
 
 Timer::~Timer() {
+  unregisterFromReactor();
 	close(m_fd);
 }
 

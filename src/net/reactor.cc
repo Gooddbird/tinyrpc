@@ -7,6 +7,7 @@
 #include "reactor.h"
 #include "mutex.h"
 #include "fd_event.h"
+#include "timer.h"
 
 
 namespace tinyrpc {
@@ -165,6 +166,8 @@ void Reactor::delEventInLoopThread(tinyrpc::FdEvent::ptr fd_event) {
 	
 }
 
+
+
 void Reactor::loop() {
 
   assert(isLoopThread());
@@ -288,9 +291,8 @@ void Reactor::addTask(std::vector<std::function<void()>> task, bool is_wakeup /*
   }
 }
 
-void Reactor::addTimerEvent(TimerEvent::ptr event) {
-  m_timer.setReactor(this);  
-  m_timer.addTimerEvent(event);
+Timer* Reactor::getTimer() {
+  return m_timer;
 }
 
 }

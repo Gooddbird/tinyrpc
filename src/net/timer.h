@@ -7,6 +7,8 @@
 #include <functional>
 #include "mutex.h"
 #include "reactor.h"
+#include "fd_event.h"
+#include "../log/log.h"
 
 
 namespace tinyrpc {
@@ -17,6 +19,7 @@ int64_t getNowMs() {
   int64_t re = val.tv_sec * 1000 + val.tv_usec / 1000;
   return re;
 }
+
 
 class TimerEvent {
 
@@ -29,7 +32,9 @@ class TimerEvent {
   }
 
   void resetTime() {
-    m_arrive_time = getNowMs() + m_interval;  	
+    DebugLog << "reser tiemrevent, begin arrivetime=" << m_arrive_time;
+    m_arrive_time += m_interval;  	
+    DebugLog << "reser tiemrevent, end arrivetime=" << m_arrive_time;
   }
 
  public:
@@ -41,15 +46,15 @@ class TimerEvent {
 
 };
 
-class Timer : public FdEvent {
+class FdEvent;
+
+class Timer : public tinyrpc::FdEvent {
 
  public:
   
-  Timer();
+  Timer(Reactor* reactor);
 
 	~Timer();
-
-	int64_t getNextTaskInterval();
 
 	void addTimerEvent(TimerEvent::ptr event, bool need_reset = true);
 
@@ -58,15 +63,6 @@ class Timer : public FdEvent {
 	void resetArriveTime();
 
   void onTimer();
-
-  void setReactor(Reactor* reactor) {
-    m_reactor = reactor;
-  }
-
-  Reactor* getReactor() {
-    return m_reactor;
-  }
-	
 
  private:
 
