@@ -62,12 +62,17 @@ void FdEvent::delListenEvents(IOEvent event) {
 
 }
 
-void FdEvent::updateToReactor(IOEvent event) {
-  m_reactor->addEvent(shared_from_this());
+void FdEvent::updateToReactor() {
+
+  epoll_event event;
+  event.events = m_listen_events;
+  event.data.ptr = this;
+
+  m_reactor->addEvent(m_fd, event);
 }
 
 void FdEvent::unregisterFromReactor () {
-  m_reactor->delEvent(shared_from_this());
+  m_reactor->delEvent(m_fd);
 }
 
 int FdEvent::getFd() const {

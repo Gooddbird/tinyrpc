@@ -8,6 +8,7 @@
 
 
 #include "../src/net/reactor.h"
+#include "../src/net/timer.h"
 #include "../src/log/log.h"
 
 tinyrpc::Reactor reactor;
@@ -21,7 +22,7 @@ void* fun(void* arg) {
   // DebugLog << "end wakeup";
   int fd = listenfd;
 
-  tinyrpc::FdEvent::ptr fd_event(new tinyrpc::FdEvent(listenfd));
+  tinyrpc::FdEvent* fd_event = new tinyrpc::FdEvent(&reactor);
 
 	auto readcb = [fd]() {
 		DebugLog << "new clent coming!";
@@ -36,7 +37,7 @@ void* fun(void* arg) {
 	fd_event->setCallBack(tinyrpc::IOEvent::READ, readcb);
 	fd_event->addListenEvents(tinyrpc::IOEvent::READ);
 
-	reactor.addEvent(fd_event, true);
+	// reactor.addEvent(fd_event, true);
   while(1);
 
   return nullptr;
@@ -86,8 +87,17 @@ int main(int argc, char* argv[]) {
   // DebugLog << "listen addr=" << inet_ntoa(addr.sin_addr) << ":" << 30000;
 
 	DebugLog << "begin to loop!";
-  pthread_t t_id;
-  pthread_create(&t_id, nullptr, fun, nullptr);
+  // pthread_t t_id;
+  // pthread_create(&t_id, nullptr, fun, nullptr);
+
+  auto timer_fun = []() {
+    DebugLog << "timer trigger ";
+  };
+  
+  tinyrpc::TimerEvent::ptr timer_event(new tinyrpc::TimerEvent(2000, true, timer_fun));
+
+  tinyrpc::Timer::ptr timer = reactor.getTimer();
+  timer->addTimerEvent(timer_event);
 	reactor.loop();
 
 	return 0;

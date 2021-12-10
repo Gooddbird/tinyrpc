@@ -13,12 +13,7 @@
 
 namespace tinyrpc {
 
-int64_t getNowMs() {
-  timeval val;
-  gettimeofday(&val, nullptr);
-  int64_t re = val.tv_sec * 1000 + val.tv_usec / 1000;
-  return re;
-}
+int64_t getNowMs();
 
 
 class TimerEvent {
@@ -29,12 +24,13 @@ class TimerEvent {
   TimerEvent(int64_t interval, bool is_repeated, std::function<void()>task)
     : m_interval(interval), m_is_repeated(is_repeated), m_task(task) {
     m_arrive_time = getNowMs() + m_interval;  	
+    DebugLog << "timeevent will occur at " << m_arrive_time;
   }
 
   void resetTime() {
-    DebugLog << "reser tiemrevent, begin arrivetime=" << m_arrive_time;
+    DebugLog << "reser tiemrevent, origin arrivetime=" << m_arrive_time;
     m_arrive_time += m_interval;  	
-    DebugLog << "reser tiemrevent, end arrivetime=" << m_arrive_time;
+    DebugLog << "reser tiemrevent, now arrivetime=" << m_arrive_time;
   }
 
  public:
@@ -51,6 +47,8 @@ class FdEvent;
 class Timer : public tinyrpc::FdEvent {
 
  public:
+
+  typedef std::shared_ptr<Timer> ptr;
   
   Timer(Reactor* reactor);
 

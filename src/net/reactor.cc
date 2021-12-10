@@ -3,6 +3,7 @@
 #include <sys/eventfd.h>
 #include <assert.h>
 #include <string.h>
+#include <algorithm>
 #include "../log/log.h"
 #include "reactor.h"
 #include "mutex.h"
@@ -40,6 +41,10 @@ Reactor::Reactor() {
 
 Reactor::~Reactor() {
 	close(m_epfd);
+  if (m_timer != nullptr) {
+    delete m_timer;
+    m_timer = nullptr;
+  }
 }
 
 
@@ -50,18 +55,18 @@ Reactor* Reactor::GetReactor() {
 
 
 // call by other threads, need lock
-void Reactor::addEvent(tinyrpc::FdEvent::ptr fd_event, bool is_wakeup/*=true*/) {
-  if (fd_event->getFd() == -1) {
+void Reactor::addEvent(int fd, epoll_event event, bool is_wakeup/*=true*/) {
+  if (fd == -1) {
     ErrorLog << "add error. fd invalid, fd = -1";
     return;
   }
   if (isLoopThread()) {
-    addEventInLoopThread(fd_event);
+    addEventInLoopThread(fd, event);
     return;
   }
 	{
 		MutexLockGuard lock(m_mutex);
-		m_pending_fds.insert(std::make_pair(fd_event, 1));
+		m_pending_add_fds.insert(std::make_pair(fd, event));
 	}
 	if (is_wakeup) {
 		wakeup();
@@ -69,21 +74,21 @@ void Reactor::addEvent(tinyrpc::FdEvent::ptr fd_event, bool is_wakeup/*=true*/) 
 }
 
 // call by other threads, need lock
-void Reactor::delEvent(tinyrpc::FdEvent::ptr fd_event, bool is_wakeup/*=true*/) {
+void Reactor::delEvent(int fd, bool is_wakeup/*=true*/) {
 
-  if (fd_event->getFd() == -1) {
+  if (fd == -1) {
     ErrorLog << "add error. fd invalid, fd = -1";
     return;
   }
 
   if (isLoopThread()) {
-    delEventInLoopThread(fd_event);
+    delEventInLoopThread(fd);
     return;
   }
 
 	{
 		MutexLockGuard lock(m_mutex);
-		m_pending_fds.insert(std::make_pair(fd_event, 2));
+		m_pending_del_fds.push_back(fd);
 	}
 	if (is_wakeup) {
 		wakeup();
@@ -118,51 +123,54 @@ void Reactor::addWakeupFd() {
 	if ((epoll_ctl(m_epfd, op, m_wake_fd, &event)) != 0) {
 		ErrorLog << "epoo_ctl error, fd[" << m_wake_fd << "], errno=" << errno << ", err=" << strerror(errno) ;
 	}
+	m_fds.push_back(m_wake_fd);
 
 }
 
 // need't mutex, only this thread call
-void Reactor::addEventInLoopThread(tinyrpc::FdEvent::ptr fd_event) {
+void Reactor::addEventInLoopThread(int fd, epoll_event event) {
 
   assert(isLoopThread());
 
 	int op = EPOLL_CTL_ADD;
-	int tmp_fd = fd_event->getFd();
-	if (m_fds.find(tmp_fd) != m_fds.end()) {
+	// int tmp_fd = event;
+	auto it = find(m_fds.begin(), m_fds.end(), fd);
+	if (it != m_fds.end()) {
 		op = EPOLL_CTL_MOD;
 	}
 	
-	epoll_event event;
-	event.data.ptr = fd_event.get();
-	event.events = fd_event->getListenEvents();
+	// epoll_event event;
+	// event.data.ptr = fd_event.get();
+	// event.events = fd_event->getListenEvents();
 
-	if (epoll_ctl(m_epfd, op, tmp_fd, &event) != 0) {
-		ErrorLog << "epoo_ctl error, fd[" << tmp_fd << "]";
+	if (epoll_ctl(m_epfd, op, fd, &event) != 0) {
+		ErrorLog << "epoo_ctl error, fd[" << fd << "]";
 		return;
 	}
 
-	m_fds.insert(std::make_pair(tmp_fd, fd_event));
-	DebugLog << "add succ, fd[" << tmp_fd << "]"; 
+	m_fds.push_back(fd);
+	DebugLog << "add succ, fd[" << fd << "]"; 
 
 }
 
 
 // need't mutex, only this thread call
-void Reactor::delEventInLoopThread(tinyrpc::FdEvent::ptr fd_event) {
+void Reactor::delEventInLoopThread(int fd) {
 
   assert(isLoopThread());
 
-	int tmp_fd = fd_event->getFd();
-	if (m_fds.find(tmp_fd) == m_fds.end()) {
-		DebugLog << "fd[" << tmp_fd << "] not in this loop";
+	auto it = find(m_fds.begin(), m_fds.end(), fd);
+	if (it == m_fds.end()) {
+		DebugLog << "fd[" << fd << "] not in this loop";
 	}
 	int op = EPOLL_CTL_DEL;
 
-	if ((epoll_ctl(m_epfd, op, tmp_fd, nullptr)) != 0) {
-		ErrorLog << "epoo_ctl error, fd[" << tmp_fd << "]";
+	if ((epoll_ctl(m_epfd, op, fd, nullptr)) != 0) {
+		ErrorLog << "epoo_ctl error, fd[" << fd << "]";
 	}
-	m_fds.erase(m_fds.find(fd_event->getFd()));
-	DebugLog << "del succ, fd[" << tmp_fd << "]"; 
+
+	m_fds.erase(it);
+	DebugLog << "del succ, fd[" << fd << "]"; 
 	
 }
 
@@ -178,7 +186,7 @@ void Reactor::loop() {
 		const int MAX_EVENTS = 10;
 		epoll_event re_events[MAX_EVENTS + 1];
 		DebugLog << "to epoll_wait";
-		int rt = epoll_wait(m_epfd, re_events, MAX_EVENTS, 3000);
+		int rt = epoll_wait(m_epfd, re_events, MAX_EVENTS, -1);
 
 		DebugLog << "epoll_waiti back";
 
@@ -235,22 +243,25 @@ void Reactor::loop() {
 			}
       m_pending_tasks.clear();
 
-			std::map<tinyrpc::FdEvent::ptr, int> tmp;
+			std::map<int, epoll_event> tmp_add;
+			std::vector<int> tmp_del;
 
 			{
 				MutexLockGuard lock(m_mutex);
-				tmp.swap(m_pending_fds);
-				m_pending_fds.clear();
+				tmp_add.swap(m_pending_add_fds);
+				m_pending_add_fds.clear();
+
+				tmp_del.swap(m_pending_del_fds);
+				m_pending_del_fds.clear();
+
 			}
-			// DebugLog << "tmp.size=" << tmp.size();
-			for (auto i = tmp.begin(); i != tmp.end(); ++i) {
-				if ((*i).second == 1) {
-					DebugLog << "need to add";
-					addEventInLoopThread((*i).first);	
-				} else if ((*i).second == 2) {
-					DebugLog << "need to del";
-					delEventInLoopThread((*i).first);
-				}
+			for (auto i = tmp_add.begin(); i != tmp_add.end(); ++i) {
+				DebugLog << "fd[" << (*i).first <<"] need to add";
+				addEventInLoopThread((*i).first, (*i).second);	
+			}
+			for (auto i = tmp_del.begin(); i != tmp_del.end(); ++i) {
+				DebugLog << "fd[" << (*i) <<"] need to del";
+				delEventInLoopThread((*i));	
 			}
 		}
 	}
@@ -291,8 +302,15 @@ void Reactor::addTask(std::vector<std::function<void()>> task, bool is_wakeup /*
   }
 }
 
-Timer* Reactor::getTimer() {
-  return m_timer;
+TimerPtr Reactor::getTimer() {
+	if (m_is_init_timer) {
+		DebugLog << "already init timer!";
+	} else {
+		m_timer = new Timer(this);
+		m_timer_fd = m_timer->getFd();
+	}
+	std::shared_ptr<Timer> timer(m_timer);
+	return timer;
 }
 
 }

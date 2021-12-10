@@ -16,9 +16,9 @@ set(LIBS
   tinyrpc
 )
 
-add_executable(test_log testcases/test_log.cc)
-add_dependencies(test_log tinyrpc)
-target_link_libraries(test_log ${LIBS})
+# add_executable(test_log testcases/test_log.cc)
+# add_dependencies(test_log tinyrpc)
+# target_link_libraries(test_log ${LIBS})
 
 add_executable(test_reactor testcases/test_reactor.cc)
 add_dependencies(test_reactor tinyrpc)

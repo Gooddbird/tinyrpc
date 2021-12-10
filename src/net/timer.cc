@@ -14,12 +14,21 @@
 
 namespace tinyrpc {
 
-Timer::Timer(Reactor* reactor) : m_reactor(reactor) {
+
+int64_t getNowMs() {
+  timeval val;
+  gettimeofday(&val, nullptr);
+  int64_t re = val.tv_sec * 1000 + val.tv_usec / 1000;
+  return re;
+}
+
+Timer::Timer(Reactor* reactor) : FdEvent(reactor) {
 
   m_fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK|TFD_CLOEXEC);
   if (m_fd == -1) {
     DebugLog << "timerfd_create error";  
-  } 
+  }
+  DebugLog << "timerfd is [" << m_fd << "]";
 	m_read_callback = std::bind(&Timer::onTimer, this);
   addListenEvents(READ);
   updateToReactor();
@@ -34,10 +43,10 @@ Timer::~Timer() {
 
 void Timer::addTimerEvent(TimerEvent::ptr event, bool need_reset /*=true*/) {
   bool is_reset = false;
-  auto it = m_pending_events.begin();
-  if (it == m_pending_events.end()) {
+  if (m_pending_events.empty()) {
     is_reset = true;
   } else {
+		auto it = m_pending_events.begin();
     if (event->m_arrive_time < (*it).second->m_arrive_time) {
       is_reset = true;
     }
@@ -47,10 +56,12 @@ void Timer::addTimerEvent(TimerEvent::ptr event, bool need_reset /*=true*/) {
     DebugLog << "need reset timer";
     resetArriveTime();
   }
+  DebugLog << "add timer event succ";
 }
 
 void Timer::delTimerEvent(TimerEvent::ptr event) {
   event->m_is_cancled = true;
+  DebugLog << "del timer event succ";
 }
 
 void Timer::resetArriveTime() {
@@ -67,12 +78,14 @@ void Timer::resetArriveTime() {
   }
   int64_t interval = (*it).first - now;
 
+  DebugLog << "interval = " << interval;
+
   itimerspec new_value;
   memset(&new_value, 0, sizeof(new_value));
   
   timespec ts;
   memset(&ts, 0, sizeof(ts));
-  ts.tv_sec = interval * 1000;
+  ts.tv_sec = interval / 1000;
   ts.tv_nsec = (interval % 1000) * 1000000;
   new_value.it_value = ts;
 
@@ -87,7 +100,19 @@ void Timer::resetArriveTime() {
 }
 
 void Timer::onTimer() {
-	int64_t now = getNowMs();
+
+  if (!(m_listen_events & ETModel)) {
+    // ET need't read
+
+    char buf[8];
+    while(1) {
+      if((read(m_fd, buf, 8) == -1) && errno == EAGAIN) {
+        break;
+      }
+    }
+  }
+
+  int64_t now = getNowMs();
 	auto it = m_pending_events.begin();
 	std::vector<TimerEvent::ptr> tmps;
 	std::vector<std::function<void()>> tasks;

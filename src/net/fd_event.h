@@ -27,8 +27,6 @@ enum IOEvent {
 class FdEvent : public std::enable_shared_from_this<FdEvent> {
  public:
   
-  typedef std::shared_ptr<FdEvent> ptr;
-
   FdEvent(tinyrpc::Reactor* reactor);
 
   // FdEvent(int fd) : m_fd(fd) {
@@ -49,7 +47,7 @@ class FdEvent : public std::enable_shared_from_this<FdEvent> {
 
   void delListenEvents(IOEvent event);
 
-  void updateToReactor(IOEvent even);
+  void updateToReactor();
 
   void unregisterFromReactor ();
 
