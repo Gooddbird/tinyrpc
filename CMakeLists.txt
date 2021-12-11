@@ -25,6 +25,10 @@ add_dependencies(test_reactor tinyrpc)
 target_link_libraries(test_reactor ${LIBS})
 
 
+add_executable(test_iothread testcases/test_iothread.cc)
+add_dependencies(test_iothread tinyrpc)
+target_link_libraries(test_iothread ${LIBS})
+
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 

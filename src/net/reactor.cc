@@ -40,6 +40,7 @@ Reactor::Reactor() {
 }
 
 Reactor::~Reactor() {
+  DebugLog << "~Reactor";
 	close(m_epfd);
   if (m_timer != nullptr) {
     delete m_timer;
@@ -302,15 +303,19 @@ void Reactor::addTask(std::vector<std::function<void()>> task, bool is_wakeup /*
   }
 }
 
-TimerPtr Reactor::getTimer() {
+Timer* Reactor::getTimer() {
 	if (m_is_init_timer) {
 		DebugLog << "already init timer!";
 	} else {
 		m_timer = new Timer(this);
 		m_timer_fd = m_timer->getFd();
 	}
-	std::shared_ptr<Timer> timer(m_timer);
-	return timer;
+	// std::shared_ptr<Timer> timer(m_timer);
+	return m_timer;
+}
+
+pid_t Reactor::getTid() {
+  return m_tid;
 }
 
 }

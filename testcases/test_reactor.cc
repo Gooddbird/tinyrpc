@@ -90,14 +90,14 @@ int main(int argc, char* argv[]) {
   // pthread_t t_id;
   // pthread_create(&t_id, nullptr, fun, nullptr);
 
-  auto timer_fun = []() {
-    DebugLog << "timer trigger ";
-  };
+  // auto timer_fun = []() {
+    // DebugLog << "timer trigger ";
+  // };
   
-  tinyrpc::TimerEvent::ptr timer_event(new tinyrpc::TimerEvent(2000, true, timer_fun));
+  // tinyrpc::TimerEvent::ptr timer_event(new tinyrpc::TimerEvent(2000, true, timer_fun));
 
-  tinyrpc::Timer::ptr timer = reactor.getTimer();
-  timer->addTimerEvent(timer_event);
+  // tinyrpc::Timer::ptr timer = reactor.getTimer();
+  // timer->addTimerEvent(timer_event);
 	reactor.loop();
 
 	return 0;

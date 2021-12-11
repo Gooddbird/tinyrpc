@@ -2,6 +2,7 @@
 #define TINYRPC_NET_EVENT_LOOP_H
 
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <vector>
 #include <atomic>
 #include <map>
@@ -19,6 +20,8 @@ typedef std::shared_ptr<Timer> TimerPtr;
 class Reactor {
 
  public:
+
+  typedef std::shared_ptr<Reactor> ptr;
 
   Reactor();
 
@@ -38,7 +41,9 @@ class Reactor {
 
   void stop();
 
-  TimerPtr getTimer();
+  Timer* getTimer();
+
+  pid_t getTid();
  
  public:
   static Reactor* GetReactor();
