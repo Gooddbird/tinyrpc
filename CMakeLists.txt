@@ -8,6 +8,7 @@ set(LIB_SRC
   src/net/fd_event.cc
   src/net/reactor.cc
   src/net/timer.cc
+  src/net/net_address.cc
 )
 
 add_library(tinyrpc SHARED ${LIB_SRC})
@@ -16,9 +17,9 @@ set(LIBS
   tinyrpc
 )
 
-# add_executable(test_log testcases/test_log.cc)
-# add_dependencies(test_log tinyrpc)
-# target_link_libraries(test_log ${LIBS})
+add_executable(test_log testcases/test_log.cc)
+add_dependencies(test_log tinyrpc)
+target_link_libraries(test_log ${LIBS})
 
 add_executable(test_reactor testcases/test_reactor.cc)
 add_dependencies(test_reactor tinyrpc)
