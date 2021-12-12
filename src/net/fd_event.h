@@ -37,7 +37,7 @@ class FdEvent : public std::enable_shared_from_this<FdEvent> {
 
   virtual ~FdEvent();
 
-  void handleEvent(int flaga);
+  void handleEvent(int flag);
 
   void setCallBack(IOEvent flag, std::function<void()> cb);
 
