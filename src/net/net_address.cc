@@ -21,6 +21,7 @@ IPAddress::IPAddress(const std::string& ip, uint16_t port)
  
   DebugLog << "create ipv4 address succ [" << toString() << "]";
 }
+
 IPAddress::IPAddress(sockaddr_in addr) : m_addr(addr) {
   if (m_addr.sin_family != AF_INET) {
     ErrorLog << "err family, this address is valid";

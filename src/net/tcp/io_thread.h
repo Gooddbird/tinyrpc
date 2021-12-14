@@ -12,6 +12,8 @@ static thread_local Reactor* t_reactor_ptr = nullptr;
 class IOThread {
 
  public:
+  
+  typedef std::shared_ptr<IOThread> ptr;
  	IOThread() {
 		pthread_create(&m_thread, nullptr, &IOThread::main, this);
 	}

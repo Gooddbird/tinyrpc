@@ -9,6 +9,7 @@ set(LIB_SRC
   src/net/reactor.cc
   src/net/timer.cc
   src/net/net_address.cc
+  src/net/tcp/tcp_server.cc
 )
 
 add_library(tinyrpc SHARED ${LIB_SRC})
