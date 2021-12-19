@@ -87,8 +87,8 @@ std::stringstream& LogEvent::getStringStream() {
   
   m_ss << "[" << m_pid << "]\t" 
 		<< "[" << m_tid << "]\t"
-    << "[" << m_file_name << ":" << m_line << "]\t"
-    << "[" << m_func_name << "]\t";
+    << "[" << m_file_name << ":" << m_line << "]\t";
+    // << "[" << m_func_name << "]\t";
   
   return m_ss;
 }

@@ -19,12 +19,17 @@ class TcpAcceptor : public FdEvent {
 
   void init();
 
+  int accept();
+
   ~TcpAcceptor();
 
  
  private:
   int m_family;
-  NetAddress::ptr m_net_addr;
+
+  NetAddress::ptr m_local_addr;
+
+  NetAddress::ptr m_peer_addr;
 
 };
 
@@ -42,10 +47,10 @@ class TcpServer {
 
 
  private:
+
   void onReadCallBack();
 
   void onWriteCallBack();
-
 
 
  private:
@@ -56,6 +61,8 @@ class TcpServer {
   pid_t m_main_thread_id {0};
   Timer* m_timer;
   std::vector<IOThread::ptr> m_io_threads;
+
+  int m_tcp_counts {0};
 
   Reactor::ptr m_main_reactor;
 

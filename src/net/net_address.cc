@@ -44,6 +44,10 @@ std::string IPAddress::toString() {
   return ss.str();
 }
 
+socklen_t IPAddress::getSockLen() const {
+  return sizeof(m_addr);
+}
+
 
 UnixDomainAddress::UnixDomainAddress(std::string& path) : m_path(path) {
 
@@ -53,6 +57,9 @@ UnixDomainAddress::UnixDomainAddress(std::string& path) : m_path(path) {
   strcpy(m_addr.sun_path, m_path.c_str());
 
 }
+UnixDomainAddress::UnixDomainAddress(sockaddr_un addr) : m_addr(addr) {
+  m_path = m_addr.sun_path; 
+}
 
 int UnixDomainAddress::getFamily() const {
   return m_addr.sun_family;
@@ -60,6 +67,10 @@ int UnixDomainAddress::getFamily() const {
 
 sockaddr* UnixDomainAddress::getSockAddr() {
   return reinterpret_cast<sockaddr*>(&m_addr);
+}
+
+socklen_t UnixDomainAddress::getSockLen() const {
+  return sizeof(m_addr);
 }
 
 std::string UnixDomainAddress::toString() {

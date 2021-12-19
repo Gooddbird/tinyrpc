@@ -25,6 +25,10 @@ class TcpBuffer {
 
   void writeToBuffer(const char* buf, int size);
 
+  void readFormBuffer(std::vector<char>& re, int size);
+
+  void clear();
+
 
  private:
 

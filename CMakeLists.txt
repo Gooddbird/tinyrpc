@@ -31,6 +31,11 @@ add_executable(test_iothread testcases/test_iothread.cc)
 add_dependencies(test_iothread tinyrpc)
 target_link_libraries(test_iothread ${LIBS})
 
+
+add_executable(test_tcpserver testcases/test_tcpserver.cc)
+add_dependencies(test_tcpserver tinyrpc)
+target_link_libraries(test_tcpserver ${LIBS})
+
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
