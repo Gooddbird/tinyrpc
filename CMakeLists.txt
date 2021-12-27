@@ -10,6 +10,8 @@ set(LIB_SRC
   src/net/timer.cc
   src/net/net_address.cc
   src/net/tcp/tcp_server.cc
+  src/net/tcp/tcp_buffer.cc
+  src/net/tcp/tcp_connection.cc
 )
 
 add_library(tinyrpc SHARED ${LIB_SRC})

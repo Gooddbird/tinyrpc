@@ -21,13 +21,17 @@ class TcpBuffer {
 
   int writeAble();
 
-  int readFormSocket(char* buf, int size);
+  // int readFormSocket(char* buf, int size);
 
   void writeToBuffer(const char* buf, int size);
 
-  void readFormBuffer(std::vector<char>& re, int size);
+  void readFromBuffer(std::vector<char>& re, int size);
+
+  void resize(int size);
 
   void clear();
+
+  int getSize();
 
 
  private:
@@ -35,7 +39,7 @@ class TcpBuffer {
   int m_read_index {0};
   int m_write_index {0};
   int m_size {0};
-  std:vector<char> m_buffer;
+  std::vector<char> m_buffer;
 
 };
 
