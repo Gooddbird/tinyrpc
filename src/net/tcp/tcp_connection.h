@@ -1,3 +1,6 @@
+#ifndef TINYRPC_NET_TCP_TCP_CONNECTION_H
+#define TINYRPC_NET_TCP_TCP_CONNECTION_H
+
 #include <memory>
 #include <vector>
 #include "../../log/log.h"
@@ -19,7 +22,9 @@ class TcpConection : public FdEvent {
  public:
  	typedef std::shared_ptr<TcpConection> ptr;
 
-	explicit TcpConection(tinyrpc::Reactor* reactor);
+	TcpConection(tinyrpc::Reactor* reactor);
+
+  void init(int fd, int size);
 
 
  private:
@@ -43,3 +48,5 @@ class TcpConection : public FdEvent {
 
 
 }
+
+#endif

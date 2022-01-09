@@ -38,6 +38,11 @@ add_executable(test_tcpserver testcases/test_tcpserver.cc)
 add_dependencies(test_tcpserver tinyrpc)
 target_link_libraries(test_tcpserver ${LIBS})
 
+
+add_executable(test_connect testcases/test_connect.cc)
+add_dependencies(test_connect tinyrpc)
+target_link_libraries(test_connect ${LIBS})
+
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 

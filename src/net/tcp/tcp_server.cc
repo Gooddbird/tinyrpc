@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include "tcp_server.h"
+#include "tcp_connection.h"
 
 
 namespace tinyrpc {
@@ -106,17 +107,21 @@ void TcpServer::init() {
 
 TcpServer::~TcpServer() {
 	m_main_reactor->stop();
-
 }
 
 void TcpServer::onReadCallBack() {
-	int rt = m_acceptor->accept();
+	int fd = m_acceptor->accept();
 
-	if (rt == -1) {
+	if (fd == -1) {
 		ErrorLog << "accept error, return";
 	}
 	m_tcp_counts++;
 	DebugLog << "current tcp connection count is [" << m_tcp_counts << "]";
+
+	Reactor* reactor = m_main_reactor.get();
+	TcpConection::ptr tcp_conn = std::make_shared<TcpConection> (reactor);
+	tcp_conn->init(fd, 128);
+  m_clients.push_back(tcp_conn);
 
 }
 
@@ -125,6 +130,3 @@ void TcpServer::onWriteCallBack() {
 }
 
 }
-
-
-

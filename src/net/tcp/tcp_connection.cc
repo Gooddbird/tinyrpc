@@ -8,6 +8,30 @@ TcpConection::TcpConection(tinyrpc::Reactor* reactor) : FdEvent(reactor), m_stat
   
 }
 
+TcpConection::~TcpConection() {
+
+}
+
+void TcpConection::init(int fd, int size) {
+
+  // 初始化缓冲区大小
+  m_write_buffer = std::make_shared<TcpBuffer>(size);
+  m_read_buffer = std::make_shared<TcpBuffer>(size);
+
+  setFd(fd);
+
+	addListenEvents(IOEvent::READ);
+	// addListenEvents(IOEvent::WRITE);
+  
+  setCallBack(IOEvent::READ, std::bind(&TcpConection::onReadEvent, this));
+
+  setCallBack(IOEvent::WRITE, std::bind(&TcpConection::onWriteEvent, this));
+
+  // 注册读写监听到reactor
+  updateToReactor();
+
+}
+
 void TcpConection::onReadEvent() {
 	// copy data from socket to app buffer
 	
@@ -21,7 +45,7 @@ void TcpConection::onReadEvent() {
 	if (rt == -1) {
 		ErrorLog << "read empty, error=" << strerror(errno);
 	} else {
-		DebugLog << "succ read " << rt << "bytes: " << buf;
+		DebugLog << "succ read " << rt << " bytes: " << buf << ", count=" << rt;
 	}
 	m_read_buffer->writeToBuffer(buf, rt);
 
@@ -36,7 +60,7 @@ void TcpConection::onWriteEvent() {
 	if (rt == -1) {
 		ErrorLog << "write empty, error=" << strerror(errno);
 	} else {
-		DebugLog << "succ write " << rt << "bytes: " << buf;
+		DebugLog << "succ write " << rt << " bytes: " << buf;
 	}
 }
 

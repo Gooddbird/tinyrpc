@@ -6,6 +6,7 @@
 #include "../fd_event.h"
 #include "../timer.h"
 #include "../net_address.h"
+#include "tcp_connection.h"
 
 
 namespace tinyrpc {
@@ -65,6 +66,8 @@ class TcpServer {
   int m_tcp_counts {0};
 
   Reactor::ptr m_main_reactor;
+
+  std::vector<TcpConection::ptr> m_clients;
 
 };
 
