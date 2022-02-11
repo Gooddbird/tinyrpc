@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <atomic>
 #include "coroutine.h"
 #include "../log/log.h"
 
@@ -13,21 +14,26 @@ static thread_local Coroutine* t_main_coroutine = nullptr;
 // 线程当前正在执行的协程
 static thread_local Coroutine* t_cur_coroutine = nullptr;
 
-static std::atomic<int> g_coroutine_count = 0;
+static std::atomic<int> g_coroutine_count(0);
+
+static std::atomic<int> g_cur_coroutine_id(1);
 
 void CoFunction(Coroutine* co) {
+
   if (co!= nullptr) {
     co->m_call_back(co->m_arg);
   }
+
   Coroutine::Yield();
 }
 
 Coroutine::Coroutine() {
-  m_cor_id = g_coroutine_count++;
+  m_cor_id = g_cur_coroutine_id++;
+  g_coroutine_count++;
   memset(&m_coctx, 0, sizeof(m_coctx));
   t_main_coroutine = this;
   t_cur_coroutine = this;
-  DebugLog << "" 
+  DebugLog << "main coroutine created, id[" << m_cor_id << "]"; 
 }
 
 Coroutine::Coroutine(int size, std::function<void(void*)> cb, void* arg)
@@ -36,6 +42,7 @@ Coroutine::Coroutine(int size, std::function<void(void*)> cb, void* arg)
   if (t_main_coroutine == nullptr) {
     t_main_coroutine = new Coroutine();
   }
+
   assert(t_main_coroutine != nullptr);
 
   // 申请堆起始地址
@@ -47,7 +54,8 @@ Coroutine::Coroutine(int size, std::function<void(void*)> cb, void* arg)
 
   top = reinterpret_cast<char*>((reinterpret_cast<unsigned long>(top)) & -16LL);
 
-  m_cor_id = g_coroutine_count++;
+  m_cor_id = g_cur_coroutine_id++;
+  g_coroutine_count++;
   memset(&m_coctx, 0, sizeof(m_coctx));
 
   m_coctx.regs[kRSP] = top;
@@ -55,9 +63,11 @@ Coroutine::Coroutine(int size, std::function<void(void*)> cb, void* arg)
   m_coctx.regs[kRETAddr] = reinterpret_cast<char*>(CoFunction); 
   m_coctx.regs[kRDI] = reinterpret_cast<char*>(this);
 
+  DebugLog << "coroutine created, id[" << m_cor_id << "]"; 
 }
 
 Coroutine::~Coroutine() {
+  g_coroutine_count--;
   DebugLog << "coroutine[" << m_cor_id << "] die";
 }
 
@@ -72,17 +82,19 @@ Coroutine* Coroutine::GetCurrentCoroutine() {
 让出执行权,切换到主协程
 ********/
 void Coroutine::Yield() {
-
-  if (t_cur_coroutine == t_main_coroutine) {
-    ErrorLog << "current coroutine is main coroutine";
-  }
-
   if (t_main_coroutine == nullptr) {
     ErrorLog << "main coroutine is nullptr";
     return;
   }
 
-  coctx_swap(&(t_cur_coroutine->m_coctx), &(t_main_coroutine->m_coctx));
+  if (t_cur_coroutine == t_main_coroutine) {
+    ErrorLog << "current coroutine is main coroutine";
+    return;
+  }
+  Coroutine* co = t_cur_coroutine;
+  t_cur_coroutine = t_main_coroutine;
+  coctx_swap(&(co->m_coctx), &(t_main_coroutine->m_coctx));
+  DebugLog << "swap back";
 }
 
 /********
@@ -106,8 +118,8 @@ void Coroutine::Resume(Coroutine* co) {
   }
 
   t_cur_coroutine = co;
-
   coctx_swap(&(t_main_coroutine->m_coctx), &(co->m_coctx));
+  DebugLog << "swap back";
 
 }
 

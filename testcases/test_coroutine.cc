@@ -14,14 +14,14 @@ int main(int argc, char* argv[]) {
 
   tinyrpc::Coroutine::GetCurrentCoroutine();
 
-  tinyrpc::Coroutine::ptr co = std::make_shared<tinyrpc::Coroutine>(tinyrpc::Coroutine(128*1024, &fun, nullptr));
+  tinyrpc::Coroutine::ptr co = std::make_shared<tinyrpc::Coroutine>(128*1024, &fun, nullptr);
 
   DebugLog << "this is main co";
   tinyrpc::Coroutine::Resume(co.get());
-  DebugLog << "main co back";
+  DebugLog << "main co back 1";
 
   tinyrpc::Coroutine::Resume(co.get());
-
+  DebugLog << "main co back 2";
 
   return 0;
 

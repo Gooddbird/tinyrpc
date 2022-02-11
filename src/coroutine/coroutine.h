@@ -29,15 +29,16 @@ class Coroutine {
 
   static Coroutine* GetCurrentCoroutine();
 
+ private:
+  int m_cor_id;       // 协程号
+  coctx m_coctx;      // 协程寄存器上下文
+  int m_stack_size;   // 协程申请堆空间的栈大小,单位: 字节
+
  public:
 
   std::function<void(void*)> m_call_back;   // 协程回调函数
   void* m_arg;        // 回调函数参数
 
- private:
-  int m_cor_id;       // 协程号
-  coctx m_coctx;      // 协程寄存器上下文
-  int m_stack_size;   // 协程申请堆空间的栈大小,单位: 字节
 
 };
 
