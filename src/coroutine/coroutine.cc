@@ -21,9 +21,11 @@ static std::atomic<int> g_cur_coroutine_id(1);
 void CoFunction(Coroutine* co) {
 
   if (co!= nullptr) {
+    // 去执行协程回调函数
     co->m_call_back(co->m_arg);
   }
 
+  // 执行完协程回调函数返回后,说明协程生命周期结束,此时需恢复到主协程
   Coroutine::Yield();
 }
 
@@ -31,6 +33,7 @@ Coroutine::Coroutine() {
   m_cor_id = g_cur_coroutine_id++;
   g_coroutine_count++;
   memset(&m_coctx, 0, sizeof(m_coctx));
+
   t_main_coroutine = this;
   t_cur_coroutine = this;
   DebugLog << "main coroutine created, id[" << m_cor_id << "]"; 
@@ -68,6 +71,13 @@ Coroutine::Coroutine(int size, std::function<void(void*)> cb, void* arg)
 
 Coroutine::~Coroutine() {
   g_coroutine_count--;
+
+  if (g_coroutine_count == 1) {
+    if (t_main_coroutine != nullptr) {
+      delete t_main_coroutine;
+      t_main_coroutine = nullptr;
+    }
+  }
   DebugLog << "coroutine[" << m_cor_id << "] die";
 }
 
@@ -94,7 +104,7 @@ void Coroutine::Yield() {
   Coroutine* co = t_cur_coroutine;
   t_cur_coroutine = t_main_coroutine;
   coctx_swap(&(co->m_coctx), &(t_main_coroutine->m_coctx));
-  DebugLog << "swap back";
+  // DebugLog << "swap back";
 }
 
 /********
@@ -119,9 +129,8 @@ void Coroutine::Resume(Coroutine* co) {
 
   t_cur_coroutine = co;
   coctx_swap(&(t_main_coroutine->m_coctx), &(co->m_coctx));
-  DebugLog << "swap back";
+  // DebugLog << "swap back";
 
 }
-
 
 }
