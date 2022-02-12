@@ -10,7 +10,7 @@ FdEvent::FdEvent(tinyrpc::Reactor* reactor) : m_reactor(reactor) {
 
   }
 
-  FdEvent::~FdEvent() {}
+FdEvent::~FdEvent() {}
 
 void FdEvent::handleEvent(int flag) {
   if (flag == READ) {

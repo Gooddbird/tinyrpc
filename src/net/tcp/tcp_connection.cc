@@ -9,6 +9,7 @@ TcpConection::TcpConection(tinyrpc::Reactor* reactor) : FdEvent(reactor), m_stat
 }
 
 TcpConection::~TcpConection() {
+	close(m_fd);
 
 }
 
@@ -21,7 +22,6 @@ void TcpConection::init(int fd, int size) {
   setFd(fd);
 
 	addListenEvents(IOEvent::READ);
-	// addListenEvents(IOEvent::WRITE);
   
   setCallBack(IOEvent::READ, std::bind(&TcpConection::onReadEvent, this));
 
@@ -62,6 +62,9 @@ void TcpConection::onWriteEvent() {
 	} else {
 		DebugLog << "succ write " << rt << " bytes: " << buf;
 	}
+	delListenEvents(IOEvent::WRITE);
+	updateToReactor();
+
 }
 
 void TcpConection::asyncRead(std::vector<char>& re, int size) {
@@ -72,6 +75,8 @@ void TcpConection::asyncWrite(const std::vector<char>& buf) {
 	const char* tmp = &buf[0];
 	int size = buf.size();
 	m_write_buffer->writeToBuffer(tmp, size);
+	addListenEvents(IOEvent::WRITE);
+	updateToReactor();
 }
 
 }
