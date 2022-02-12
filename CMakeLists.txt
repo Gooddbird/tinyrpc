@@ -1,10 +1,13 @@
 cmake_minimum_required(VERSION 2.8)
 project(tinyrpc)
 set(CMAKE_VERBOSE_MAKEFILE ON)
+ENABLE_LANGUAGE(ASM)
 set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -rdynamic -O3 -g -std=c++11 -lpthread -Wall -Wno-deprecated -Werror -Wno-dev -Wno-unused-function")
 
 set(LIB_SRC
   src/log/log.cc  
+  src/coroutine/coctx_swap.S
+  src/coroutine/coroutine.cc
   src/net/fd_event.cc
   src/net/reactor.cc
   src/net/timer.cc
@@ -33,15 +36,17 @@ add_executable(test_iothread testcases/test_iothread.cc)
 add_dependencies(test_iothread tinyrpc)
 target_link_libraries(test_iothread ${LIBS})
 
-
 add_executable(test_tcpserver testcases/test_tcpserver.cc)
 add_dependencies(test_tcpserver tinyrpc)
 target_link_libraries(test_tcpserver ${LIBS})
 
-
 add_executable(test_connect testcases/test_connect.cc)
 add_dependencies(test_connect tinyrpc)
 target_link_libraries(test_connect ${LIBS})
+
+add_executable(test_coroutine testcases/test_coroutine.cc)
+add_dependencies(test_coroutine tinyrpc)
+target_link_libraries(test_coroutine ${LIBS})
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)

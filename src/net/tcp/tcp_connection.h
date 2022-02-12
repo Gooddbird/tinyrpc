@@ -24,6 +24,8 @@ class TcpConection : public FdEvent {
 
 	TcpConection(tinyrpc::Reactor* reactor);
 
+	~TcpConection();
+
   void init(int fd, int size);
 
 

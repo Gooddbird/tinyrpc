@@ -8,6 +8,7 @@
 #include <assert.h>
 #include "reactor.h"
 #include "../log/log.h"
+#include "../coroutine/coroutine.h"
 #include "mutex.h"
 
 namespace tinyrpc {
@@ -26,6 +27,8 @@ enum IOEvent {
 
 class FdEvent : public std::enable_shared_from_this<FdEvent> {
  public:
+
+  typedef std::shared_ptr<FdEvent> ptr;
   
   FdEvent(tinyrpc::Reactor* reactor);
 
