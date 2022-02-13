@@ -2,13 +2,14 @@
 
 namespace tinyrpc {
 
-FdEvent::FdEvent(tinyrpc::Reactor* reactor) : m_reactor(reactor) {
+FdEvent::FdEvent(tinyrpc::Reactor* reactor, int fd/*=-1*/) : m_fd(fd), m_reactor(reactor) {
     if (reactor == nullptr) {
       ErrorLog << "create reactor first";
     }
     assert(reactor != nullptr);
 
-  }
+}
+
 
 FdEvent::~FdEvent() {}
 

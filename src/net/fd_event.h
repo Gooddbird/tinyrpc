@@ -21,22 +21,12 @@ enum IOEvent {
   ETModel = EPOLLET,
 };
 
-// void toStringIO(IOEvent envnt) {
-  // swit
-// }
-
 class FdEvent : public std::enable_shared_from_this<FdEvent> {
  public:
 
   typedef std::shared_ptr<FdEvent> ptr;
   
-  FdEvent(tinyrpc::Reactor* reactor);
-
-  // FdEvent(int fd) : m_fd(fd) {
-    // if (m_fd == -1) {
-      // DebugLog << "bad socketfd";
-    // }
-  // }
+  FdEvent(tinyrpc::Reactor* reactor, int fd = -1);
 
   virtual ~FdEvent();
 

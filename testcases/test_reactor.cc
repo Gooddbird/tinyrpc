@@ -14,6 +14,7 @@
 #include "../src/coroutine/coroutine.h"
 
 tinyrpc::Reactor reactor;
+tinyrpc::Coroutine::ptr cor;
 int listenfd = -1;
 
 void* fun(void* arg) {
@@ -45,42 +46,44 @@ void* fun(void* arg) {
   return nullptr;
 }
 
-void read_f(void* arg) {
-  tinyrpc::FdEvent* fd_event = new tinyrpc::FdEvent(&reactor);
-  fd_event->setFd(listenfd);
+void accept_f() {
 
-  // tinyrpc::FdEvent* fd_event = (tinyrpc::FdEvent*)arg; 
-  int flag = fcntl(fd_event->getFd(), F_GETFL, 0); 
+  auto readco = [] (void* arg) {
+    tinyrpc::FdEvent* fd_event = new tinyrpc::FdEvent(&reactor, listenfd);
 
-  fcntl(fd_event->getFd(), F_SETFL, flag | O_NONBLOCK);
-    // ErrorLog << "fcntl error, error=" << strerror(errno);
+    int flag = fcntl(fd_event->getFd(), F_GETFL, 0); 
 
-  flag = fcntl(fd_event->getFd(), F_GETFL, 0); 
-  if (flag & O_NONBLOCK) {
-    DebugLog << "succ set o_nonblock";
-  }
-  tinyrpc::Coroutine* cor = tinyrpc::Coroutine::GetCurrentCoroutine();
-  auto readcb = [cor] () {
-    DebugLog << "occur read, ready to resume";
-    tinyrpc::Coroutine::Resume(cor);
+    fcntl(fd_event->getFd(), F_SETFL, flag | O_NONBLOCK);
+    flag = fcntl(fd_event->getFd(), F_GETFL, 0); 
+    if (flag & O_NONBLOCK) {
+      DebugLog << "succ set o_nonblock";
+    }
+
+		tinyrpc::Coroutine *thiscor = tinyrpc::Coroutine::GetCurrentCoroutine();
+    auto read_call_back = [thiscor]() {
+      DebugLog << "occur read, ready to resume";
+      tinyrpc::Coroutine::Resume(thiscor);
+    };
+
+    fd_event->setCallBack(tinyrpc::IOEvent::READ, read_call_back);
+    fd_event->addListenEvents(tinyrpc::IOEvent::READ);
+
+    fd_event->updateToReactor();
+
+    tinyrpc::Coroutine::Yield();
+    DebugLog << "resume back, to accept";
+
+    sockaddr_in cli_addr;
+    socklen_t cli_len;
+    int cli_fd = accept(fd_event->getFd(), (sockaddr*)&cli_addr, &cli_len); 
+    DebugLog << "success accept fd" << cli_fd;
   };
 
-  fd_event->setCallBack(tinyrpc::IOEvent::READ, readcb);
-  fd_event->addListenEvents(tinyrpc::IOEvent::READ);
+  tinyrpc::Coroutine::GetCurrentCoroutine();
+  cor = std::make_shared<tinyrpc::Coroutine>(128 * 1024, readco, nullptr);
+  tinyrpc::Coroutine::Resume(cor.get()); 
 
-  fd_event->updateToReactor();
-
-  tinyrpc::Coroutine::Yield();
-  DebugLog << "resume back, to accept";
-
-  sockaddr_in cli_addr;
-  socklen_t cli_len;
-  int cli_fd = accept(fd_event->getFd(), (sockaddr*)&cli_addr, &cli_len); 
-
-  DebugLog << "success accept fd" << cli_fd;
 }
-
-
 
 int main(int argc, char* argv[]) {
 	listenfd = -1;	
@@ -88,31 +91,34 @@ int main(int argc, char* argv[]) {
 		ErrorLog << "socket error, exit!, errno=" << errno << ", err=" << strerror(errno);
 		return -1;
 	}
+
 	sockaddr_in addr;
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
-	addr.sin_port = htons(30000);
+	addr.sin_port = htons(30005);
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	
 	if ((bind(listenfd, (sockaddr*)&addr, sizeof(addr))) != 0) {
 		ErrorLog << "bind error, exit!, errno=" << errno << ", err=" << strerror(errno);
 		return -1;
 	}
-	
+
 	if (listen(listenfd, 5) != 0) {
 
 		ErrorLog << "listen error, exit!, errno=" << errno << ", err=" << strerror(errno); 
 		return -1;
 	}
-	
-  tinyrpc::Coroutine::GetCurrentCoroutine();
 
-  tinyrpc::Coroutine::ptr co = std::make_shared<tinyrpc::Coroutine>(128*1024, &read_f, nullptr);
-
-  DebugLog << "listen addr=" << inet_ntoa(addr.sin_addr) << ":" << 30000;
-  tinyrpc::Coroutine::Resume(co.get());
+  // tinyrpc::Coroutine::GetCurrentCoroutine();
+  // tinyrpc::Coroutine::ptr co = std::make_shared<tinyrpc::Coroutine>(128*1024, &read_f, nullptr);
+  // DebugLog << "listen addr=" << inet_ntoa(addr.sin_addr) << ":" << 30000;
+  // tinyrpc::Coroutine::Resume(co.get());
 
 	DebugLog << "begin to loop!";
+
+	
+	accept_f();
+
 	reactor.loop();
 
   // pthread_t t_id;

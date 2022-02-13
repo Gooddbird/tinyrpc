@@ -19,14 +19,16 @@ class Coroutine {
 
  public:
 
-  Coroutine(int size, std::function<void(void*)> cb, void* arg);
+  Coroutine(int size, std::function<void()> cb);
 
   ~Coroutine();
+
+  void SetCallBack(std::function<void> cb); 
 
  public:
   static void Yield();
 
-  static void Resume(Coroutine* cor);
+  static void Resume(Coroutine::ptr cor);
 
   static Coroutine* GetCurrentCoroutine();
 
@@ -34,12 +36,11 @@ class Coroutine {
   int m_cor_id;       // 协程id
   coctx m_coctx;      // 协程寄存器上下文
   int m_stack_size;   // 协程申请堆空间的栈大小,单位: 字节
+  char* m_stack_sp;   // 
 
  public:
 
-  std::function<void(void*)> m_call_back;   // 协程回调函数
-  void* m_arg;        // 回调函数参数
-
+  std::function<void()> m_call_back;   // 协程回调函数
 
 };
 
