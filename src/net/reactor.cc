@@ -46,14 +46,15 @@ Reactor::~Reactor() {
     delete m_timer;
     m_timer = nullptr;
   }
+  t_reactor_ptr = nullptr;
 }
-
 
 Reactor* Reactor::GetReactor() {
+  if (t_reactor_ptr == nullptr) {
+    t_reactor_ptr = new Reactor;
+  }
   return t_reactor_ptr; 
 }
-
-
 
 // call by other threads, need lock
 void Reactor::addEvent(int fd, epoll_event event, bool is_wakeup/*=true*/) {

@@ -52,6 +52,8 @@ class FdEvent : public std::enable_shared_from_this<FdEvent> {
 
 	Reactor* getReactor() const;
 
+  void setNonBlock();
+
  public:
 	MutexLock m_mutex;
 
