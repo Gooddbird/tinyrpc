@@ -48,7 +48,7 @@ void* fun(void* arg) {
 
 void accept_f() {
 
-  auto readco = [] (void* arg) {
+  auto readco = [] () {
     tinyrpc::FdEvent* fd_event = new tinyrpc::FdEvent(&reactor, listenfd);
 
     int flag = fcntl(fd_event->getFd(), F_GETFL, 0); 
@@ -80,7 +80,7 @@ void accept_f() {
   };
 
   tinyrpc::Coroutine::GetCurrentCoroutine();
-  cor = std::make_shared<tinyrpc::Coroutine>(128 * 1024, readco, nullptr);
+  cor = std::make_shared<tinyrpc::Coroutine>(128 * 1024, readco);
   tinyrpc::Coroutine::Resume(cor.get()); 
 
 }

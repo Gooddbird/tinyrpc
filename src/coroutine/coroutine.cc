@@ -81,7 +81,7 @@ Coroutine::~Coroutine() {
   }
   if (m_stack_sp != nullptr) {
     free(m_stack_sp);
-    m_stack_size = nullptr;
+    m_stack_sp = nullptr;
   }
   DebugLog << "coroutine[" << m_cor_id << "] die";
 }

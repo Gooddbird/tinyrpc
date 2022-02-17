@@ -8,6 +8,7 @@ set(LIB_SRC
   src/log/log.cc  
   src/coroutine/coctx_swap.S
   src/coroutine/coroutine.cc
+  src/coroutine/coroutine_hook.cc
   src/net/fd_event.cc
   src/net/reactor.cc
   src/net/timer.cc
@@ -15,6 +16,7 @@ set(LIB_SRC
   src/net/tcp/tcp_server.cc
   src/net/tcp/tcp_buffer.cc
   src/net/tcp/tcp_connection.cc
+
 )
 
 add_library(tinyrpc SHARED ${LIB_SRC})
