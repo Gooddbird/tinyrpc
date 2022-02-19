@@ -23,4 +23,13 @@ typedef int (*accept_fun_ptr_t)(int sockfd, struct sockaddr *addr, socklen_t *ad
 typedef int (*socket_fun_ptr_t)(int domain, int type, int protocol);
 
 
+extern "C" {
+
+int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+
+ssize_t read(int fd, void *buf, size_t count);
+
+}
+
+
 #endif
