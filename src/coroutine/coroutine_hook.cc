@@ -50,10 +50,17 @@ ssize_t read(int fd, void *buf, size_t count) {
     DebugLog << "hook disable, call sys func";
     return g_sys_read_fun(fd, buf, count);
   }
+
 	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
 	assert(reactor != nullptr);
 
 	tinyrpc::FdEvent::ptr fd_event = std::make_shared<tinyrpc::FdEvent>(reactor, fd);
+
+	if (fd_event->isNonBlock()) {
+		DebugLog << "user set nonblock, call sys func";
+		return g_sys_read_fun(fd, buf, count);
+	}
+
 	fd_event->setNonBlock();
 	
 	toEpoll(fd_event, tinyrpc::IOEvent::READ);
@@ -79,6 +86,12 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	assert(reactor != nullptr);
 
 	tinyrpc::FdEvent::ptr fd_event = std::make_shared<tinyrpc::FdEvent>(reactor, sockfd);
+
+	if (fd_event->isNonBlock()) {
+		DebugLog << "user set nonblock, call sys func";
+		return g_sys_accept_fun(sockfd, addr, addrlen);
+	}
+
 	fd_event->setNonBlock();
 
 	toEpoll(fd_event, tinyrpc::IOEvent::READ);
@@ -104,6 +117,11 @@ ssize_t write(int fd, const void *buf, size_t count) {
 	assert(reactor != nullptr);
 
 	tinyrpc::FdEvent::ptr fd_event = std::make_shared<tinyrpc::FdEvent>(reactor, fd);
+
+	if (fd_event->isNonBlock()) {
+		DebugLog << "user set nonblock, call sys func";
+		return g_sys_write_fun(fd, buf, count);
+	}
 	fd_event->setNonBlock();
 	
 	toEpoll(fd_event, tinyrpc::IOEvent::WRITE);
@@ -117,6 +135,21 @@ ssize_t write(int fd, const void *buf, size_t count) {
 }
 
 int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
+	DebugLog << "this is hook connect";
+  if (!g_hook_enable) {
+    DebugLog << "hook disable, call sys func";
+  }
+	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
+	assert(reactor != nullptr);
+
+	tinyrpc::FdEvent::ptr fd_event = std::make_shared<tinyrpc::FdEvent>(reactor, fd);
+
+	if (fd_event->isNonBlock()) {
+		DebugLog << "user set nonblock, call sys func";
+    return g_sys_connect_fun(sockfd, addr, addrlen);
+	}
+
+	
 	return g_sys_connect_fun(sockfd, addr, addrlen);
 }
 
@@ -132,7 +165,7 @@ void enableHook() {
   g_hook_enable = true;
 }
 
-void disabkeHook() {
+void disableHook() {
   g_hook_enable = false;
 }
 

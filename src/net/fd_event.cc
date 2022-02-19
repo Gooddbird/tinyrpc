@@ -99,9 +99,8 @@ void FdEvent::setNonBlock() {
     ErrorLog << "error, fd=-1";
     return;
   }
-  int flag = fcntl(m_fd, F_GETFL, 0); 
 
-  if (flag & O_NONBLOCK) {
+  if (IsNonBlock()) {
     DebugLog << "fd already set o_nonblock";
     return;
   }
@@ -116,5 +115,14 @@ void FdEvent::setNonBlock() {
 
 }
 
+bool FdEvent::isNonBlock() {
+  if (m_fd == -1) {
+    ErrorLog << "error, fd=-1";
+    return false;
+  }
+  int flag = fcntl(m_fd, F_GETFL, 0); 
+  return (flag & O_NONBLOCK);
+
+}
 
 }

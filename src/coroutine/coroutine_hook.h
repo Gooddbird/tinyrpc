@@ -8,7 +8,7 @@
 namespace tinyrpc {
 	void enableHook();
 
-	void disabkeHook();
+	void disableHook();
 }
 
 
