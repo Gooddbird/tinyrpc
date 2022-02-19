@@ -28,7 +28,7 @@ class Coroutine {
  public:
   static void Yield();
 
-  static void Resume(Coroutine::ptr cor);
+  static void Resume(Coroutine* cor);
 
   static Coroutine* GetCurrentCoroutine();
 

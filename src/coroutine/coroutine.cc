@@ -72,13 +72,6 @@ Coroutine::Coroutine(int size, std::function<void()> cb)
 Coroutine::~Coroutine() {
   g_coroutine_count--;
 
-  if (g_coroutine_count == 1) {
-		// 如果是最后一个用户协程的话，需要先析构掉主协程
-    if (t_main_coroutine != nullptr) {
-      delete t_main_coroutine;
-      t_main_coroutine = nullptr;
-    }
-  }
   if (m_stack_sp != nullptr) {
     free(m_stack_sp);
     m_stack_sp = nullptr;
@@ -115,7 +108,7 @@ void Coroutine::Yield() {
 /********
 取得执行权,从主协程切换到目标协程
 ********/
-void Coroutine::Resume(Coroutine::ptr co) {
+void Coroutine::Resume(Coroutine* co) {
 
   if (t_cur_coroutine != t_main_coroutine) {
     ErrorLog << "swap error, current coroutine must be main coroutine";
@@ -126,8 +119,11 @@ void Coroutine::Resume(Coroutine::ptr co) {
     ErrorLog << "main coroutine is nullptr";
     return;
   }
-
-  t_cur_coroutine = co.get();
+  if (co == nullptr) {
+    ErrorLog << "pending coroutine is nullptr";
+    return;
+  }
+  t_cur_coroutine = co;
   coctx_swap(&(t_main_coroutine->m_coctx), &(co->m_coctx));
   // DebugLog << "swap back";
 

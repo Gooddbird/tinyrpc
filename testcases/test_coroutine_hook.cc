@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
   DebugLog << "this is main co";
   tinyrpc::Coroutine::ptr cor1 = std::make_shared<tinyrpc::Coroutine>(1024 * 128, fun1); 
   
-  tinyrpc::Coroutine::Resume(cor1);
+  tinyrpc::Coroutine::Resume(cor1.get());
 
   tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
   assert(reactor != nullptr);

@@ -13,14 +13,35 @@
 
 HOOK_SYS_FUNC(accept);
 HOOK_SYS_FUNC(read);
+HOOK_SYS_FUNC(write);
+HOOK_SYS_FUNC(connect);
 
 static int g_hook_enable = false;
 
 extern "C" {
 
-void toEpoll() {
-
-
+void toEpoll(tinyrpc::FdEvent::ptr fd_event, int events) {
+	
+	tinyrpc::Coroutine* cur_cor = tinyrpc::Coroutine::GetCurrentCoroutine() ;
+	if (events & tinyrpc::IOEvent::READ) {
+		DebugLog << "fd:[" << fd_event->getFd() << "], register read event to epoll";
+		fd_event->setCallBack(tinyrpc::IOEvent::READ, 
+			[cur_cor, fd_event]() {
+				tinyrpc::Coroutine::Resume(cur_cor);
+			}
+		);
+		fd_event->addListenEvents(tinyrpc::IOEvent::READ);
+	}
+	if (events & tinyrpc::IOEvent::WRITE) {
+		DebugLog << "fd:[" << fd_event->getFd() << "], register write event to epoll";
+		fd_event->setCallBack(tinyrpc::IOEvent::WRITE, 
+			[cur_cor]() {
+				tinyrpc::Coroutine::Resume(cur_cor);
+			}
+		);
+		fd_event->addListenEvents(tinyrpc::IOEvent::WRITE);
+	}
+	fd_event->updateToReactor();
 }
 
 ssize_t read(int fd, void *buf, size_t count) {
@@ -35,20 +56,13 @@ ssize_t read(int fd, void *buf, size_t count) {
 	tinyrpc::FdEvent::ptr fd_event = std::make_shared<tinyrpc::FdEvent>(reactor, fd);
 	fd_event->setNonBlock();
 	
-	tinyrpc::Coroutine::ptr cur_cor;
-	cur_cor.reset(tinyrpc::Coroutine::GetCurrentCoroutine());
-
-	fd_event->setCallBack(tinyrpc::IOEvent::READ, 
-		[cur_cor]() {
-			tinyrpc::Coroutine::Resume(cur_cor);
-		}
-	);
-
-	fd_event->addListenEvents(tinyrpc::IOEvent::READ);
-	fd_event->updateToReactor();
+	toEpoll(fd_event, tinyrpc::IOEvent::READ);
 
 	DebugLog << "read func to yield";
 	tinyrpc::Coroutine::Yield();
+
+	fd_event->delListenEvents(tinyrpc::IOEvent::READ);
+	fd_event->updateToReactor();
 
 	DebugLog << "read func yield back, now to call sys read";
 	return g_sys_read_fun(fd, buf, count);
@@ -66,21 +80,14 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 
 	tinyrpc::FdEvent::ptr fd_event = std::make_shared<tinyrpc::FdEvent>(reactor, sockfd);
 	fd_event->setNonBlock();
+
+	toEpoll(fd_event, tinyrpc::IOEvent::READ);
 	
-	tinyrpc::Coroutine::ptr cur_cor;
-	cur_cor.reset(tinyrpc::Coroutine::GetCurrentCoroutine());
-
-	fd_event->setCallBack(tinyrpc::IOEvent::READ, 
-		[cur_cor]() {
-			tinyrpc::Coroutine::Resume(cur_cor);
-		}
-	);
-
-	fd_event->addListenEvents(tinyrpc::IOEvent::READ);
-	fd_event->updateToReactor();
-
 	DebugLog << "accept func to yield";
 	tinyrpc::Coroutine::Yield();
+
+	fd_event->delListenEvents(tinyrpc::IOEvent::READ);
+	fd_event->updateToReactor();
 
 	DebugLog << "accept func yield back, now to call sys accept";
 	return g_sys_accept_fun(sockfd, addr, addrlen);
@@ -88,11 +95,30 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 }
 
 ssize_t write(int fd, const void *buf, size_t count) {
-	HOOK_SYS_FUNC(write);
+	DebugLog << "this is hook write";
+  if (!g_hook_enable) {
+    DebugLog << "hook disable, call sys func";
+    return g_sys_write_fun(fd, buf, count);
+  }
+	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
+	assert(reactor != nullptr);
+
+	tinyrpc::FdEvent::ptr fd_event = std::make_shared<tinyrpc::FdEvent>(reactor, fd);
+	fd_event->setNonBlock();
+	
+	toEpoll(fd_event, tinyrpc::IOEvent::WRITE);
+
+	DebugLog << "write func to yield";
+	tinyrpc::Coroutine::Yield();
+
+	DebugLog << "write func yield back, now to call sys write";
 	return g_sys_write_fun(fd, buf, count);
+
 }
 
-typedef int (*connect_fun_ptr_t)(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
+	return g_sys_connect_fun(sockfd, addr, addrlen);
+}
 
 
 typedef int (*socket_fun_ptr_t)(int domain, int type, int protocol);
