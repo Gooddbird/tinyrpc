@@ -16,7 +16,7 @@ void fun1() {
   sockaddr_in addr;
   memset(&addr, 0, sizeof(addr));
   addr.sin_family = AF_INET;
-  addr.sin_port = htons(30005);
+  addr.sin_port = htons(39999);
   addr.sin_addr.s_addr = htonl(INADDR_ANY);
   
   if ((bind(listenfd, (sockaddr*)&addr, sizeof(addr))) != 0) {

@@ -222,16 +222,22 @@ void Reactor::loop() {
             write_cb = ptr->getCallBack(WRITE);
           }
 
-					if (one_event.events & EPOLLIN) {
-						DebugLog << "socket [" << fd << "] occur read event";
-            MutexLockGuard lock(m_mutex);
-						m_pending_tasks.push_back(read_cb);						
-					}
-					if (one_event.events & EPOLLOUT) {
-						DebugLog << "socket [" << fd << "] occur write event";
-            MutexLockGuard lock(m_mutex);
-						m_pending_tasks.push_back(write_cb);						
-					}
+          if ((!(one_event.events & EPOLLIN)) && (!(one_event.events & EPOLLOUT))){
+            DebugLog << "socket [" << fd << "] occur other unknow event:[" << one_event.events << "], need unregister this socket";
+            delEventInLoopThread(fd);
+          } else {
+            if (one_event.events & EPOLLIN) {
+              DebugLog << "socket [" << fd << "] occur read event";
+              MutexLockGuard lock(m_mutex);
+              m_pending_tasks.push_back(read_cb);						
+            }
+            if (one_event.events & EPOLLOUT) {
+              DebugLog << "socket [" << fd << "] occur write event";
+              MutexLockGuard lock(m_mutex);
+              m_pending_tasks.push_back(write_cb);						
+            }
+          }
+
 				}
 				
 			}

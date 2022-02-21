@@ -2,6 +2,7 @@
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
 #include "coroutine_hook.h"
 #include "coroutine.h"
 #include "../net/fd_event.h"
@@ -164,6 +165,7 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 	assert(reactor != nullptr);
 
 	tinyrpc::FdEvent::ptr fd_event = std::make_shared<tinyrpc::FdEvent>(reactor, sockfd);
+	tinyrpc::Coroutine* cur_cor = tinyrpc::Coroutine::GetCurrentCoroutine();
 
 	// if (fd_event->isNonBlock()) {
 		// DebugLog << "user set nonblock, call sys func";
@@ -173,25 +175,25 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 	fd_event->setNonBlock();
   int n = g_sys_connect_fun(sockfd, addr, addrlen);
   if (n == 0) {
-
     DebugLog << "direct connect succ, return";
     return n;
-  } else if (n == -1 && errno != EINPROGRESS) {
+  } else if (errno != EINPROGRESS) {
+		DebugLog << "connect error and errno is't EINPROGRESS, errno=" << errno <<  ",error=" << strerror(errno);
     return n;
   }
 
+	DebugLog << "errno == EINPROGRESS";
+
   toEpoll(fd_event, tinyrpc::IOEvent::WRITE);
 
-  int max_timeout = 75000;
+  int max_timeout = 75000;		// 最大超时时间
+	bool is_timeout = false;		// 是否超时
 
-  auto delWriteListenCb = [fd_event]() {
-    fd_event->delListenEvents(tinyrpc::IOEvent::WRITE); 
-    fd_event->updateToReactor();
-  };
-
-  auto timeout_cb = [delWriteListenCb, max_timeout](){
-    ErrorLog << "connect error,  timeout[ " << max_timeout << "ms]";
-    delWriteListenCb();
+	// 超时函数句柄
+  auto timeout_cb = [&is_timeout, cur_cor](){
+		// 设置超时标志，然后唤醒协程
+		is_timeout = true;
+		tinyrpc::Coroutine::Resume(cur_cor);
   };
 
   tinyrpc::TimerEvent::ptr event = std::make_shared<tinyrpc::TimerEvent>(max_timeout, false, timeout_cb);
@@ -200,10 +202,27 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
   timer->addTimerEvent(event);
 
   tinyrpc::Coroutine::Yield();
-  delWriteListenCb();
 
-	DebugLog << "connect func yield back, now to call sys connect";
-	return g_sys_connect_fun(sockfd, addr, addrlen);
+	fd_event->delListenEvents(tinyrpc::IOEvent::WRITE); 
+	fd_event->updateToReactor();
+
+	// 定时器也需要删除
+	timer->delTimerEvent(event);
+
+	n = g_sys_connect_fun(sockfd, addr, addrlen);
+	if ((n < 0 && errno == EISCONN) || n == 0) {
+		DebugLog << "connect succ";
+		return 0;
+	}
+
+	if (is_timeout) {
+    ErrorLog << "connect error,  timeout[ " << max_timeout << "ms]";
+		errno = ETIMEDOUT;
+	} 
+
+	DebugLog << "connect error and errno=" << errno <<  ",error=" << strerror(errno);
+	return -1;
+
 }
 
 typedef int (*socket_fun_ptr_t)(int domain, int type, int protocol);

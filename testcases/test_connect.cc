@@ -22,7 +22,7 @@ void connect_co() {
   sockaddr_in ser_addr;
   ser_addr.sin_family = AF_INET;
 
-  ser_addr.sin_port = htons(30005); 
+  ser_addr.sin_port = htons(39999); 
   ser_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
   // int flag = fcntl(connfd, F_GETFL, 0); 
