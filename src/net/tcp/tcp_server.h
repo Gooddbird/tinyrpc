@@ -20,7 +20,7 @@ class TcpAcceptor : public FdEvent {
 
   void init();
 
-  int accept();
+  int toAccept();
 
   ~TcpAcceptor();
 
@@ -29,11 +29,9 @@ class TcpAcceptor : public FdEvent {
   int m_family;
 
   NetAddress::ptr m_local_addr;
-
   NetAddress::ptr m_peer_addr;
 
 };
-
 
 
 class TcpServer {
@@ -55,6 +53,9 @@ class TcpServer {
 
 
  private:
+  void MainCorFun();
+
+ private:
   
   NetAddress::ptr m_addr;
 
@@ -65,9 +66,11 @@ class TcpServer {
 
   int m_tcp_counts {0};
 
-  Reactor::ptr m_main_reactor;
+  Reactor* m_main_reactor;
 
   std::vector<TcpConection::ptr> m_clients;
+
+  bool m_is_stop_accept {false};
 
 };
 

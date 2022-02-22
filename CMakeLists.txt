@@ -57,6 +57,10 @@ add_executable(test_coroutine_hook testcases/test_coroutine_hook.cc)
 add_dependencies(test_coroutine_hook tinyrpc)
 target_link_libraries(test_coroutine_hook ${LIBS})
 
+add_executable(test_tcpserver_cor testcases/test_tcpserver_cor.cc)
+add_dependencies(test_tcpserver_cor tinyrpc)
+target_link_libraries(test_tcpserver_cor ${LIBS})
+
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 

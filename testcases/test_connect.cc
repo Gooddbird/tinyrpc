@@ -14,6 +14,8 @@
 int connfd = -1;
 
 void connect_co() {
+  int count = 10000;
+  while(count--) {
   connfd = socket(AF_INET, SOCK_STREAM, 0);
 
   if (connfd == -1) {
@@ -34,7 +36,6 @@ void connect_co() {
     // DebugLog << "succ set o_nonblock";
   // }
   // DebugLog << "begin to connect";
-
   int rt = connect(connfd, reinterpret_cast<sockaddr*>(&ser_addr), sizeof(ser_addr));
   DebugLog << "rt " << rt;
   if (rt == -1) {
@@ -44,6 +45,7 @@ void connect_co() {
     DebugLog << "connect succ";
   } else {
     DebugLog << "unknown rt " << rt;
+  }
   }
  
 }

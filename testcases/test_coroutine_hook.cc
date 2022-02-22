@@ -32,9 +32,14 @@ void fun1() {
   sockaddr_in cli_addr;
   socklen_t cli_len;
   DebugLog << "begin to accept";
+
+  while(1) {
+
   int connfd = accept(listenfd, (sockaddr*)&cli_addr, (socklen_t*)&cli_len);
   
   DebugLog << "fd : " << connfd << "has acceptd";
+  }
+
 }
 
 int main(int argc, char* argv[]) {
