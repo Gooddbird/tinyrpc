@@ -9,6 +9,7 @@
 #include "mutex.h"
 #include "fd_event.h"
 #include "timer.h"
+#include "../coroutine/coroutine.h"
 
 
 namespace tinyrpc {
@@ -308,6 +309,14 @@ void Reactor::addTask(std::vector<std::function<void()>> task, bool is_wakeup /*
   if (is_wakeup) {
     wakeup();
   }
+}
+
+void Reactor::addCoroutine(tinyrpc::Coroutine::ptr cor, bool is_wakeup /*=true*/) {
+
+  auto func = [cor](){
+    tinyrpc::Coroutine::Resume(cor.get());
+  };
+  addTask(func, is_wakeup);
 }
 
 Timer* Reactor::getTimer() {

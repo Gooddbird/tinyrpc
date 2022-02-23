@@ -7,6 +7,7 @@
 #include <atomic>
 #include <map>
 #include <functional>
+#include "../coroutine/coroutine.h"
 #include "fd_event.h"
 #include "mutex.h"
 
@@ -35,6 +36,8 @@ class Reactor {
 
   void addTask(std::vector<std::function<void()>> task, bool is_wakeup = true);
   
+  void addCoroutine(tinyrpc::Coroutine::ptr cor, bool is_wakeup = true);
+
   void wakeup();
   
   void loop();

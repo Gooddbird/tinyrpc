@@ -16,7 +16,7 @@ class TcpAcceptor {
  public:
 
   typedef std::shared_ptr<TcpAcceptor> ptr;
-  TcpAcceptor(Reactor* reactor, NetAddress::ptr net_addr);
+  TcpAcceptor(NetAddress::ptr net_addr);
 
   void init();
 
@@ -30,7 +30,6 @@ class TcpAcceptor {
 
   NetAddress::ptr m_local_addr;
   NetAddress::ptr m_peer_addr;
-  FdEvent::ptr m_fd_event;
 
 };
 

@@ -9,14 +9,13 @@
 
 namespace tinyrpc {
 
-TcpAcceptor::TcpAcceptor(NetAddress::ptr net_addr)  m_local_addr(net_addr) {
+TcpAcceptor::TcpAcceptor(NetAddress::ptr net_addr) : m_local_addr(net_addr) {
 	
 	m_family = m_local_addr->getFamily();
 }
 
 void TcpAcceptor::init() {
 	m_fd = socket(m_local_addr->getFamily(), SOCK_STREAM, 0);
-  m_fd_event = std::make_shared<tinyrpc::FdEvent>(GetReactor(), m_fd);
 
 	assert(m_fd != -1);
 	DebugLog << "create listenfd succ, listenfd=" << m_fd;
@@ -30,7 +29,7 @@ void TcpAcceptor::init() {
 
 	socklen_t len = m_local_addr->getSockLen();
 
-	rt = bind(m_fd, m_local_addr->getSockAddr(), len);
+	int rt = bind(m_fd, m_local_addr->getSockAddr(), len);
 	if (rt != 0) {
 		ErrorLog << "bind error, errno=" << errno << ", error=" << strerror(errno);
 	}
@@ -43,8 +42,7 @@ void TcpAcceptor::init() {
 }
 
 TcpAcceptor::~TcpAcceptor() {
-	m_fd_event->unregisterFromReactor();	
-
+	tinyrpc::Reactor::GetReactor()->delEvent(m_fd);
 	if (m_fd != -1) {
 		close(m_fd);
 	}
