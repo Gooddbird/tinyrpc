@@ -9,22 +9,25 @@
 
 namespace tinyrpc {
 
-TcpAcceptor::TcpAcceptor(Reactor* reactor, NetAddress::ptr net_addr)
-	: FdEvent(reactor), m_local_addr(net_addr) {
+TcpAcceptor::TcpAcceptor(NetAddress::ptr net_addr)  m_local_addr(net_addr) {
 	
 	m_family = m_local_addr->getFamily();
 }
 
 void TcpAcceptor::init() {
 	m_fd = socket(m_local_addr->getFamily(), SOCK_STREAM, 0);
+  m_fd_event = std::make_shared<tinyrpc::FdEvent>(GetReactor(), m_fd);
+
 	assert(m_fd != -1);
 	DebugLog << "create listenfd succ, listenfd=" << m_fd;
-	int flag = fcntl(m_fd, F_GETFL, 0);
-	int rt = fcntl(m_fd, F_SETFL, flag | O_NONBLOCK);
+
+	// int flag = fcntl(m_fd, F_GETFL, 0);
+	// int rt = fcntl(m_fd, F_SETFL, flag | O_NONBLOCK);
 	
-	if (rt != 0) {
-		ErrorLog << "fcntl set nonblock error, errno=" << errno << ", error=" << strerror(errno);
-	}
+	// if (rt != 0) {
+		// ErrorLog << "fcntl set nonblock error, errno=" << errno << ", error=" << strerror(errno);
+	// }
+
 	socklen_t len = m_local_addr->getSockLen();
 
 	rt = bind(m_fd, m_local_addr->getSockAddr(), len);
@@ -37,13 +40,10 @@ void TcpAcceptor::init() {
 		ErrorLog << "listen error, fd= " << m_fd << ", errno=" << errno << ", error=" << strerror(errno);
 	}
 
-	// addListenEvents(IOEvent::READ);
-	// updateToReactor();
-
 }
 
 TcpAcceptor::~TcpAcceptor() {
-	unregisterFromReactor();	
+	m_fd_event->unregisterFromReactor();	
 
 	if (m_fd != -1) {
 		close(m_fd);
@@ -88,19 +88,6 @@ TcpServer::TcpServer(NetAddress::ptr addr) : m_addr(addr) {
 
 void TcpServer::init() {
 
-	// m_main_reactor = tinyrpc::GetReactor();
-	// assert(m_main_reactor != nullptr);
-
-	// m_main_thread_id = m_main_reactor->getTid();
-
-	// m_acceptor.reset(new TcpAcceptor(reactor, m_addr));
-	// m_acceptor->setCallBack(IOEvent::READ, std::bind(&TcpServer::onReadCallBack, this));
-	// m_acceptor->setCallBack(IOEvent::WRITE, std::bind(&TcpServer::onWriteCallBack, this));
-
-	// m_acceptor->init();
-
-	// m_main_reactor->loop();
-
 	m_main_reactor = tinyrpc::Reactor::GetReactor();
 	m_acceptor.reset(new TcpAcceptor(m_main_reactor, m_addr));
 	tinyrpc::Coroutine::ptr cor = std::make_shared<tinyrpc::Coroutine>(128 * 1024, std::bind(&TcpServer::MainCorFun, this)); 
@@ -111,27 +98,7 @@ void TcpServer::init() {
 }
 
 TcpServer::~TcpServer() {
-	m_main_reactor->stop();
-}
-
-void TcpServer::onReadCallBack() {
-	// int fd = m_acceptor->accept();
-
-	// if (fd == -1) {
-		// ErrorLog << "accept error, return";
-	// }
-	// m_tcp_counts++;
-	// DebugLog << "current tcp connection count is [" << m_tcp_counts << "]";
-
-	// Reactor* reactor = m_main_reactor;
-	// TcpConection::ptr tcp_conn = std::make_shared<TcpConection> (reactor);
-	// tcp_conn->init(fd, 128);
-  // m_clients.push_back(tcp_conn);
-
-}
-
-void TcpServer::onWriteCallBack() {
-	
+  m_acceptor->unregisterFromReactor();
 }
 
 void TcpServer::MainCorFun() {

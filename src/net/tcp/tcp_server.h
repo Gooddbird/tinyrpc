@@ -11,7 +11,7 @@
 
 namespace tinyrpc {
 
-class TcpAcceptor : public FdEvent {
+class TcpAcceptor {
 
  public:
 
@@ -23,13 +23,14 @@ class TcpAcceptor : public FdEvent {
   int toAccept();
 
   ~TcpAcceptor();
-
  
  private:
   int m_family;
+  int m_fd;
 
   NetAddress::ptr m_local_addr;
   NetAddress::ptr m_peer_addr;
+  FdEvent::ptr m_fd_event;
 
 };
 
@@ -46,11 +47,6 @@ class TcpServer {
 
 
  private:
-
-  void onReadCallBack();
-
-  void onWriteCallBack();
-
 
  private:
   void MainCorFun();

@@ -9,7 +9,6 @@ FdEvent::FdEvent(tinyrpc::Reactor* reactor, int fd/*=-1*/) : m_fd(fd), m_reactor
       ErrorLog << "create reactor first";
     }
     assert(reactor != nullptr);
-
 }
 
 

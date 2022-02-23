@@ -75,8 +75,8 @@ ssize_t read(int fd, void *buf, size_t count) {
 	DebugLog << "read func to yield";
 	tinyrpc::Coroutine::Yield();
 
-	fd_event->delListenEvents(tinyrpc::IOEvent::READ);
-	fd_event->updateToReactor();
+	// fd_event->delListenEvents(tinyrpc::IOEvent::READ);
+	// fd_event->updateToReactor();
 
 	DebugLog << "read func yield back, now to call sys read";
 	return g_sys_read_fun(fd, buf, count);
@@ -111,8 +111,8 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	DebugLog << "accept func to yield";
 	tinyrpc::Coroutine::Yield();
 
-	fd_event->delListenEvents(tinyrpc::IOEvent::READ);
-	fd_event->updateToReactor();
+	// fd_event->delListenEvents(tinyrpc::IOEvent::READ);
+	// fd_event->updateToReactor();
 
 	DebugLog << "accept func yield back, now to call sys accept";
 	return g_sys_accept_fun(sockfd, addr, addrlen);
@@ -147,8 +147,8 @@ ssize_t write(int fd, const void *buf, size_t count) {
 	DebugLog << "write func to yield";
 	tinyrpc::Coroutine::Yield();
 
-	fd_event->delListenEvents(tinyrpc::IOEvent::WRITE);
-	fd_event->updateToReactor();
+	// fd_event->delListenEvents(tinyrpc::IOEvent::WRITE);
+	// fd_event->updateToReactor();
 
 	DebugLog << "write func yield back, now to call sys write";
 	return g_sys_write_fun(fd, buf, count);
@@ -203,8 +203,8 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 
   tinyrpc::Coroutine::Yield();
 
-	fd_event->delListenEvents(tinyrpc::IOEvent::WRITE); 
-	fd_event->updateToReactor();
+	// fd_event->delListenEvents(tinyrpc::IOEvent::WRITE); 
+	// fd_event->updateToReactor();
 
 	// 定时器也需要删除
 	timer->delTimerEvent(event);
