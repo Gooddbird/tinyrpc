@@ -94,7 +94,7 @@ std::stringstream& LogEvent::getStringStream() {
 }
 
 void LogEvent::log() {
-  MutexLockGuard lock(m_mutex);
+  Mutex::Lock lock(m_mutex);
 	m_ss << "\n";
   std::cout << m_ss.str();
 }

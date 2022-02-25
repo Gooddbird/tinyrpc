@@ -28,6 +28,8 @@ class FdEvent : public std::enable_shared_from_this<FdEvent> {
   
   FdEvent(tinyrpc::Reactor* reactor, int fd = -1);
 
+  FdEvent(int fd);
+
   virtual ~FdEvent();
 
   void handleEvent(int flag);
@@ -52,12 +54,14 @@ class FdEvent : public std::enable_shared_from_this<FdEvent> {
 
 	Reactor* getReactor() const;
 
+  void setReactor(Reactor* r);
+
   void setNonBlock();
   
   bool isNonBlock();
 
  public:
-	MutexLock m_mutex;
+	Mutex m_mutex;
 
  protected:
   int m_fd {-1};
@@ -68,6 +72,23 @@ class FdEvent : public std::enable_shared_from_this<FdEvent> {
 	int m_current_events {0};
 
   Reactor* m_reactor;
+
+};
+
+
+class FdEventContainer {
+
+ public:
+  FdEventContainer(int size);
+
+  FdEvent::ptr getFdEvent(int fd); 
+
+ public:
+  static FdEventContainer* GetFdContainer();
+
+ private:
+  RWMutex m_mutex;
+  std::vector<FdEvent::ptr> m_fds;
 
 };
 

@@ -56,7 +56,10 @@ ssize_t read(int fd, void *buf, size_t count) {
 	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
 	assert(reactor != nullptr);
 
-	tinyrpc::FdEvent::ptr fd_event = std::make_shared<tinyrpc::FdEvent>(reactor, fd);
+  tinyrpc::FdEvent::ptr fd_event = tinyrpc::FdEventContainer::GetFdContainer()->getFdEvent(fd);
+  if(fd_event->getReactor() == nullptr) {
+    fd_event->setReactor(tinyrpc::Reactor::GetReactor());  
+  }
 
 	// if (fd_event->isNonBlock()) {
 		// DebugLog << "user set nonblock, call sys func";
@@ -92,7 +95,10 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
 	assert(reactor != nullptr);
 
-	tinyrpc::FdEvent::ptr fd_event = std::make_shared<tinyrpc::FdEvent>(reactor, sockfd);
+  tinyrpc::FdEvent::ptr fd_event = tinyrpc::FdEventContainer::GetFdContainer()->getFdEvent(sockfd);
+  if(fd_event->getReactor() == nullptr) {
+    fd_event->setReactor(tinyrpc::Reactor::GetReactor());  
+  }
 
 	// if (fd_event->isNonBlock()) {
 		// DebugLog << "user set nonblock, call sys func";
@@ -128,7 +134,10 @@ ssize_t write(int fd, const void *buf, size_t count) {
 	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
 	assert(reactor != nullptr);
 
-	tinyrpc::FdEvent::ptr fd_event = std::make_shared<tinyrpc::FdEvent>(reactor, fd);
+  tinyrpc::FdEvent::ptr fd_event = tinyrpc::FdEventContainer::GetFdContainer()->getFdEvent(fd);
+  if(fd_event->getReactor() == nullptr) {
+    fd_event->setReactor(tinyrpc::Reactor::GetReactor());  
+  }
 
 	// if (fd_event->isNonBlock()) {
 		// DebugLog << "user set nonblock, call sys func";
@@ -164,7 +173,10 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
 	assert(reactor != nullptr);
 
-	tinyrpc::FdEvent::ptr fd_event = std::make_shared<tinyrpc::FdEvent>(reactor, sockfd);
+  tinyrpc::FdEvent::ptr fd_event = tinyrpc::FdEventContainer::GetFdContainer()->getFdEvent(sockfd);
+  if(fd_event->getReactor() == nullptr) {
+    fd_event->setReactor(tinyrpc::Reactor::GetReactor());  
+  }
 	tinyrpc::Coroutine* cur_cor = tinyrpc::Coroutine::GetCurrentCoroutine();
 
 	// if (fd_event->isNonBlock()) {
@@ -223,6 +235,7 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 	DebugLog << "connect error and errno=" << errno <<  ",error=" << strerror(errno);
 	return -1;
 
+
 }
 
 typedef int (*socket_fun_ptr_t)(int domain, int type, int protocol);
@@ -234,6 +247,7 @@ namespace tinyrpc {
 
 void enableHook() {
   g_hook_enable = true;
+
 }
 
 void disableHook() {

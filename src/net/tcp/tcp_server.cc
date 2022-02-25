@@ -33,16 +33,19 @@ void TcpAcceptor::init() {
 	if (rt != 0) {
 		ErrorLog << "bind error, errno=" << errno << ", error=" << strerror(errno);
 	}
+  assert(rt == 0);
 
 	rt = listen(m_fd, 10);
 	if (rt != 0) {
 		ErrorLog << "listen error, fd= " << m_fd << ", errno=" << errno << ", error=" << strerror(errno);
 	}
+  assert(rt == 0);
 
 }
 
 TcpAcceptor::~TcpAcceptor() {
-	tinyrpc::Reactor::GetReactor()->delEvent(m_fd);
+  FdEvent::ptr fd_event = FdEventContainer::GetFdContainer()->getFdEvent(m_fd);
+  fd_event->unregisterFromReactor();
 	if (m_fd != -1) {
 		close(m_fd);
 	}
@@ -56,7 +59,7 @@ int TcpAcceptor::toAccept() {
 	// call hook accept
 	int rt = accept(m_fd, &cli_addr, &len);
 	if (rt == -1) {
-		DebugLog << "error, no new client coming";
+		DebugLog << "error, no new client coming, errno=" << errno << "error=" << strerror(errno);
 		return -1;
 	}
 
@@ -87,7 +90,7 @@ TcpServer::TcpServer(NetAddress::ptr addr) : m_addr(addr) {
 void TcpServer::init() {
 
 	m_main_reactor = tinyrpc::Reactor::GetReactor();
-	m_acceptor.reset(new TcpAcceptor(m_main_reactor, m_addr));
+	m_acceptor.reset(new TcpAcceptor(m_addr));
 	tinyrpc::Coroutine::ptr cor = std::make_shared<tinyrpc::Coroutine>(128 * 1024, std::bind(&TcpServer::MainCorFun, this)); 
 	tinyrpc::Coroutine::Resume(cor.get());
 
@@ -96,28 +99,30 @@ void TcpServer::init() {
 }
 
 TcpServer::~TcpServer() {
-  m_acceptor->unregisterFromReactor();
+
 }
 
 void TcpServer::MainCorFun() {
 	tinyrpc::enableHook();
+
 	m_acceptor->init();	
 	int fd;
 	TcpConection::ptr tcp_conn;
 	while(!m_is_stop_accept) {
 		fd = m_acceptor->toAccept();
 		if (fd == -1) {
-			ErrorLog << "accept error, return";
-			continue;
+			ErrorLog << "accept ret -1 error, return";
+			// continue;
+      break;
 		}
 
 		m_tcp_counts++;
 		DebugLog << "current tcp connection count is [" << m_tcp_counts << "]";
 
-		tcp_conn = std::make_shared<TcpConection> (m_main_reactor);
-		tcp_conn->init(fd, 128);
-		m_clients.push_back(tcp_conn);
-
+		// tcp_conn = std::make_shared<TcpConection> (m_main_reactor);
+		// tcp_conn->init(fd, 128);
+		// m_clients.push_back(tcp_conn);
+    //
 	}
 }
 

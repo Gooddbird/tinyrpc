@@ -4,6 +4,8 @@
 
 namespace tinyrpc {
 
+static FdEventContainer* g_FdContainer = nullptr;
+
 FdEvent::FdEvent(tinyrpc::Reactor* reactor, int fd/*=-1*/) : m_fd(fd), m_reactor(reactor) {
     if (reactor == nullptr) {
       ErrorLog << "create reactor first";
@@ -11,10 +13,14 @@ FdEvent::FdEvent(tinyrpc::Reactor* reactor, int fd/*=-1*/) : m_fd(fd), m_reactor
     assert(reactor != nullptr);
 }
 
+FdEvent::FdEvent(int fd) : m_fd(fd) {
+
+}
 
 FdEvent::~FdEvent() {}
 
 void FdEvent::handleEvent(int flag) {
+
   if (flag == READ) {
     m_read_callback();
   } else if (flag == WRITE) {
@@ -74,6 +80,9 @@ void FdEvent::updateToReactor() {
 }
 
 void FdEvent::unregisterFromReactor () {
+  m_listen_events = 0;
+  m_read_callback = nullptr;
+  m_write_callback = nullptr;
   m_reactor->delEvent(m_fd);
 }
 
@@ -91,6 +100,10 @@ int FdEvent::getListenEvents() const {
 
 Reactor* FdEvent::getReactor() const {
   return m_reactor;
+}
+
+void FdEvent::setReactor(Reactor* r) {
+  m_reactor = r;
 }
 
 void FdEvent::setNonBlock() {
@@ -124,5 +137,44 @@ bool FdEvent::isNonBlock() {
   return (flag & O_NONBLOCK);
 
 }
+
+FdEvent::ptr FdEventContainer::getFdEvent(int fd) {
+  RWMutex::ReadLock lock(m_mutex);
+  std::vector<FdEvent::ptr> tmps = m_fds;
+  lock.unlock();
+  if (fd < static_cast<int>(tmps.size())) {
+    return tmps[fd];
+  }
+
+  int n = (int)(tmps.size() * 1.5);
+  n = (n > fd ? n : fd);
+
+  for (int i = tmps.size(); i < n; ++i) {
+    FdEvent::ptr p = std::make_shared<FdEvent>(i);
+    tmps.push_back(p);
+  }
+  tinyrpc::FdEvent::ptr re = tmps[fd]; 
+  RWMutex::WriteLock lock2(m_mutex);
+  m_fds.swap(tmps);
+  lock.unlock();
+  return re;
+
+}
+
+FdEventContainer::FdEventContainer(int size) {
+  for(int i = 0; i < size; ++i) {
+    FdEvent::ptr p = std::make_shared<FdEvent>(i);
+    m_fds.push_back(p);
+  }
+
+}
+
+FdEventContainer* FdEventContainer::GetFdContainer() {
+  if (g_FdContainer == nullptr) {
+    g_FdContainer = new FdEventContainer(128); 
+  }
+  return g_FdContainer;
+}
+
 
 }

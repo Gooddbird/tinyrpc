@@ -71,8 +71,7 @@ class LogEvent {
 
 	std::stringstream m_ss;
 
- 	MutexLock m_mutex;
-	
+ 	Mutex m_mutex;
 
 };
 

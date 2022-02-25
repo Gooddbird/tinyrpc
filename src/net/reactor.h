@@ -71,7 +71,7 @@ class Reactor {
   bool m_is_init_timer {false};
   pid_t m_tid {0};        // thread id
 
-  MutexLock m_mutex;                    // mutex
+  Mutex m_mutex;                    // mutex
   
   std::vector<int> m_fds;              // alrady care events
   std::atomic<int> m_fd_size; 
