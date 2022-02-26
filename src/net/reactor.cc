@@ -14,6 +14,7 @@
 
 
 extern read_fun_ptr_t g_sys_read_fun;  // sys read func
+extern write_fun_ptr_t g_sys_write_fun;  // sys write func
 
 namespace tinyrpc {
 
@@ -110,7 +111,7 @@ void Reactor::wakeup() {
 
 	uint64_t tmp = 1;
 	uint64_t* p = &tmp; 
-	if(write(m_wake_fd, p, 8) != 8) {
+	if(g_sys_write_fun(m_wake_fd, p, 8) != 8) {
 		ErrorLog << "write wakeupfd[" << m_wake_fd <<"] error";
 	}
 }

@@ -29,7 +29,6 @@ class TcpConection {
 
   void initBuffer(int size);
 
-
  public:
 
   void asyncRead(std::vector<char>& re, int& size);

@@ -17,8 +17,7 @@ TcpConection::TcpConection(tinyrpc::Reactor* reactor, int fd, int buff_size) : m
   m_read_cor = std::make_shared<Coroutine>(128 * 1024, std::bind(&TcpConection::MainReadCoFunc, this));
   m_write_cor = std::make_shared<Coroutine>(128 * 1024, std::bind(&TcpConection::MainWriteCoFunc, this));
   m_reactor->addCoroutine(m_read_cor);
-  m_reactor->loop();
-
+  DebugLog << "succ create tcp connection";
 }
 
 TcpConection::~TcpConection() {
