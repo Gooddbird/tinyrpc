@@ -7,6 +7,7 @@
 #include "../fd_event.h"
 #include "../reactor.h"
 #include "tcp_buffer.h"
+#include "../../coroutine/coroutine.h"
 
 namespace tinyrpc {
 
@@ -17,37 +18,45 @@ enum TcpConnectionState {
 };
 
 
-class TcpConection : public FdEvent {
+class TcpConection {
 
  public:
  	typedef std::shared_ptr<TcpConection> ptr;
 
-	TcpConection(tinyrpc::Reactor* reactor);
+	TcpConection(tinyrpc::Reactor* reactor, int fd, int buff_size);
 
 	~TcpConection();
 
-  void init(int fd, int size);
+  void initBuffer(int size);
 
 
  private:
 
-  void asyncRead(std::vector<char>& re, int size);
+  void asyncRead(std::vector<char>& re, int& size);
 
 	void asyncWrite(const std::vector<char>& buf);
 
-	void onReadEvent();
+ private:
+  void MainReadCoFunc();
 
-	void onWriteEvent();
+  void MainWriteCoFunc();
 
  private:
 
+  Reactor* m_reactor;
+  int m_fd = -1;
   TcpConnectionState m_state {TcpConnectionState::Connected};
 
 	TcpBuffer::ptr m_read_buffer;
 	TcpBuffer::ptr m_write_buffer;
+  Coroutine::ptr m_read_cor;
+  Coroutine::ptr m_write_cor;
+
+  FdEvent::ptr m_fd_event;
+  bool m_stop_read = false;
+  bool m_stop_write = false;
 
 };
-
 
 }
 

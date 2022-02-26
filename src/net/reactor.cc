@@ -182,6 +182,10 @@ void Reactor::delEventInLoopThread(int fd) {
 void Reactor::loop() {
 
   assert(isLoopThread());
+  if (m_is_looping) {
+    DebugLog << "this reactor is looping!";
+    return;
+  }
   
   m_is_looping = true;
 

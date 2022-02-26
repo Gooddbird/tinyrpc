@@ -80,10 +80,10 @@ void FdEvent::updateToReactor() {
 }
 
 void FdEvent::unregisterFromReactor () {
+  m_reactor->delEvent(m_fd);
   m_listen_events = 0;
   m_read_callback = nullptr;
   m_write_callback = nullptr;
-  m_reactor->delEvent(m_fd);
 }
 
 int FdEvent::getFd() const {
