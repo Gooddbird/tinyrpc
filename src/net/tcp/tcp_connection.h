@@ -13,7 +13,7 @@ namespace tinyrpc {
 
 enum TcpConnectionState {
 	Connected = 1,		// can do io
-	Closing = 2,			// can do io
+	HalfClosing = 2,			// server call shutdown, write half close
 	Closed = 3,				// can't do io
 };
 
@@ -30,16 +30,20 @@ class TcpConection {
   void initBuffer(int size);
 
 
- private:
+ public:
 
   void asyncRead(std::vector<char>& re, int& size);
 
 	void asyncWrite(const std::vector<char>& buf);
 
+  void shutdownConnection();
+
  private:
   void MainReadCoFunc();
 
   void MainWriteCoFunc();
+
+  void clearClient();
 
  private:
 

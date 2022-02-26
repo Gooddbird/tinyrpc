@@ -10,11 +10,15 @@
 #include "fd_event.h"
 #include "timer.h"
 #include "../coroutine/coroutine.h"
+#include "../coroutine/coroutine_hook.h"
 
+
+extern read_fun_ptr_t g_sys_read_fun;  // sys read func
 
 namespace tinyrpc {
 
 static thread_local Reactor* t_reactor_ptr = nullptr;
+
 
 Reactor::Reactor() {
   
@@ -209,7 +213,7 @@ void Reactor::loop() {
 					DebugLog << "epoll wakeup, fd=[" << m_wake_fd << "]";
 					char buf[8];
 					while(1) {
-						if((read(m_wake_fd, buf, 8) == -1) && errno == EAGAIN) {
+						if((g_sys_read_fun(m_wake_fd, buf, 8) == -1) && errno == EAGAIN) {
 							break;
 						}
 					}

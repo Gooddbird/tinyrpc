@@ -53,11 +53,11 @@ TcpAcceptor::~TcpAcceptor() {
 
 int TcpAcceptor::toAccept() {
 
-	socklen_t len;
+	socklen_t len = 0;
 	sockaddr cli_addr;
 	
 	// call hook accept
-	int rt = accept(m_fd, &cli_addr, &len);
+	int rt = accept(m_fd, reinterpret_cast<sockaddr*>(&cli_addr), &len);
 	if (rt == -1) {
 		DebugLog << "error, no new client coming, errno=" << errno << "error=" << strerror(errno);
 		return -1;
@@ -91,38 +91,35 @@ void TcpServer::init() {
 
 	m_main_reactor = tinyrpc::Reactor::GetReactor();
 	m_acceptor.reset(new TcpAcceptor(m_addr));
-	tinyrpc::Coroutine::ptr cor = std::make_shared<tinyrpc::Coroutine>(128 * 1024, std::bind(&TcpServer::MainCorFun, this)); 
-	tinyrpc::Coroutine::Resume(cor.get());
+	m_accept_cor = std::make_shared<tinyrpc::Coroutine>(128 * 1024, std::bind(&TcpServer::MainAcceptCorFunc, this)); 
+	tinyrpc::Coroutine::Resume(m_accept_cor.get());
 
 	m_main_reactor->loop();
 
 }
 
 TcpServer::~TcpServer() {
-
+  DebugLog << "~TcpServer";
 }
 
-void TcpServer::MainCorFun() {
+void TcpServer::MainAcceptCorFunc() {
 	tinyrpc::enableHook();
 
 	m_acceptor->init();	
-	int fd;
-	TcpConection::ptr tcp_conn;
 	while(!m_is_stop_accept) {
-		fd = m_acceptor->toAccept();
+
+		int fd = m_acceptor->toAccept();
 		if (fd == -1) {
-			ErrorLog << "accept ret -1 error, return";
-			// continue;
-      break;
+			ErrorLog << "accept ret -1 error, return, to yield";
+      Coroutine::Yield();
+      continue;
 		}
 
 		m_tcp_counts++;
 		DebugLog << "current tcp connection count is [" << m_tcp_counts << "]";
 
-		// tcp_conn = std::make_shared<TcpConection> (m_main_reactor);
-		// tcp_conn->init(fd, 128);
-		// m_clients.push_back(tcp_conn);
-    //
+    TcpConection::ptr tcp_conn = std::make_shared<TcpConection> (m_main_reactor, fd, 128);
+    m_clients.insert(std::make_pair(fd, tcp_conn));
 	}
 }
 

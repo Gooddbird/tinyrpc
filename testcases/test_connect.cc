@@ -14,8 +14,8 @@
 int connfd = -1;
 
 void connect_co() {
-  int count = 10000;
-  while(count--) {
+  // int count = 10000;
+  // while(count--) {
   connfd = socket(AF_INET, SOCK_STREAM, 0);
 
   if (connfd == -1) {
@@ -27,15 +27,6 @@ void connect_co() {
   ser_addr.sin_port = htons(39999); 
   ser_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-  // int flag = fcntl(connfd, F_GETFL, 0); 
-
-  // fcntl(connfd, F_SETFL, flag | O_NONBLOCK);
-
-  // flag = fcntl(connfd, F_GETFL, 0); 
-  // if (flag & O_NONBLOCK) {
-    // DebugLog << "succ set o_nonblock";
-  // }
-  // DebugLog << "begin to connect";
   int rt = connect(connfd, reinterpret_cast<sockaddr*>(&ser_addr), sizeof(ser_addr));
   DebugLog << "rt " << rt;
   if (rt == -1) {
@@ -46,6 +37,12 @@ void connect_co() {
   } else {
     DebugLog << "unknown rt " << rt;
   }
+  while(1) {
+    std::string ss;
+    std::cin >> ss;
+		char buf[4] = {'a', 'b', 'c', 'd'};
+    int rt = write(connfd, buf, sizeof(buf));
+    DebugLog << "succ write[" << buf << "], write count=" << rt << ", src count=" << sizeof(buf);
   }
  
 }

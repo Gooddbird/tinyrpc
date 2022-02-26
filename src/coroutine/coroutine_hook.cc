@@ -10,7 +10,7 @@
 #include "../net/timer.h"
 #include "../log/log.h"
 
-#define HOOK_SYS_FUNC(name) static name##_fun_ptr_t g_sys_##name##_fun = (name##_fun_ptr_t)dlsym(RTLD_NEXT, #name);
+#define HOOK_SYS_FUNC(name) name##_fun_ptr_t g_sys_##name##_fun = (name##_fun_ptr_t)dlsym(RTLD_NEXT, #name);
 
 
 HOOK_SYS_FUNC(accept);

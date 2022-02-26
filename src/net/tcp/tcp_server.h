@@ -1,6 +1,7 @@
 #ifndef TINYRPC_NET_TCP_TCP_SERVER_H
 #define TINYRPC_NET_TCP_TCP_SERVER_H
 
+#include <map>
 #include "io_thread.h"
 #include "../reactor.h"
 #include "../fd_event.h"
@@ -46,16 +47,13 @@ class TcpServer {
 
 
  private:
-
- private:
-  void MainCorFun();
+  void MainAcceptCorFunc();
 
  private:
   
   NetAddress::ptr m_addr;
 
   TcpAcceptor::ptr m_acceptor;
-  pid_t m_main_thread_id {0};
   Timer* m_timer;
   std::vector<IOThread::ptr> m_io_threads;
 
@@ -63,9 +61,11 @@ class TcpServer {
 
   Reactor* m_main_reactor;
 
-  std::vector<TcpConection::ptr> m_clients;
+  std::map<int, TcpConection::ptr> m_clients;
 
   bool m_is_stop_accept {false};
+
+  Coroutine::ptr m_accept_cor;
 
 };
 
