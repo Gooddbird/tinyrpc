@@ -11,6 +11,8 @@
 
 namespace tinyrpc {
 
+class TcpServer;
+
 enum TcpConnectionState {
 	Connected = 1,		// can do io
 	HalfClosing = 2,			// server call shutdown, write half close
@@ -23,7 +25,7 @@ class TcpConection {
  public:
  	typedef std::shared_ptr<TcpConection> ptr;
 
-	TcpConection(tinyrpc::Reactor* reactor, int fd, int buff_size);
+	TcpConection(tinyrpc::TcpServer* tcp_svr, tinyrpc::Reactor* reactor, int fd, int buff_size);
 
 	~TcpConection();
 
@@ -37,6 +39,10 @@ class TcpConection {
 
   void shutdownConnection();
 
+  TcpConnectionState getState() const {
+    return m_state;
+  }
+
  private:
   void MainReadCoFunc();
 
@@ -45,7 +51,7 @@ class TcpConection {
   void clearClient();
 
  private:
-
+  TcpServer* m_tcp_svr;
   Reactor* m_reactor;
   int m_fd = -1;
   TcpConnectionState m_state {TcpConnectionState::Connected};

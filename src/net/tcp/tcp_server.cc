@@ -87,7 +87,7 @@ TcpServer::TcpServer(NetAddress::ptr addr) : m_addr(addr) {
 
 }
 
-void TcpServer::init() {
+void TcpServer::start() {
 
 	m_main_reactor = tinyrpc::Reactor::GetReactor();
 	m_acceptor.reset(new TcpAcceptor(m_addr));
@@ -118,9 +118,39 @@ void TcpServer::MainAcceptCorFunc() {
 		m_tcp_counts++;
 		DebugLog << "current tcp connection count is [" << m_tcp_counts << "]";
 
-    TcpConection::ptr tcp_conn = std::make_shared<TcpConection> (m_main_reactor, fd, 128);
+    TcpConection::ptr tcp_conn = std::make_shared<TcpConection> (this, m_main_reactor, fd, 128);
     m_clients.insert(std::make_pair(fd, tcp_conn));
+    DebugLog << "insert succ, size=" << m_clients.size();
 	}
+}
+
+bool TcpServer::addClient(int fd, const TcpConection::ptr& conn) {
+  auto it = m_clients.find(fd);
+  if (it != m_clients.end()) {
+    TcpConection::ptr s_conn = it->second;
+    if (s_conn->getState() != Closed) {
+      ErrorLog << "insert error, this fd of TcpConection exist and state not Closed";
+      return false;
+    }
+    // src Tcpconnection can delete
+    s_conn.reset();
+    // set new Tcpconnection
+    it->second = conn;
+    
+  } else {
+    m_clients.insert(std::make_pair(fd, conn));
+  }
+  return true;
+}
+
+bool TcpServer::delClient(int fd) {
+  auto it = m_clients.find(fd);
+  if (it == m_clients.end()) {
+    ErrorLog << "this fd of TcpConnection not exist";
+    return false;
+  }
+  m_clients.erase(it);
+  return true;
 }
 
 }

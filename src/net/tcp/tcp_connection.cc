@@ -2,13 +2,19 @@
 #include <string.h>
 #include <sys/socket.h>
 #include "tcp_connection.h"
+#include "tcp_server.h"
 #include "../../coroutine/coroutine_hook.h"
 
 namespace tinyrpc {
 
-TcpConection::TcpConection(tinyrpc::Reactor* reactor, int fd, int buff_size) : m_fd(fd), m_state(Connected) {	
+TcpConection::TcpConection(tinyrpc::TcpServer* tcp_svr, tinyrpc::Reactor* reactor, int fd, int buff_size)
+  : m_fd(fd), m_state(Connected) {	
   assert(reactor != nullptr); 
   m_reactor = reactor;
+
+  assert(tcp_svr!= nullptr); 
+  m_tcp_svr = tcp_svr;
+
   tinyrpc::enableHook();
   m_fd_event = FdEventContainer::GetFdContainer()->getFdEvent(fd);
   m_fd_event->setReactor(m_reactor);
@@ -21,7 +27,7 @@ TcpConection::TcpConection(tinyrpc::Reactor* reactor, int fd, int buff_size) : m
 }
 
 TcpConection::~TcpConection() {
-  DebugLog << "~TcpConection";
+  DebugLog << "~TcpConection, fd=" << m_fd;
 }
 
 void TcpConection::initBuffer(int size) {
@@ -59,6 +65,8 @@ void TcpConection::MainReadCoFunc() {
     if (rt <= 0) {
       ErrorLog << "read empty while occur read event, because of peer close, sys error=" << strerror(errno) << ", now to clear tcp connection";
       clearClient();
+      // this cor can destroy
+      break;
     } else {
       DebugLog << "succ read " << rt << " bytes: " << buf << ", count=" << rt;
     }
@@ -103,6 +111,11 @@ void TcpConection::clearClient() {
   }
   // first unregister epoll event
   m_fd_event->unregisterFromReactor(); 
+
+  // stop read and write cor
+  m_stop_read = true;
+  m_stop_write = true;
+
   close(m_fd_event->getFd());
   m_state = Closed;
 

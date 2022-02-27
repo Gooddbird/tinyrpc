@@ -43,8 +43,11 @@ class TcpServer {
 
   ~TcpServer();
 
-  void init();
+  void start();
 
+  bool addClient(int fd, const TcpConection::ptr& conn);
+
+  bool delClient(int fd);
 
  private:
   void MainAcceptCorFunc();

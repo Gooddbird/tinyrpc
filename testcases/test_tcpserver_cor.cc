@@ -7,6 +7,6 @@ int main(int argc, char* argv[]) {
   tinyrpc::IPAddress::ptr addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
   
   tinyrpc::TcpServer server(addr);
-  server.init();
+  server.start();
   return 0;
 }
