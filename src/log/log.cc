@@ -14,7 +14,10 @@ static thread_local pid_t t_thread_id = 0;
 static pid_t g_pid = 0;
 
 pid_t gettid() {
-  return syscall(SYS_gettid);
+  if (t_thread_id == 0) {
+    return syscall(SYS_gettid);
+  }
+  return t_thread_id;
 }
 
 

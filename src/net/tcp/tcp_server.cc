@@ -4,6 +4,7 @@
 #include <string.h>
 #include "tcp_server.h"
 #include "tcp_connection.h"
+#include "io_thread.h"
 #include "../../coroutine/coroutine.h"
 #include "../../coroutine/coroutine_hook.h"
 
@@ -83,8 +84,8 @@ int TcpAcceptor::toAccept() {
 }
 
 
-TcpServer::TcpServer(NetAddress::ptr addr) : m_addr(addr) {
-
+TcpServer::TcpServer(NetAddress::ptr addr, int pool_size /*=10*/) : m_addr(addr) {
+  m_io_pool = std::make_shared<IOThreadPool>(pool_size);
 }
 
 void TcpServer::start() {
@@ -125,8 +126,10 @@ void TcpServer::MainAcceptCorFunc() {
 
 		m_tcp_counts++;
 		DebugLog << "current tcp connection count is [" << m_tcp_counts << "]";
+     
+    TcpConection::ptr tcp_conn = std::make_shared<TcpConection> (this, 
+        m_io_pool->getIOThread()->getReactor(), fd, 128);
 
-    TcpConection::ptr tcp_conn = std::make_shared<TcpConection> (this, m_main_reactor, fd, 128);
     addClient(fd, tcp_conn);
     DebugLog << "insert succ, size=" << m_clients.size();
 	}

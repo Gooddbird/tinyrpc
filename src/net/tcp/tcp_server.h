@@ -8,6 +8,7 @@
 #include "../timer.h"
 #include "../net_address.h"
 #include "tcp_connection.h"
+#include "io_thread.h"
 
 
 namespace tinyrpc {
@@ -39,7 +40,7 @@ class TcpServer {
 
  public:
 
-	TcpServer(NetAddress::ptr addr);
+	TcpServer(NetAddress::ptr addr, int pool_size = 2);
 
   ~TcpServer();
 
@@ -60,8 +61,6 @@ class TcpServer {
 
   TcpAcceptor::ptr m_acceptor;
 
-  std::vector<IOThread::ptr> m_io_threads;
-
   int m_tcp_counts {0};
 
   Reactor* m_main_reactor;
@@ -73,9 +72,9 @@ class TcpServer {
   Coroutine::ptr m_accept_cor;
   
   TimerEvent::ptr m_timer_event;
-
   Timer::ptr m_timer;
 
+  IOThreadPool::ptr m_io_pool;
 
 };
 
