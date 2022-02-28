@@ -20,6 +20,8 @@ namespace tinyrpc {
 
 static thread_local Reactor* t_reactor_ptr = nullptr;
 
+static thread_local int t_max_epoll_timeout = 10000;     // ms
+
 
 Reactor::Reactor() {
   
@@ -198,7 +200,7 @@ void Reactor::loop() {
 		const int MAX_EVENTS = 10;
 		epoll_event re_events[MAX_EVENTS + 1];
 		DebugLog << "to epoll_wait";
-		int rt = epoll_wait(m_epfd, re_events, MAX_EVENTS, -1);
+		int rt = epoll_wait(m_epfd, re_events, MAX_EVENTS, t_max_epoll_timeout);
 
 		DebugLog << "epoll_waiti back";
 
@@ -221,30 +223,32 @@ void Reactor::loop() {
 
 				} else {
 					tinyrpc::FdEvent* ptr = (tinyrpc::FdEvent*)one_event.data.ptr;
+          if (ptr != nullptr) {
+            int fd;
+            std::function<void()> read_cb;
+            std::function<void()> write_cb;
 
-          int fd;
-          std::function<void()> read_cb;
-          std::function<void()> write_cb;
-          {
-            Mutex::Lock lock(ptr->m_mutex);
-            fd = ptr->getFd();
-            read_cb = ptr->getCallBack(READ);
-            write_cb = ptr->getCallBack(WRITE);
-          }
-
-          if ((!(one_event.events & EPOLLIN)) && (!(one_event.events & EPOLLOUT))){
-            DebugLog << "socket [" << fd << "] occur other unknow event:[" << one_event.events << "], need unregister this socket";
-            delEventInLoopThread(fd);
-          } else {
-            if (one_event.events & EPOLLIN) {
-              DebugLog << "socket [" << fd << "] occur read event";
-              Mutex::Lock lock(m_mutex);
-              m_pending_tasks.push_back(read_cb);						
+            {
+              Mutex::Lock lock(ptr->m_mutex);
+              fd = ptr->getFd();
+              read_cb = ptr->getCallBack(READ);
+              write_cb = ptr->getCallBack(WRITE);
             }
-            if (one_event.events & EPOLLOUT) {
-              DebugLog << "socket [" << fd << "] occur write event";
-              Mutex::Lock lock(m_mutex);
-              m_pending_tasks.push_back(write_cb);						
+
+            if ((!(one_event.events & EPOLLIN)) && (!(one_event.events & EPOLLOUT))){
+              DebugLog << "socket [" << fd << "] occur other unknow event:[" << one_event.events << "], need unregister this socket";
+              delEventInLoopThread(fd);
+            } else {
+              if (one_event.events & EPOLLIN) {
+                DebugLog << "socket [" << fd << "] occur read event";
+                Mutex::Lock lock(m_mutex);
+                m_pending_tasks.push_back(read_cb);						
+              }
+              if (one_event.events & EPOLLOUT) {
+                DebugLog << "socket [" << fd << "] occur write event";
+                Mutex::Lock lock(m_mutex);
+                m_pending_tasks.push_back(write_cb);						
+              }
             }
           }
 
@@ -283,6 +287,7 @@ void Reactor::loop() {
 			}
 		}
 	}
+  DebugLog << "reactor loop end";
   m_is_looping = false;
 }
 
@@ -335,7 +340,6 @@ Timer* Reactor::getTimer() {
 		m_timer = new Timer(this);
 		m_timer_fd = m_timer->getFd();
 	}
-	// std::shared_ptr<Timer> timer(m_timer);
 	return m_timer;
 }
 

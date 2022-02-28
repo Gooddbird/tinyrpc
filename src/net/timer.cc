@@ -10,7 +10,10 @@
 #include "timer.h"
 #include "mutex.h"
 #include "fd_event.h"
+#include "../coroutine/coroutine_hook.h"
 
+
+extern read_fun_ptr_t g_sys_read_fun;  // sys read func
 
 namespace tinyrpc {
 
@@ -78,8 +81,6 @@ void Timer::resetArriveTime() {
   }
   int64_t interval = (*it).first - now;
 
-  DebugLog << "interval = " << interval;
-
   itimerspec new_value;
   memset(&new_value, 0, sizeof(new_value));
   
@@ -94,21 +95,18 @@ void Timer::resetArriveTime() {
   if (rt != 0) {
     ErrorLog << "tiemr_settime error, interval=" << interval;
   } else {
-    DebugLog << "reset timer succ";
+    DebugLog << "reset timer succ, next occur time=" << (*it).first;
   }
 
 }
 
 void Timer::onTimer() {
 
-  if (!(m_listen_events & ETModel)) {
-    // ET need't read
-
-    char buf[8];
-    while(1) {
-      if((read(m_fd, buf, 8) == -1) && errno == EAGAIN) {
-        break;
-      }
+  DebugLog << "onTimer, first read data";
+  char buf[8];
+  while(1) {
+    if((g_sys_read_fun(m_fd, buf, 8) == -1) && errno == EAGAIN) {
+      break;
     }
   }
 
@@ -124,6 +122,7 @@ void Timer::onTimer() {
 			break;
 		}
 	}
+
 	assert(m_reactor != nullptr);
 	m_reactor->addTask(tasks);
 	m_pending_events.erase(m_pending_events.begin(), it);
@@ -136,7 +135,6 @@ void Timer::onTimer() {
 
 	resetArriveTime();
 }
-
 
 }
 

@@ -28,9 +28,9 @@ class TimerEvent {
   }
 
   void resetTime() {
-    DebugLog << "reser tiemrevent, origin arrivetime=" << m_arrive_time;
+    DebugLog << "reset tiemrevent, origin arrivetime=" << m_arrive_time;
     m_arrive_time += m_interval;  	
-    DebugLog << "reser tiemrevent, now arrivetime=" << m_arrive_time;
+    DebugLog << "reset tiemrevent, now arrivetime=" << m_arrive_time;
   }
 
  public:

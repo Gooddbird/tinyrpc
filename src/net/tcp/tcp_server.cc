@@ -94,6 +94,13 @@ void TcpServer::start() {
 	m_accept_cor = std::make_shared<tinyrpc::Coroutine>(128 * 1024, std::bind(&TcpServer::MainAcceptCorFunc, this)); 
 	tinyrpc::Coroutine::Resume(m_accept_cor.get());
 
+  m_timer.reset(m_main_reactor->getTimer());
+
+  m_timer_event = std::make_shared<TimerEvent>(10000, true, 
+    std::bind(&TcpServer::MainLoopTimerFunc, this));
+  
+  m_timer->addTimerEvent(m_timer_event);
+
 	m_main_reactor->loop();
 
 }
@@ -103,6 +110,7 @@ TcpServer::~TcpServer() {
 }
 
 void TcpServer::MainAcceptCorFunc() {
+  DebugLog << "enable Hook here";
 	tinyrpc::enableHook();
 
 	m_acceptor->init();	
@@ -119,9 +127,27 @@ void TcpServer::MainAcceptCorFunc() {
 		DebugLog << "current tcp connection count is [" << m_tcp_counts << "]";
 
     TcpConection::ptr tcp_conn = std::make_shared<TcpConection> (this, m_main_reactor, fd, 128);
-    m_clients.insert(std::make_pair(fd, tcp_conn));
+    addClient(fd, tcp_conn);
     DebugLog << "insert succ, size=" << m_clients.size();
 	}
+}
+
+
+void TcpServer::MainLoopTimerFunc() {
+  DebugLog << "this TcpServer loop timer excute";
+  
+  // delete Closed TcpConnection per loop
+  // for free memory
+  for (auto &i : m_clients) {
+    if ((i.second)->getState() == Closed) {
+      // need to delete TcpConnection
+      DebugLog << "TcpConection [fd:" << i.first << "] will delete";
+      (i.second).reset();
+    }
+  }
+
+  DebugLog << "this TcpServer loop timer end";
+  
 }
 
 bool TcpServer::addClient(int fd, const TcpConection::ptr& conn) {
@@ -132,6 +158,7 @@ bool TcpServer::addClient(int fd, const TcpConection::ptr& conn) {
       ErrorLog << "insert error, this fd of TcpConection exist and state not Closed";
       return false;
     }
+    DebugLog << "delete src TcpConnection[fd:6], and insert new TcpConnection[fd:6]";
     // src Tcpconnection can delete
     s_conn.reset();
     // set new Tcpconnection
@@ -149,7 +176,9 @@ bool TcpServer::delClient(int fd) {
     ErrorLog << "this fd of TcpConnection not exist";
     return false;
   }
-  m_clients.erase(it);
+  // only delete this TcpConnection
+  // don't delete map'key
+  ((*it).second).reset();
   return true;
 }
 

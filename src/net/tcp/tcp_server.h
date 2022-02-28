@@ -52,12 +52,14 @@ class TcpServer {
  private:
   void MainAcceptCorFunc();
 
+  void MainLoopTimerFunc();
+
  private:
   
   NetAddress::ptr m_addr;
 
   TcpAcceptor::ptr m_acceptor;
-  Timer* m_timer;
+
   std::vector<IOThread::ptr> m_io_threads;
 
   int m_tcp_counts {0};
@@ -69,6 +71,11 @@ class TcpServer {
   bool m_is_stop_accept {false};
 
   Coroutine::ptr m_accept_cor;
+  
+  TimerEvent::ptr m_timer_event;
+
+  Timer::ptr m_timer;
+
 
 };
 
