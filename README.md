@@ -1,7 +1,6 @@
 ## tinyrpc
 use c++ to make a tiny rpc
 
-
 ## how to use
 
 1. git clone
@@ -10,3 +9,5 @@ use c++ to make a tiny rpc
 4. cd build
 5. cmake ..
 6. make
+7. cd ../bin
+8. ./test_xxxx
