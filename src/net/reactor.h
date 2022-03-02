@@ -16,7 +16,7 @@ namespace tinyrpc {
 class FdEvent;
 class Timer;
 
-typedef std::shared_ptr<Timer> TimerPtr;
+// typedef std::shared_ptr<Timer> TimerPtr;
 
 class Reactor {
 

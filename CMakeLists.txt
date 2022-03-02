@@ -16,6 +16,7 @@ set(LIB_SRC
   src/net/tcp/tcp_server.cc
   src/net/tcp/tcp_buffer.cc
   src/net/tcp/tcp_connection.cc
+  src/net/http/http_codec.cc
 
 )
 

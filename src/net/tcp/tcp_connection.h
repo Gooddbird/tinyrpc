@@ -3,11 +3,13 @@
 
 #include <memory>
 #include <vector>
+#include <queue>
 #include "../../log/log.h"
 #include "../fd_event.h"
 #include "../reactor.h"
 #include "tcp_buffer.h"
 #include "../../coroutine/coroutine.h"
+#include "../http/http_request.h"
 
 namespace tinyrpc {
 
