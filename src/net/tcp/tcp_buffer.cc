@@ -95,4 +95,15 @@ void TcpBuffer::clear() {
   m_write_index = 0;
 }
 
+const char* TcpBuffer::getBuffer() {
+  char* tmp;
+  memcpy(&tmp, &m_buffer[m_read_index], readAble());
+  return tmp;
+}
+
+std::vector<char> TcpBuffer::getBufferVector() {
+  std::vector<char> tmp(m_buffer);
+  return std::move(tmp);
+}
+
 }

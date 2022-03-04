@@ -33,6 +33,10 @@ class TcpBuffer {
 
   int getSize();
 
+  const char* getBuffer();
+
+  std::vector<char> getBufferVector();
+
 
  private:
 

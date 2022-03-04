@@ -9,7 +9,7 @@ namespace tinyrpc {
 
 enum CodeCType {
   CODEC_HTTP = 1,
-  CODEC_TINY = 2,
+  CODEC_TINYPB = 2,
 };
 
 std::string GetCodeCType(CodeCType type) {
@@ -17,11 +17,11 @@ std::string GetCodeCType(CodeCType type) {
     case CodeCType::CODEC_HTTP:
       return "http";
 
-    case CodeCType::CODEC_TINY:
-      return "tiny";
+    case CodeCType::CODEC_TINYPB:
+      return "tinypb";
 
     default:
-      return "unknown protocol";
+      return "unknown code type";
   }
 }
 
