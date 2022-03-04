@@ -37,6 +37,9 @@ class TcpBuffer {
 
   std::vector<char> getBufferVector();
 
+  void recycle(int index);
+
+  void enlargeBuffer();
 
  private:
 

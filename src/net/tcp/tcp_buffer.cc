@@ -69,7 +69,11 @@ void TcpBuffer::readFromBuffer(std::vector<char>& re, int size) {
   memcpy(&tmp[0], &m_buffer[m_read_index], read_size);
   re.swap(tmp);
   m_read_index += read_size;
+  enlargeBuffer();
 
+}
+
+void TcpBuffer::enlargeBuffer() {
   if (m_read_index > static_cast<int>(m_buffer.size() / 3)) {
     
     std::vector<char> new_buffer(m_buffer.size());
@@ -93,6 +97,17 @@ void TcpBuffer::clear() {
   m_buffer.clear();
   m_read_index = 0;
   m_write_index = 0;
+}
+
+void TcpBuffer::recycle(int index) {
+  int j = m_read_index + index;
+  if (j >= (int)m_buffer.size()) {
+    ErrorLog << "recycle error";
+    return;
+  }
+  m_read_index = j;
+  enlargeBuffer();
+
 }
 
 const char* TcpBuffer::getBuffer() {

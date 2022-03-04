@@ -11,9 +11,9 @@ class HttpCodeC : public CodeC {
 
   ~HttpCodeC();
 
-  void encode(TcpBuffer& buf);
+  void encode(TcpBuffer::ptr buf);
   
-  void decode(TcpBuffer& buf);
+  void decode(TcpBuffer::ptr buf);
 
   CodeCType type() const;
 

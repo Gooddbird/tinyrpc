@@ -10,6 +10,7 @@
 #include "tcp_buffer.h"
 #include "../../coroutine/coroutine.h"
 #include "../http/http_request.h"
+#include "../tinypb/tinypb_codec.h"
 
 namespace tinyrpc {
 
@@ -51,6 +52,8 @@ class TcpConection {
   void MainWriteCoFunc();
 
   void clearClient();
+  
+  void decode();
 
  private:
   TcpServer* m_tcp_svr;
@@ -62,6 +65,7 @@ class TcpConection {
 	TcpBuffer::ptr m_write_buffer;
   Coroutine::ptr m_read_cor;
   Coroutine::ptr m_write_cor;
+  TinyPbCodeC::ptr m_codec;
 
   FdEvent::ptr m_fd_event;
   bool m_stop_read = false;

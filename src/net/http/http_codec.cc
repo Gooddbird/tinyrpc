@@ -11,15 +11,15 @@ HttpCodeC::~HttpCodeC() {
 
 }
 
-void HttpCodeC::encode(TcpBuffer& buf) {
+void HttpCodeC::encode(TcpBuffer::ptr buf) {
   DebugLog << "test encode";
-  buf.readAble();
+  buf->readAble();
 }
 
-void HttpCodeC::decode(TcpBuffer& buf) {
+void HttpCodeC::decode(TcpBuffer::ptr buf) {
 
   DebugLog << "test decode start";
-  buf.readAble();
+  buf->readAble();
 
 
   DebugLog << "test decode end";

@@ -3,6 +3,7 @@
 #include <sys/socket.h>
 #include "tcp_connection.h"
 #include "tcp_server.h"
+#include "../tinypb/tinypb_codec.h"
 #include "../../coroutine/coroutine_hook.h"
 
 namespace tinyrpc {
@@ -23,6 +24,9 @@ TcpConection::TcpConection(tinyrpc::TcpServer* tcp_svr, tinyrpc::Reactor* reacto
   m_read_cor = std::make_shared<Coroutine>(128 * 1024, std::bind(&TcpConection::MainReadCoFunc, this));
   m_write_cor = std::make_shared<Coroutine>(128 * 1024, std::bind(&TcpConection::MainWriteCoFunc, this));
   m_reactor->addCoroutine(m_read_cor);
+  
+  m_codec = std::make_shared<TinyPbCodeC>();
+
   DebugLog << "succ create tcp connection";
 }
 
@@ -71,8 +75,12 @@ void TcpConection::MainReadCoFunc() {
       DebugLog << "succ read " << rt << " bytes: " << buf << ", count=" << rt;
     }
     m_read_buffer->writeToBuffer(buf, rt);
-
+    m_reactor->addTask(std::bind(&TcpConection::decode, this)); 
   }
+}
+
+void TcpConection::decode() {
+  m_codec->decode(m_read_buffer);
 }
 
 void TcpConection::MainWriteCoFunc() {
