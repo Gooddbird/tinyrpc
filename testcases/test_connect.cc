@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <iostream>
+#include <sstream>
 #include "../src/log/log.h"
 #include "../src/coroutine/coroutine_hook.h"
 #include "../src/net/reactor.h"
@@ -38,11 +39,28 @@ void connect_co() {
     DebugLog << "unknown rt " << rt;
   }
   while(1) {
-    std::string ss;
-    std::cin >> ss;
-		char buf[4] = {'a', 'b', 'c', 'd'};
+    int a;
+    std::cin >> a;
+
+    char buf[20];
+    buf[0] = 0x02;
+    int32_t pk_len = 20;
+    pk_len = htonl(pk_len);
+
+    memcpy(&buf[1], &pk_len, 4);
+    int sergvice_name_len = 6;
+    sergvice_name_len = htonl(sergvice_name_len);
+
+    memcpy(&buf[5], &sergvice_name_len, 4);
+    char service_name[6] = "ikerl";
+    memcpy(&buf[9], &service_name[0], 6);
+    int checksum = 1;
+    memcpy(&buf[15], &checksum, 4);
+    buf[19] = 0x03;
+
+		// char buf[4] = {'a', 'b', 'c', 'd'};
     int rt = write(connfd, buf, sizeof(buf));
-    DebugLog << "succ write[" << buf << "], write count=" << rt << ", src count=" << sizeof(buf);
+    DebugLog << "succ write[" << service_name << "], write count=" << rt << ", src count=" << sizeof(buf);
   }
  
 }

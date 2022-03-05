@@ -3,19 +3,9 @@
 
 #include <stdint.h>
 #include "../codec.h"
+#include "../abstract_data.h"
 
 namespace tinyrpc {
-
-struct TinyPbStruct {
-  // char* start;
-  int32_t pk_len;
-  int32_t service_name_len;
-  std::string service_name;
-  std::vector<char> pb_data {1};
-  int32_t check_num;
-  // char end;
-};
-
 
 class TinyPbCodeC: public CodeC {
  public:
@@ -25,9 +15,9 @@ class TinyPbCodeC: public CodeC {
 
   ~TinyPbCodeC ();
 
-  void encode(TcpBuffer::ptr buf);
+  void encode(TcpBuffer::ptr buf, AbstractData* data);
   
-  void decode(TcpBuffer::ptr buf);
+  void decode(TcpBuffer::ptr buf, AbstractData* data);
 
   CodeCType type() const;
 

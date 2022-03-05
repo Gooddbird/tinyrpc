@@ -3,16 +3,10 @@
 
 #include <string>
 #include "tcp/tcp_buffer.h"
+#include "abstract_data.h"
 
 
 namespace tinyrpc {
-
-enum CodeCType {
-  CODEC_HTTP = 1,
-  CODEC_TINYPB = 2,
-};
-
-
 
 class CodeC {
 
@@ -22,9 +16,9 @@ class CodeC {
 
   virtual ~CodeC() {}
 
-  virtual void encode(TcpBuffer::ptr buf) = 0;
+  virtual void encode(TcpBuffer::ptr buf, AbstractData* data) = 0;
 
-  virtual void decode(TcpBuffer::ptr buf) = 0;
+  virtual void decode(TcpBuffer::ptr buf, AbstractData* data) = 0;
 
   virtual CodeCType type() const = 0;
 

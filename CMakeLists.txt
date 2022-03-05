@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(tinyrpc)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 ENABLE_LANGUAGE(ASM)
-set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -rdynamic -O3 -g -std=c++11 -Wall -Wno-deprecated -Werror -Wno-dev -Wno-unused-function")
+set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -rdynamic -O3 -g -std=c++11 -Wall -Wno-deprecated -Werror -Wno-dev")
 
 set(LIB_SRC
   src/log/log.cc  

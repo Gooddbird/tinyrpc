@@ -4,6 +4,7 @@
 #include "tcp_connection.h"
 #include "tcp_server.h"
 #include "../tinypb/tinypb_codec.h"
+#include "../tinypb/tinypb_data.h"
 #include "../../coroutine/coroutine_hook.h"
 
 namespace tinyrpc {
@@ -80,7 +81,15 @@ void TcpConection::MainReadCoFunc() {
 }
 
 void TcpConection::decode() {
-  m_codec->decode(m_read_buffer);
+  while(m_read_buffer->readAble() > 0) {
+    TinyPbStruct pb_struct; 
+    m_codec->decode(m_read_buffer, &pb_struct);
+    DebugLog << "parse service_name=" << pb_struct.service_name;
+    if (pb_struct.parse_succ) {
+      
+      DebugLog << "parse succ ";
+    }
+  }
 }
 
 void TcpConection::MainWriteCoFunc() {
