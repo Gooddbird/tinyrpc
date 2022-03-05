@@ -11,3 +11,10 @@ use c++ to make a tiny rpc
 6. make
 7. cd ../bin
 8. ./test_xxxx
+
+
+## reference
+libco: https://github.com/Tencent/libco
+sylar: https://github.com/sylar-yin/sylar
+muduo: https://github.com/chenshuo/muduo
+
