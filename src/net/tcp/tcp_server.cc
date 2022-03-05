@@ -127,7 +127,7 @@ void TcpServer::MainAcceptCorFunc() {
 		m_tcp_counts++;
 		DebugLog << "current tcp connection count is [" << m_tcp_counts << "]";
      
-    TcpConection::ptr tcp_conn = std::make_shared<TcpConection> (this, 
+    TcpConnection::ptr tcp_conn = std::make_shared<TcpConnection> (this, 
         m_io_pool->getIOThread()->getReactor(), fd, 128);
 
     addClient(fd, tcp_conn);
@@ -153,10 +153,10 @@ void TcpServer::MainLoopTimerFunc() {
   
 }
 
-bool TcpServer::addClient(int fd, const TcpConection::ptr& conn) {
+bool TcpServer::addClient(int fd, const TcpConnection::ptr& conn) {
   auto it = m_clients.find(fd);
   if (it != m_clients.end()) {
-    TcpConection::ptr s_conn = it->second;
+    TcpConnection::ptr s_conn = it->second;
     if (s_conn->getState() != Closed) {
       ErrorLog << "insert error, this fd of TcpConection exist and state not Closed";
       return false;

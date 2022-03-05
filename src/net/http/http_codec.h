@@ -1,11 +1,12 @@
 #ifndef TINYRPC_NET_HTTP_HTTP_CODEC_H
 #define TINYRPC_NET_HTTP_HTTP_CODEC_H
 
-#include "../codec.h"
+#include "../abstract_data.h"
+#include "../abstract_codec.h"
 
 namespace tinyrpc {
 
-class HttpCodeC : public CodeC {
+class HttpCodeC : public AbstractCodeC {
  public:
   HttpCodeC();
 

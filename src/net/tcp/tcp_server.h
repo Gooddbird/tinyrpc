@@ -46,7 +46,7 @@ class TcpServer {
 
   void start();
 
-  bool addClient(int fd, const TcpConection::ptr& conn);
+  bool addClient(int fd, const TcpConnection::ptr& conn);
 
   bool delClient(int fd);
 
@@ -65,7 +65,7 @@ class TcpServer {
 
   Reactor* m_main_reactor;
 
-  std::map<int, TcpConection::ptr> m_clients;
+  std::map<int, TcpConnection::ptr> m_clients;
 
   bool m_is_stop_accept {false};
 

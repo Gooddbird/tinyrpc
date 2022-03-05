@@ -8,13 +8,13 @@
 
 namespace tinyrpc {
 
-class CodeC {
+class AbstractCodeC {
 
  public:
 
-  CodeC() {}
+  AbstractCodeC() {}
 
-  virtual ~CodeC() {}
+  virtual ~AbstractCodeC() {}
 
   virtual void encode(TcpBuffer::ptr buf, AbstractData* data) = 0;
 

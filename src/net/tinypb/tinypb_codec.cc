@@ -104,7 +104,7 @@ void TinyPbCodeC::decode(TcpBuffer::ptr buf, AbstractData* data) {
   char service_name[pb_struct->service_name_len];
 
   memcpy(&service_name[0], &tmp[service_name_index], pb_struct->service_name_len);
-  pb_struct->service_name = service_name;
+  pb_struct->service_full_name = service_name;
   // DebugLog << "service_name = " << pb_struct.service_name;
 
   int pb_data_len = pb_struct->pk_len - pb_struct->service_name_len - 2 * sizeof(char) - 3 * sizeof(int32_t);
@@ -119,7 +119,7 @@ void TinyPbCodeC::decode(TcpBuffer::ptr buf, AbstractData* data) {
 
   memcpy(&(pb_struct->pb_data[0]), &tmp[pb_data_index], pb_data_len);
 
-  DebugLog << "decode succ,  pk_len = " << pk_len << ", service_name = " << pb_struct->service_name; 
+  DebugLog << "decode succ,  pk_len = " << pk_len << ", service_name = " << pb_struct->service_full_name; 
   buf->recycle(pk_len);
 
   pb_struct->parse_succ = true;

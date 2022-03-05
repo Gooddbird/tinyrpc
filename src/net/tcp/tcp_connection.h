@@ -23,14 +23,14 @@ enum TcpConnectionState {
 };
 
 
-class TcpConection {
+class TcpConnection {
 
  public:
- 	typedef std::shared_ptr<TcpConection> ptr;
+ 	typedef std::shared_ptr<TcpConnection> ptr;
 
-	TcpConection(tinyrpc::TcpServer* tcp_svr, tinyrpc::Reactor* reactor, int fd, int buff_size);
+	TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::Reactor* reactor, int fd, int buff_size);
 
-	~TcpConection();
+	~TcpConnection();
 
   void initBuffer(int size);
 

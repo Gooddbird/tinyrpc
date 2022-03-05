@@ -1,6 +1,7 @@
 #include "http_codec.h"
 #include "../../log/log.h"
 #include "../abstract_data.h"
+#include "../abstract_codec.h"
 
 namespace tinyrpc {
 
