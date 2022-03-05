@@ -21,8 +21,6 @@ struct TinyPbStruct : public AbstractData {
   int32_t check_num {-1};
   // char end;
 
-  bool parse_succ {false};
-
   CodeCType type() const {
     return CodeCType::CODEC_TINYPB;
   }

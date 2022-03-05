@@ -25,12 +25,27 @@ TinyPbCodeC::~TinyPbCodeC() {
 
 void TinyPbCodeC::encode(TcpBuffer::ptr buf, AbstractData* data) {
   DebugLog << "test encode start";
+  TinyPbStruct* tmp = dynamic_cast<TinyPbStruct*>(data);
+  
+  if (tmp->service_full_name.empty() || tmp->pb_data.size() == 0) {
+    ErrorLog << "parse error, service_full_name is empty or pb_data is empty";
+    data->parse_succ = false;
+    return;
+  }
 
   std::stringstream ss;
   ss << PB_START << buf->getBuffer();
-  // int pk_len = 1;
 
   DebugLog << "test encode end";
+}
+
+void TinyPbCodeC::encodePb(TinyPbStruct* data) {
+
+  if (data->service_full_name.empty() || data->pb_data.size() == 0) {
+    ErrorLog << "parse error, service_full_name is empty or pb_data is empty";
+    data->parse_succ = false;
+    return;
+  }
 }
 
 void TinyPbCodeC::decode(TcpBuffer::ptr buf, AbstractData* data) {

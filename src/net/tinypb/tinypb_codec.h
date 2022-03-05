@@ -19,6 +19,8 @@ class TinyPbCodeC: public AbstractCodeC {
   
   void decode(TcpBuffer::ptr buf, AbstractData* data);
 
+  void encodePb(TinyPbStruct* data);
+
   CodeCType type() const;
 
  private:

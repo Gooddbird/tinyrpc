@@ -13,6 +13,8 @@ class AbstractData {
   AbstractData() {}
   virtual ~AbstractData() {};
   virtual CodeCType type() const = 0;
+
+  bool parse_succ {false};
 };
 
 
