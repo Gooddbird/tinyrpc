@@ -18,6 +18,7 @@ set(LIB_SRC
   src/net/tcp/tcp_connection.cc
   src/net/http/http_codec.cc
   src/net/tinypb/tinypb_codec.cc
+  src/net/tinypb/tinypb_rpc_dispatcher.cc
 
 )
 
@@ -27,6 +28,7 @@ set(LIBS
   tinyrpc
   dl
   pthread
+  protobuf
 )
 
 add_executable(test_log testcases/test_log.cc)
@@ -46,7 +48,7 @@ add_executable(test_tcpserver testcases/test_tcpserver.cc)
 add_dependencies(test_tcpserver tinyrpc)
 target_link_libraries(test_tcpserver ${LIBS})
 
-add_executable(test_connect testcases/test_connect.cc)
+add_executable(test_connect testcases/test_connect.cc testcases/tinypb.pb.cc)
 add_dependencies(test_connect tinyrpc)
 target_link_libraries(test_connect ${LIBS})
 

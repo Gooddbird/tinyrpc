@@ -23,7 +23,7 @@ enum TcpConnectionState {
 };
 
 
-class TcpConnection {
+class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
  public:
  	typedef std::shared_ptr<TcpConnection> ptr;
@@ -65,6 +65,7 @@ class TcpConnection {
 	TcpBuffer::ptr m_write_buffer;
   Coroutine::ptr m_read_cor;
   Coroutine::ptr m_write_cor;
+
   TinyPbCodeC::ptr m_codec;
 
   FdEvent::ptr m_fd_event;

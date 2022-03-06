@@ -85,8 +85,9 @@ void TcpConnection::decode() {
     TinyPbStruct pb_struct; 
     m_codec->decode(m_read_buffer, &pb_struct);
     DebugLog << "parse service_name=" << pb_struct.service_full_name;
-    if (pb_struct.parse_succ) {
+    if (pb_struct.decode_succ) {
       DebugLog << "parse succ ";
+      m_tcp_svr->getDispatcher()->dispatch(&pb_struct, this);
     }
   }
 }

@@ -175,7 +175,7 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 
   tinyrpc::FdEvent::ptr fd_event = tinyrpc::FdEventContainer::GetFdContainer()->getFdEvent(sockfd);
   if(fd_event->getReactor() == nullptr) {
-    fd_event->setReactor(tinyrpc::Reactor::GetReactor());  
+    fd_event->setReactor(reactor);  
   }
 	tinyrpc::Coroutine* cur_cor = tinyrpc::Coroutine::GetCurrentCoroutine();
 

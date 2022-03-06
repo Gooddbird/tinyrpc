@@ -15,7 +15,7 @@ static pid_t g_pid = 0;
 
 pid_t gettid() {
   if (t_thread_id == 0) {
-    return syscall(SYS_gettid);
+    t_thread_id = syscall(SYS_gettid);
   }
   return t_thread_id;
 }

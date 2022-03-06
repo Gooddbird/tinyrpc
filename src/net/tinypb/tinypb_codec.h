@@ -4,8 +4,10 @@
 #include <stdint.h>
 #include "../abstract_codec.h"
 #include "../abstract_data.h"
+#include "tinypb_data.h"
 
 namespace tinyrpc {
+
 
 class TinyPbCodeC: public AbstractCodeC {
  public:
@@ -15,15 +17,15 @@ class TinyPbCodeC: public AbstractCodeC {
 
   ~TinyPbCodeC ();
 
+  // overwrite
   void encode(TcpBuffer::ptr buf, AbstractData* data);
   
+  // overwrite
   void decode(TcpBuffer::ptr buf, AbstractData* data);
 
-  void encodePb(TinyPbStruct* data);
+  const char* encodePbData(TinyPbStruct* data, int& len);
 
   CodeCType type() const;
-
- private:
 
 };
 

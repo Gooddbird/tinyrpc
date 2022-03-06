@@ -102,6 +102,7 @@ void TcpServer::start() {
   
   m_timer->addTimerEvent(m_timer_event);
 
+	m_dispatcher = std::make_shared<TinyPbRpcDispacther>();
 	m_main_reactor->loop();
 
 }
@@ -183,6 +184,10 @@ bool TcpServer::delClient(int fd) {
   // don't delete map'key
   ((*it).second).reset();
   return true;
+}
+
+TinyPbRpcDispacther* TcpServer::getDispatcher() {	
+	return m_dispatcher.get();	
 }
 
 }

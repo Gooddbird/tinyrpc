@@ -5,10 +5,23 @@
 #include "../abstract_dispatcher.h"
 #include "tinypb_data.h"
 #include "tinypb_rpc_dispatcher.h"
+#include "tinypb_rpc_controller.h"
 
 namespace tinyrpc {
 
-void TinyPbRpcDispacther::dispatch(AbstractData* data, const TcpConnection::ptr& conn) {
+void cb() {
+  DebugLog << "call succ";
+}
+
+TinyPbRpcDispacther::TinyPbRpcDispacther() {
+
+}
+
+TinyPbRpcDispacther::~TinyPbRpcDispacther() {
+
+}
+
+void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
   TinyPbStruct* tmp = dynamic_cast<TinyPbStruct*>(data);
 
   if (tmp == nullptr) {
@@ -21,37 +34,36 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, const TcpConnection::ptr&
     ErrorLog << "parse service name error, return";
     return;
   }
-  auto it = g_service_map.find(service_name);
-  if (it == g_service_map.end()) {
+  auto it = m_service_map.find(service_name);
+  if (it == m_service_map.end()) {
     ErrorLog << "not found service_name = " << service_name;
-    retrun;
+    return;
   }
-  std::shared_ptr<google::protobuf::Service> service = (*it).second;
+  google::protobuf::Service* service = (*it).second;
   assert(service != nullptr);
 
-  std::shared_ptr<google::protobuf::MethodDescriptor> method;
-  method.reset(service->GetDescriptor()->FindMethodByName(method_name));
+  const google::protobuf::MethodDescriptor* method = service->GetDescriptor()->FindMethodByName(method_name);
 
-  std::shared_ptr<google::protobuf::Message> request;
-  request.reset(service->GetRequestPrototype(method).New());
+  google::protobuf::Message* request = service->GetRequestPrototype(method).New();
 
   if(!request->ParseFromArray(&(tmp->pb_data[0]), tmp->pb_data.size())) {
     ErrorLog << "parse request error";
     return;
   }
 
-  std::shared_ptr<google::protobuf::Message> response;
-  response.reset(service->GetResponsePrototype(method).New());
+  google::protobuf::Message* response = service->GetResponsePrototype(method).New();
 
-  std::shared_ptr<google::protobuf::RpcController> rpc_controller = shd::make_shared<google::protobuf::RpcController>();
+  TinyPbRpcController* rpc_controller = new TinyPbRpcController();
 
-  auto cb = [] () {
-    DebugLog << "call service[" << service_name << "] succ";
-  }
+  google::protobuf::Closure* call_back = google::protobuf::NewCallback(&cb);
+  service->CallMethod(method, rpc_controller, request, response, call_back);
 
-  service->CallMethod(method.get(), rpc_controller.get(), request.get(), response.get(), cb);
-
+  delete method;
+  delete request;
+  delete response;
 }
+
+
 
 bool TinyPbRpcDispacther::parseServiceFullName(const std::string& full_name, std::string& service_name, std::string& method_name) {
   if (full_name.empty()) {
@@ -59,7 +71,7 @@ bool TinyPbRpcDispacther::parseServiceFullName(const std::string& full_name, std
     return false;
   }
   std::size_t i = full_name.find(".");
-  if (i == full_name.npos()) {
+  if (i == full_name.npos) {
     ErrorLog << "not found [.]";
     return false;
   }
@@ -71,14 +83,8 @@ bool TinyPbRpcDispacther::parseServiceFullName(const std::string& full_name, std
 }
 
 void TinyPbRpcDispacther::registerService(google::protobuf::Service *service) {
-  std::shared_ptr<google::protobuf::Service> ptr;
-  ptr.reset(service);
-  std::string service_name = ptr->GetDescriptor()->full_name();
-  g_service_map[service_name] = ptr;
+  std::string service_name = service->GetDescriptor()->full_name();
+  m_service_map[service_name] = service;
 }
-
-
-};
-
 
 }

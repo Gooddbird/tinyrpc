@@ -59,8 +59,10 @@ Reactor::~Reactor() {
 
 Reactor* Reactor::GetReactor() {
   if (t_reactor_ptr == nullptr) {
-    t_reactor_ptr = new Reactor;
+		DebugLog << "Create new Reactor";
+    t_reactor_ptr = new Reactor();
   }
+	DebugLog << "t_reactor_ptr = " << t_reactor_ptr;
   return t_reactor_ptr; 
 }
 
@@ -75,8 +77,8 @@ void Reactor::addEvent(int fd, epoll_event event, bool is_wakeup/*=true*/) {
     return;
   }
 	{
-    Mutex::Lock lock(m_mutex);
-		m_pending_add_fds.insert(std::make_pair(fd, event));
+ 		Mutex::Lock lock(m_mutex);
+		m_pending_add_fds.insert(std::pair<int, epoll_event>(fd, event));
 	}
 	if (is_wakeup) {
 		wakeup();
@@ -120,8 +122,12 @@ void Reactor::wakeup() {
 
 // m_tid only can be writed in Reactor::Reactor, so it needn't to lock 
 bool Reactor::isLoopThread() const {
-
-	return (m_tid == gettid());
+	if (m_tid == gettid()) {
+		DebugLog << "return true";
+		return true;
+	}
+	DebugLog << "m_tid = "<< m_tid << ", getttid = " << gettid() <<"return false";
+	return false;
 }
 
 

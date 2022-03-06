@@ -6,12 +6,13 @@
 
 namespace tinyrpc {
 
+class TcpConnection;
+
 class AbstractDispatcher {
  public:
   AbstractDispatcher() {}
-  virtual ~AbstractDispatcher() = 0;
-  virtual void dispatch(AbstractData* data, const TcpConnection::ptr& conn);
-
+  virtual ~AbstractDispatcher() {}
+  virtual void dispatch(AbstractData* data, TcpConnection* conn) = 0;
 };
 
 }

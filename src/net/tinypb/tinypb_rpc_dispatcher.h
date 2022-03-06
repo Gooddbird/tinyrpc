@@ -15,18 +15,21 @@ namespace tinyrpc {
 
 class TinyPbRpcDispacther : public AbstractDispatcher {
  public:
-  TinyPbRpcDispacther() {}; 
-  ~TinyPbRpcDispacther() {};
+
+  typedef std::shared_ptr<TinyPbRpcDispacther> ptr;
+
+  TinyPbRpcDispacther();
+  ~TinyPbRpcDispacther();
 
 
-  void dispatch(AbstractData* data, const TcpConnection::ptr& conn);
+  void dispatch(AbstractData* data, TcpConnection* conn);
 
   bool parseServiceFullName(const std::string& full_name, std::string& service_name, std::string& method_name);
 
   void registerService(google::protobuf::Service* service);
 
  public:
-  static std::map<std::string, std::shared_ptr<google::protobuf::Service>> g_service_map;
+  std::map<std::string, google::protobuf::Service*> m_service_map;
 
  private:
 

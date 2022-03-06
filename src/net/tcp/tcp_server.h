@@ -9,6 +9,7 @@
 #include "../net_address.h"
 #include "tcp_connection.h"
 #include "io_thread.h"
+#include "../tinypb/tinypb_rpc_dispatcher.h"
 
 
 namespace tinyrpc {
@@ -50,6 +51,8 @@ class TcpServer {
 
   bool delClient(int fd);
 
+  TinyPbRpcDispacther* getDispatcher();
+
  private:
   void MainAcceptCorFunc();
 
@@ -73,6 +76,7 @@ class TcpServer {
   
   TimerEvent::ptr m_timer_event;
   Timer::ptr m_timer;
+  TinyPbRpcDispacther::ptr m_dispatcher;
 
   IOThreadPool::ptr m_io_pool;
 
