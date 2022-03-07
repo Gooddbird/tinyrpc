@@ -65,6 +65,10 @@ add_executable(test_tcpserver_cor testcases/test_tcpserver_cor.cc)
 add_dependencies(test_tcpserver_cor tinyrpc)
 target_link_libraries(test_tcpserver_cor ${LIBS})
 
+add_executable(test_rpc_server testcases/test_rpc_server.cc testcases/tinypb.pb.cc)
+add_dependencies(test_rpc_server tinyrpc)
+target_link_libraries(test_rpc_server ${LIBS})
+
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 

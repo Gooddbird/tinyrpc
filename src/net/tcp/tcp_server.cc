@@ -86,6 +86,7 @@ int TcpAcceptor::toAccept() {
 
 TcpServer::TcpServer(NetAddress::ptr addr, int pool_size /*=10*/) : m_addr(addr) {
   m_io_pool = std::make_shared<IOThreadPool>(pool_size);
+	m_dispatcher = std::make_shared<TinyPbRpcDispacther>();
 }
 
 void TcpServer::start() {
@@ -102,7 +103,6 @@ void TcpServer::start() {
   
   m_timer->addTimerEvent(m_timer_event);
 
-	m_dispatcher = std::make_shared<TinyPbRpcDispacther>();
 	m_main_reactor->loop();
 
 }

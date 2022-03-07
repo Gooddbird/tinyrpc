@@ -44,13 +44,14 @@ void TinyPbCodeC::encode(TcpBuffer::ptr buf, AbstractData* data) {
 }
 
 const char* TinyPbCodeC::encodePbData(TinyPbStruct* data, int& len) {
-  if (data->service_full_name.empty() || data->pb_data.size() == 0) {
+  if (data->service_full_name.empty() || data->pb_data.length() == 0) {
     ErrorLog << "parse error, service_full_name is empty or pb_data is empty";
     data->encode_succ = false;
     return nullptr;
   }
 
-  int32_t pk_len = 2 * sizeof(char) + 3 * sizeof(int32_t) + data->pb_data.size() + data->service_full_name.length();
+  int32_t pk_len = 2 * sizeof(char) + 3 * sizeof(int32_t) + data->pb_data.length() + data->service_full_name.length();
+  DebugLog << "encode pk_len = " << pk_len;
   char* buf = reinterpret_cast<char*>(malloc(pk_len));
   char* tmp = buf;
   *tmp = PB_START;
@@ -61,15 +62,16 @@ const char* TinyPbCodeC::encodePbData(TinyPbStruct* data, int& len) {
   tmp += sizeof(int32_t);
 
   int32_t service_full_name_len = data->service_full_name.length();
+  DebugLog << "src service_full_name_len = " << service_full_name_len;
   int32_t service_full_name_len_net = htonl(service_full_name_len);
   memcpy(tmp, &service_full_name_len_net, sizeof(int32_t));
   tmp += sizeof(int32_t);
 
-  memcpy(tmp, &(data->service_full_name), service_full_name_len);
+  memcpy(tmp, &(data->service_full_name[0]), service_full_name_len);
   tmp += service_full_name_len;
 
-  memcpy(tmp, &(data->pb_data[0]), data->pb_data.size());
-  tmp += data->pb_data.size();
+  memcpy(tmp, &(data->pb_data[0]), data->pb_data.length());
+  tmp += data->pb_data.length();
 
   int32_t checksum = 1;
   int32_t checksum_net = htonl(checksum);

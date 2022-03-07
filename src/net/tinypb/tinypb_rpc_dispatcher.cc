@@ -45,13 +45,17 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
   const google::protobuf::MethodDescriptor* method = service->GetDescriptor()->FindMethodByName(method_name);
 
   google::protobuf::Message* request = service->GetRequestPrototype(method).New();
+  DebugLog << "request.name = " << request->GetDescriptor()->full_name();
+  DebugLog << "req pb_data_size = " << tmp->pb_data.length();
 
-  if(!request->ParseFromArray(&(tmp->pb_data[0]), tmp->pb_data.size())) {
+  if(!request->ParseFromString(tmp->pb_data)) {
     ErrorLog << "parse request error";
     return;
   }
 
   google::protobuf::Message* response = service->GetResponsePrototype(method).New();
+
+  DebugLog << "response.name = " << response->GetDescriptor()->full_name();
 
   TinyPbRpcController* rpc_controller = new TinyPbRpcController();
 
@@ -77,7 +81,10 @@ bool TinyPbRpcDispacther::parseServiceFullName(const std::string& full_name, std
   }
 
   service_name = full_name.substr(0, i);
+  DebugLog << "service_name = " << service_name;
   method_name = full_name.substr(i + 1, full_name.length() - i - 1);
+  DebugLog << "method_name = " << method_name;
+
   return true;
 
 }
@@ -85,6 +92,7 @@ bool TinyPbRpcDispacther::parseServiceFullName(const std::string& full_name, std
 void TinyPbRpcDispacther::registerService(google::protobuf::Service *service) {
   std::string service_name = service->GetDescriptor()->full_name();
   m_service_map[service_name] = service;
+  InfoLog << "succ register service[" << service_name << "]!"; 
 }
 
 }

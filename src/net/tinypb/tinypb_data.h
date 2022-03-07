@@ -17,7 +17,7 @@ struct TinyPbStruct : public AbstractData {
   int32_t pk_len {-1};
   int32_t service_name_len {-1};
   std::string service_full_name;
-  std::vector<char> pb_data {1};
+  std::string pb_data {"1"};
   int32_t check_num {-1};
   // char end;
 

@@ -44,7 +44,7 @@ void connect_co() {
   }
   while(1) {
     int a;
-    std::cout << "input in integer to send protobuf data";
+    DebugLog << "input in integer to send protobuf data";
     std::cin >> a;
 
     // char buf[20];
@@ -64,14 +64,21 @@ void connect_co() {
     // buf[19] = 0x03;
 
     QueryReq req;
-    req.set_id(9999); 
+    req.set_id(9876); 
     tinyrpc::TinyPbStruct pb_struct;
     pb_struct.service_full_name = "QueryService.query_name";
-    std::string s;
-    req.SerializeToString(&s);
-    for (size_t i = 0; i < s.length(); ++i) {
-      pb_struct.pb_data.push_back(s[i]);
+    req.SerializeToString(&(pb_struct.pb_data));
+
+    DebugLog << "pb size = " << pb_struct.pb_data.size();
+
+    QueryReq req_test;
+    if (!req_test.ParseFromString(pb_struct.pb_data))
+    {
+      ErrorLog << "parse request error";
+      return;
     }
+    DebugLog << "req.id = " << req_test.id(); 
+
     tinyrpc::TinyPbCodeC m_codec;
     int len = 0;
     const char* buf = m_codec.encodePbData(&pb_struct, len);
