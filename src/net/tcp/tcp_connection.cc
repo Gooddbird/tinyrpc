@@ -87,6 +87,7 @@ void TcpConnection::decode() {
     DebugLog << "parse service_name=" << pb_struct.service_full_name;
     if (pb_struct.decode_succ) {
       DebugLog << "parse succ ";
+      DebugLog << "pb_data.size = " << pb_struct.pb_data.length();
       m_tcp_svr->getDispatcher()->dispatch(&pb_struct, this);
     }
   }

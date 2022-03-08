@@ -138,7 +138,7 @@ void TinyPbCodeC::decode(TcpBuffer::ptr buf, AbstractData* data) {
     buf->recycle(pk_len);
     return;
   }
-  DebugLog << "service_name_len_index = " << service_name_len_index;
+  // DebugLog << "service_name_len_index = " << service_name_len_index;
   int service_name_index = service_name_len_index + sizeof(int32_t);
 
   if (service_name_index >= end_index) {
@@ -158,7 +158,7 @@ void TinyPbCodeC::decode(TcpBuffer::ptr buf, AbstractData* data) {
     buf->recycle(pk_len);
     return;
   }
-  // DebugLog << "service_name_len = " << pb_struct.service_name_len;
+  // DebugLog << "service_name_len = " << pb_struct->service_name_len;
   char service_name[pb_struct->service_name_len];
 
   memcpy(&service_name[0], &tmp[service_name_index], pb_struct->service_name_len);
@@ -174,8 +174,12 @@ void TinyPbCodeC::decode(TcpBuffer::ptr buf, AbstractData* data) {
     buf->recycle(pk_len);
     return;
   }
+  // DebugLog << "pb_data_index = " << pb_data_index << ", pb_data.length = " << pb_data_len;
 
-  memcpy(&(pb_struct->pb_data[0]), &tmp[pb_data_index], pb_data_len);
+  std::string pb_data_str(&tmp[pb_data_index], pb_data_len);
+  pb_struct->pb_data = pb_data_str;
+
+  // memcpy(&(pb_struct->pb_data[0]), &tmp[pb_data_index], pb_data_len);
 
   DebugLog << "decode succ,  pk_len = " << pk_len << ", service_name = " << pb_struct->service_full_name; 
   buf->recycle(pk_len);

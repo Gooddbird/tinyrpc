@@ -6,20 +6,9 @@
 #include "tinypb_data.h"
 #include "tinypb_rpc_dispatcher.h"
 #include "tinypb_rpc_controller.h"
+#include "tinypb_rpc_closure.h"
 
 namespace tinyrpc {
-
-void cb() {
-  DebugLog << "call succ";
-}
-
-TinyPbRpcDispacther::TinyPbRpcDispacther() {
-
-}
-
-TinyPbRpcDispacther::~TinyPbRpcDispacther() {
-
-}
 
 void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
   TinyPbStruct* tmp = dynamic_cast<TinyPbStruct*>(data);
@@ -46,7 +35,7 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
 
   google::protobuf::Message* request = service->GetRequestPrototype(method).New();
   DebugLog << "request.name = " << request->GetDescriptor()->full_name();
-  DebugLog << "req pb_data_size = " << tmp->pb_data.length();
+  // DebugLog << "req pb_data_size = " << tmp->pb_data.length();
 
   if(!request->ParseFromString(tmp->pb_data)) {
     ErrorLog << "parse request error";
@@ -59,10 +48,17 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
 
   TinyPbRpcController* rpc_controller = new TinyPbRpcController();
 
-  google::protobuf::Closure* call_back = google::protobuf::NewCallback(&cb);
-  service->CallMethod(method, rpc_controller, request, response, call_back);
+  std::function<void()> cb = [tmp]()
+  {
+    DebugLog << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<";
+    DebugLog << "call [" << tmp->service_full_name << "] succ";
+    DebugLog << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>";
+  };
 
-  delete method;
+  TinyPbRpcClosure closure(cb);
+  service->CallMethod(method, rpc_controller, request, response, &closure);
+
+  // delete method;
   delete request;
   delete response;
 }

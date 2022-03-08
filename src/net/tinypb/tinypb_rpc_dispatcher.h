@@ -18,9 +18,8 @@ class TinyPbRpcDispacther : public AbstractDispatcher {
 
   typedef std::shared_ptr<TinyPbRpcDispacther> ptr;
 
-  TinyPbRpcDispacther();
-  ~TinyPbRpcDispacther();
-
+  TinyPbRpcDispacther() = default;
+  ~TinyPbRpcDispacther() = default;
 
   void dispatch(AbstractData* data, TcpConnection* conn);
 

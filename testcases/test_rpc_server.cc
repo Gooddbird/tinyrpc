@@ -16,14 +16,21 @@ class QueryServiceImpl : public QueryService {
                        ::QueryNameRes* response,
                        ::google::protobuf::Closure* done) {
     
+    DebugLog << "========================";
+    DebugLog << "this is query_name func";
     response->set_name("ikerli");
+    DebugLog << "========================";
+    done->Run();
   }
   void query_age(google::protobuf::RpcController* controller,
                        const ::QueryReq* request,
                        ::QueryAgeRes* response,
                        ::google::protobuf::Closure* done) {
 
+    DebugLog << "========================";
+    DebugLog << "this is query_age func";
     response->set_age(20);
+    DebugLog << "========================";
   }
 
 };
