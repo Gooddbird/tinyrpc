@@ -25,6 +25,14 @@ int TcpBuffer::writeAble() {
 	return m_buffer.size() - m_write_index;
 }
 
+int TcpBuffer::readIndex() const {
+  return m_read_index;
+}
+
+int TcpBuffer::writeIndex() const {
+  return m_write_index;
+}
+
 // int TcpBuffer::readFromSocket(int sockfd) {
 	// if (writeAble() == 0) {
 		// m_buffer.resize(2 * m_size);
@@ -110,15 +118,14 @@ void TcpBuffer::recycle(int index) {
 
 }
 
-const char* TcpBuffer::getBuffer() {
-  char* tmp;
-  memcpy(&tmp, &m_buffer[m_read_index], readAble());
-  return tmp;
-}
+// const char* TcpBuffer::getBuffer() {
+//   char* tmp;
+//   memcpy(&tmp, &m_buffer[m_read_index], readAble());
+//   return tmp;
+// }
 
-std::vector<char> TcpBuffer::getBufferVector() {
-  std::vector<char> tmp(m_buffer);
-  return std::move(tmp);
+std::vector<char>& TcpBuffer::getBufferVector() {
+  return m_buffer;
 }
 
 }

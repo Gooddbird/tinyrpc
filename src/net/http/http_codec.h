@@ -12,9 +12,9 @@ class HttpCodeC : public AbstractCodeC {
 
   ~HttpCodeC();
 
-  void encode(TcpBuffer::ptr buf, AbstractData* data);
+  void encode(TcpBuffer* buf, AbstractData* data);
   
-  void decode(TcpBuffer::ptr buf, AbstractData* data);
+  void decode(TcpBuffer* buf, AbstractData* data);
 
   CodeCType type() const;
 

@@ -21,6 +21,10 @@ class TcpBuffer {
 
   int writeAble();
 
+  int readIndex() const;
+
+  int writeIndex() const;
+
   // int readFormSocket(char* buf, int size);
 
   void writeToBuffer(const char* buf, int size);
@@ -33,9 +37,9 @@ class TcpBuffer {
 
   int getSize();
 
-  const char* getBuffer();
+  // const char* getBuffer();
 
-  std::vector<char> getBufferVector();
+  std::vector<char>& getBufferVector();
 
   void recycle(int index);
 

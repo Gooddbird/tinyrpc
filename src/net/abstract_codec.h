@@ -16,9 +16,9 @@ class AbstractCodeC {
 
   virtual ~AbstractCodeC() {}
 
-  virtual void encode(TcpBuffer::ptr buf, AbstractData* data) = 0;
+  virtual void encode(TcpBuffer* buf, AbstractData* data) = 0;
 
-  virtual void decode(TcpBuffer::ptr buf, AbstractData* data) = 0;
+  virtual void decode(TcpBuffer* buf, AbstractData* data) = 0;
 
   virtual CodeCType type() const = 0;
 

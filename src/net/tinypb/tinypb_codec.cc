@@ -23,8 +23,12 @@ TinyPbCodeC::~TinyPbCodeC() {
 
 }
 
-void TinyPbCodeC::encode(TcpBuffer::ptr buf, AbstractData* data) {
-  DebugLog << "test encode start";
+void TinyPbCodeC::encode(TcpBuffer* buf, AbstractData* data) {
+  if (!buf || !data) {
+    ErrorLog << "encode error! buf or data nullptr";
+    return;
+  }
+  // DebugLog << "test encode start";
   TinyPbStruct* tmp = dynamic_cast<TinyPbStruct*>(data);
 
   int len = 0;
@@ -39,7 +43,7 @@ void TinyPbCodeC::encode(TcpBuffer::ptr buf, AbstractData* data) {
     DebugLog << "succ encode and write to buffer";
   }
   data = tmp;
-  DebugLog << "test encode end";
+  // DebugLog << "test encode end";
 
 }
 
@@ -91,7 +95,13 @@ const char* TinyPbCodeC::encodePbData(TinyPbStruct* data, int& len) {
 
 }
 
-void TinyPbCodeC::decode(TcpBuffer::ptr buf, AbstractData* data) {
+void TinyPbCodeC::decode(TcpBuffer* buf, AbstractData* data) {
+
+  if (!buf || !data) {
+    ErrorLog << "decode error! buf or data nullptr";
+    return;
+  }
+
   std::vector<char> tmp = buf->getBufferVector();
   int total_size = tmp.size();
   int start_index = -1;
@@ -110,13 +120,13 @@ void TinyPbCodeC::decode(TcpBuffer::ptr buf, AbstractData* data) {
         DebugLog << "j =" << j << ", i=" << i;
 
         if (j >= total_size) {
-          DebugLog << "recv package not complete, or pk_start find error, continue next parse";
+          // DebugLog << "recv package not complete, or pk_start find error, continue next parse";
           continue;
         }
         if (tmp[j] == PB_END) {
           start_index = i;
           end_index = j;
-          DebugLog << "parse succ, now break";
+          // DebugLog << "parse succ, now break";
           parse_flag = true;
           break;
         }
@@ -181,7 +191,7 @@ void TinyPbCodeC::decode(TcpBuffer::ptr buf, AbstractData* data) {
 
   // memcpy(&(pb_struct->pb_data[0]), &tmp[pb_data_index], pb_data_len);
 
-  DebugLog << "decode succ,  pk_len = " << pk_len << ", service_name = " << pb_struct->service_full_name; 
+  // DebugLog << "decode succ,  pk_len = " << pk_len << ", service_name = " << pb_struct->service_full_name; 
   buf->recycle(pk_len);
 
   pb_struct->decode_succ = true;

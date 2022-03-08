@@ -36,15 +36,19 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
  public:
 
-  void asyncRead(std::vector<char>& re, int& size);
+  // void asyncRead(std::vector<char>& re, int& size);
 
-	void asyncWrite(const std::vector<char>& buf);
+	void asyncWrite();
 
   void shutdownConnection();
 
   TcpConnectionState getState() const {
     return m_state;
   }
+
+  TcpBuffer* getInBuffer();
+
+  TcpBuffer* getOutBuffer();
 
  private:
   void MainReadCoFunc();
@@ -53,7 +57,7 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
   void clearClient();
   
-  void decode();
+  void execute();
 
  private:
   TcpServer* m_tcp_svr;

@@ -18,10 +18,10 @@ class TinyPbCodeC: public AbstractCodeC {
   ~TinyPbCodeC ();
 
   // overwrite
-  void encode(TcpBuffer::ptr buf, AbstractData* data);
+  void encode(TcpBuffer* buf, AbstractData* data);
   
   // overwrite
-  void decode(TcpBuffer::ptr buf, AbstractData* data);
+  void decode(TcpBuffer* buf, AbstractData* data);
 
   const char* encodePbData(TinyPbStruct* data, int& len);
 

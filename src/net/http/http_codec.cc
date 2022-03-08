@@ -13,12 +13,12 @@ HttpCodeC::~HttpCodeC() {
 
 }
 
-void HttpCodeC::encode(TcpBuffer::ptr buf, AbstractData* data) {
+void HttpCodeC::encode(TcpBuffer* buf, AbstractData* data) {
   DebugLog << "test encode";
   buf->readAble();
 }
 
-void HttpCodeC::decode(TcpBuffer::ptr buf, AbstractData* data) {
+void HttpCodeC::decode(TcpBuffer* buf, AbstractData* data) {
 
   DebugLog << "test decode start";
   buf->readAble();

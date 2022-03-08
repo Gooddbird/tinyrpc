@@ -7,8 +7,11 @@
 #include "tinypb_rpc_dispatcher.h"
 #include "tinypb_rpc_controller.h"
 #include "tinypb_rpc_closure.h"
+#include "tinypb_codec.h"
 
 namespace tinyrpc {
+
+class TcpBuffer;
 
 void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
   TinyPbStruct* tmp = dynamic_cast<TinyPbStruct*>(data);
@@ -48,21 +51,39 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
 
   TinyPbRpcController* rpc_controller = new TinyPbRpcController();
 
-  std::function<void()> cb = [tmp]()
+  std::function<void()> reply_package_func = [tmp, &conn, response]()
   {
-    DebugLog << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<";
-    DebugLog << "call [" << tmp->service_full_name << "] succ";
-    DebugLog << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>";
+    // DebugLog << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<";
+    DebugLog << "call [" << tmp->service_full_name << "] succ, now send reply package";
+    TcpBuffer* buff = conn->getOutBuffer();
+    if (!buff) {
+      ErrorLog << "reply error! tcp write buffer nullptr";
+      return;
+    }
+    TinyPbStruct reply_pk;
+    reply_pk.service_full_name = tmp->service_full_name;
+    reply_pk.pb_data = tmp->service_full_name;
+    if (!(response->SerializeToString(&(reply_pk.pb_data)))) {
+      ErrorLog << "reply error! encode reply package error";
+      return;
+    }
+
+    TinyPbCodeC codec;
+    codec.encode(buff, dynamic_cast<AbstractData*>(&reply_pk));
+    conn->asyncWrite();
+    
+    // buff->writeToBuffer();
+    // DebugLog << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>";
   };
 
-  TinyPbRpcClosure closure(cb);
+  TinyPbRpcClosure closure(reply_package_func);
+
   service->CallMethod(method, rpc_controller, request, response, &closure);
 
   // delete method;
   delete request;
   delete response;
 }
-
 
 
 bool TinyPbRpcDispacther::parseServiceFullName(const std::string& full_name, std::string& service_name, std::string& method_name) {
