@@ -44,7 +44,7 @@ int TcpBuffer::writeIndex() const {
 	// return rt;
 // }
 
-void TcpBuffer::resize(int size) {
+void TcpBuffer::resizeBuffer(int size) {
   std::vector<char> tmp(size);
   int c = std::min(size, readAble());
   memcpy(&tmp[0], &m_buffer[m_read_index], c);
@@ -57,7 +57,8 @@ void TcpBuffer::resize(int size) {
 
 void TcpBuffer::writeToBuffer(const char* buf, int size) {
 	if (size > writeAble()) {
-		m_buffer.resize(size + m_write_index);		
+    int new_size = (int)(1.5 * (m_write_index + size));
+		resizeBuffer(new_size);
 	}
 	memcpy(&m_buffer[m_write_index], buf, size);
 	m_write_index += size;
@@ -77,22 +78,24 @@ void TcpBuffer::readFromBuffer(std::vector<char>& re, int size) {
   memcpy(&tmp[0], &m_buffer[m_read_index], read_size);
   re.swap(tmp);
   m_read_index += read_size;
-  enlargeBuffer();
+  adjustBuffer();
 
 }
 
-void TcpBuffer::enlargeBuffer() {
+void TcpBuffer::adjustBuffer() {
   if (m_read_index > static_cast<int>(m_buffer.size() / 3)) {
     
     std::vector<char> new_buffer(m_buffer.size());
 
+    int count = readAble();
     // std::copy(&m_buffer[m_read_index], readAble(), &new_buffer);
-    memcpy(&new_buffer[0], &m_buffer[m_read_index], readAble());
+    memcpy(&new_buffer[0], &m_buffer[m_read_index], count);
 
     m_buffer.swap(new_buffer);
+    m_write_index = count;
     m_read_index = 0;
-    m_write_index -= m_read_index;
-    
+    new_buffer.clear();
+
   }
 
 }
@@ -101,21 +104,30 @@ int TcpBuffer::getSize() {
   return m_buffer.size();
 }
 
-void TcpBuffer::clear() {
+void TcpBuffer::clearBuffer() {
   m_buffer.clear();
   m_read_index = 0;
   m_write_index = 0;
 }
 
-void TcpBuffer::recycle(int index) {
+void TcpBuffer::recycleRead(int index) {
   int j = m_read_index + index;
   if (j >= (int)m_buffer.size()) {
-    ErrorLog << "recycle error";
+    ErrorLog << "recycleRead error";
     return;
   }
   m_read_index = j;
-  enlargeBuffer();
+  adjustBuffer();
+}
 
+void TcpBuffer::recycleWrite(int index) {
+  int j = m_write_index + index;
+  if (j >= (int)m_buffer.size()) {
+    ErrorLog << "recycleWrite error";
+    return;
+  }
+  m_write_index = j;
+  adjustBuffer();
 }
 
 // const char* TcpBuffer::getBuffer() {
@@ -124,7 +136,7 @@ void TcpBuffer::recycle(int index) {
 //   return tmp;
 // }
 
-std::vector<char>& TcpBuffer::getBufferVector() {
+std::vector<char> TcpBuffer::getBufferVector() {
   return m_buffer;
 }
 

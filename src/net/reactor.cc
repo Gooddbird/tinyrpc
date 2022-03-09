@@ -62,7 +62,7 @@ Reactor* Reactor::GetReactor() {
 		DebugLog << "Create new Reactor";
     t_reactor_ptr = new Reactor();
   }
-	DebugLog << "t_reactor_ptr = " << t_reactor_ptr;
+	// DebugLog << "t_reactor_ptr = " << t_reactor_ptr;
   return t_reactor_ptr; 
 }
 
@@ -126,7 +126,7 @@ bool Reactor::isLoopThread() const {
 		DebugLog << "return true";
 		return true;
 	}
-	DebugLog << "m_tid = "<< m_tid << ", getttid = " << gettid() <<"return false";
+	// DebugLog << "m_tid = "<< m_tid << ", getttid = " << gettid() <<"return false";
 	return false;
 }
 
@@ -165,7 +165,7 @@ void Reactor::addEventInLoopThread(int fd, epoll_event event) {
 	}
 
 	m_fds.push_back(fd);
-	DebugLog << "add succ, fd[" << fd << "]"; 
+	DebugLog << "epoll_ctl add succ, fd[" << fd << "]"; 
 
 }
 
@@ -265,9 +265,9 @@ void Reactor::loop() {
 			// DebugLog << "task";
 			// excute tasks
 			for (size_t i = 0; i < m_pending_tasks.size(); ++i) {
-				DebugLog << "begin to excute task[" << i << "]";
+				// DebugLog << "begin to excute task[" << i << "]";
 				m_pending_tasks[i]();
-				DebugLog << "end excute tasks[" << i << "]";
+			  // DebugLog << "end excute tasks[" << i << "]";
 			}
       m_pending_tasks.clear();
 
@@ -284,11 +284,11 @@ void Reactor::loop() {
 
 			}
 			for (auto i = tmp_add.begin(); i != tmp_add.end(); ++i) {
-				DebugLog << "fd[" << (*i).first <<"] need to add";
+				// DebugLog << "fd[" << (*i).first <<"] need to add";
 				addEventInLoopThread((*i).first, (*i).second);	
 			}
 			for (auto i = tmp_del.begin(); i != tmp_del.end(); ++i) {
-				DebugLog << "fd[" << (*i) <<"] need to del";
+				// DebugLog << "fd[" << (*i) <<"] need to del";
 				delEventInLoopThread((*i));	
 			}
 		}

@@ -33,14 +33,15 @@ void TinyPbCodeC::encode(TcpBuffer* buf, AbstractData* data) {
 
   int len = 0;
   const char* re = encodePbData(tmp, len);
-  if (re == nullptr || len == 0 || !tmp->decode_succ) {
+  if (re == nullptr || len == 0 || !tmp->encode_succ) {
     ErrorLog << "encode error";
     data->encode_succ = false;
     return;
   }
+  DebugLog << "encode package len = " << len;
   if (buf != nullptr) {
     buf->writeToBuffer(re, len);
-    DebugLog << "succ encode and write to buffer";
+    DebugLog << "succ encode and write to buffer, writeindex=" << buf->writeIndex();
   }
   data = tmp;
   // DebugLog << "test encode end";
@@ -108,7 +109,7 @@ void TinyPbCodeC::decode(TcpBuffer* buf, AbstractData* data) {
   int end_index = -1;
   int32_t pk_len= -1; 
 
-  bool parse_flag = false;
+  bool parse_full_pack = false;
   
   for (int i = 0; i < total_size; ++i) {
     // first find start
@@ -127,7 +128,7 @@ void TinyPbCodeC::decode(TcpBuffer* buf, AbstractData* data) {
           start_index = i;
           end_index = j;
           // DebugLog << "parse succ, now break";
-          parse_flag = true;
+          parse_full_pack = true;
           break;
         }
         
@@ -136,16 +137,17 @@ void TinyPbCodeC::decode(TcpBuffer* buf, AbstractData* data) {
     }
   }
 
-  if (!parse_flag) {
+  if (!parse_full_pack) {
     DebugLog << "parse error, return";
     return;
   }
+
+  buf->recycleRead(pk_len);
   
   int service_name_len_index = start_index + sizeof(char) + sizeof(int32_t);
   if (service_name_len_index >= end_index) {
     ErrorLog << "parse error, service_name_len_index[" << service_name_len_index << "] >= end_index[" << end_index << "]";
     // drop this error package
-    buf->recycle(pk_len);
     return;
   }
   // DebugLog << "service_name_len_index = " << service_name_len_index;
@@ -153,7 +155,6 @@ void TinyPbCodeC::decode(TcpBuffer* buf, AbstractData* data) {
 
   if (service_name_index >= end_index) {
     ErrorLog << "parse error, service_name_index[" << service_name_index << "] >= end_index[" << end_index << "]";
-    buf->recycle(pk_len);
     return;
   }
 
@@ -165,7 +166,6 @@ void TinyPbCodeC::decode(TcpBuffer* buf, AbstractData* data) {
 
   if (pb_struct->service_name_len > pk_len) {
     ErrorLog << "parse error, service_name_len[" << pb_struct->service_name_len << "] >= pk_len [" << pk_len << "]";
-    buf->recycle(pk_len);
     return;
   }
   // DebugLog << "service_name_len = " << pb_struct->service_name_len;
@@ -181,7 +181,6 @@ void TinyPbCodeC::decode(TcpBuffer* buf, AbstractData* data) {
 
   if (pb_data_index >= end_index) {
     ErrorLog << "parse error, pb_data_index[" << pb_data_index << "] >= end_index[" << end_index << "]";
-    buf->recycle(pk_len);
     return;
   }
   // DebugLog << "pb_data_index = " << pb_data_index << ", pb_data.length = " << pb_data_len;
@@ -189,10 +188,7 @@ void TinyPbCodeC::decode(TcpBuffer* buf, AbstractData* data) {
   std::string pb_data_str(&tmp[pb_data_index], pb_data_len);
   pb_struct->pb_data = pb_data_str;
 
-  // memcpy(&(pb_struct->pb_data[0]), &tmp[pb_data_index], pb_data_len);
-
   // DebugLog << "decode succ,  pk_len = " << pk_len << ", service_name = " << pb_struct->service_full_name; 
-  buf->recycle(pk_len);
 
   pb_struct->decode_succ = true;
   data = pb_struct;

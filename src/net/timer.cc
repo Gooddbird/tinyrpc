@@ -31,7 +31,7 @@ Timer::Timer(Reactor* reactor) : FdEvent(reactor) {
   if (m_fd == -1) {
     DebugLog << "timerfd_create error";  
   }
-  DebugLog << "timerfd is [" << m_fd << "]";
+  // DebugLog << "timerfd is [" << m_fd << "]";
 	m_read_callback = std::bind(&Timer::onTimer, this);
   addListenEvents(READ);
   updateToReactor();

@@ -57,7 +57,8 @@ void TcpConnection::asyncWrite() {
     ErrorLog << "send error! no data in write buffer";
     return;
   }
-  m_reactor->addCoroutine(m_write_cor);
+  //
+  Coroutine::Resume(m_write_cor.get());
 }
 
 void TcpConnection::MainReadCoFunc() {
@@ -68,14 +69,20 @@ void TcpConnection::MainReadCoFunc() {
     bool read_all = false;
     bool close_flag = false;
     while (!read_all) {
+
       if (m_read_buffer->writeAble() == 0) {
-        m_read_buffer->resize(2 * m_read_buffer->getSize());
+        m_read_buffer->resizeBuffer(2 * m_read_buffer->getSize());
       }
+
       int read_count = m_read_buffer->writeAble();
       int write_index = m_read_buffer->writeIndex();
 
-      int rt = read(m_fd, &(m_read_buffer->getBufferVector()[write_index]), read_count);		
+      int rt = read(m_fd, &(m_read_buffer->m_buffer[write_index]), read_count);
+      m_read_buffer->recycleWrite(rt + write_index); 
+
+      DebugLog << "read data back";
       if (rt <= 0) {
+        DebugLog << "rt <= 0";
         ErrorLog << "read empty while occur read event, because of peer close, sys error=" << strerror(errno) << ", now to clear tcp connection";
         clearClient();
         // this cor can destroy
@@ -84,9 +91,11 @@ void TcpConnection::MainReadCoFunc() {
         read_all = true;
       } else {
         if (rt == read_count) {
+          DebugLog << "read_count == rt";
           // is is possible read more data, should continue read
           continue;
         } else if (rt < read_count) {
+          DebugLog << "read_count > rt";
           // read all data in socket buffer, skip out loop
           read_all = true;
           break;
@@ -102,19 +111,22 @@ void TcpConnection::MainReadCoFunc() {
     }
     m_reactor->addTask(std::bind(&TcpConnection::execute, this)); 
     Coroutine::Yield();
+    DebugLog << "read yield back";
   }
 }
 
 void TcpConnection::execute() {
+  DebugLog << "begin to do execute";
   while(m_read_buffer->readAble() > 0) {
     TinyPbStruct pb_struct; 
     m_codec->decode(m_read_buffer.get(), &pb_struct);
     // DebugLog << "parse service_name=" << pb_struct.service_full_name;
-    if (pb_struct.decode_succ) {
-      // DebugLog << "parse succ ";
-      // DebugLog << "pb_data.size = " << pb_struct.pb_data.length();
-      m_tcp_svr->getDispatcher()->dispatch(&pb_struct, this);
+    if (!pb_struct.decode_succ) {
+      break;
     }
+
+    m_tcp_svr->getDispatcher()->dispatch(&pb_struct, this);
+    DebugLog << "contine parse next package";
   }
 }
 
@@ -132,15 +144,18 @@ void TcpConnection::MainWriteCoFunc() {
     
     int total_size = m_write_buffer->readAble();
     int read_index = m_write_buffer->readIndex();
-    int rt = write(m_fd, &(m_write_buffer->getBufferVector()[read_index]), total_size);
+    int rt = write(m_fd, &(m_write_buffer->m_buffer[read_index]), total_size);
     if (rt <= 0) {
       ErrorLog << "write empty, error=" << strerror(errno);
     }
     DebugLog << "succ write " << rt << " bytes";
-    m_write_buffer->recycle(read_index + rt);
-    if (m_write_buffer->readAble() == 0) {
+    m_write_buffer->recycleRead(read_index + rt);
+    DebugLog << "recycle write index =" << m_write_buffer->writeIndex() << ", read_index =" << m_write_buffer->readIndex() << "readable = " << m_write_buffer->readAble();
+    if (m_write_buffer->readAble() <= 0) {
+      DebugLog << "send all data, now yield Coroutine";
       // if no data to write, need back main coroutine
       Coroutine::Yield();
+      DebugLog << "write cor back";
     }
   }
 }
