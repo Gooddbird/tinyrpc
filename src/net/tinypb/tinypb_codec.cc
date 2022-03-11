@@ -138,7 +138,7 @@ void TinyPbCodeC::decode(TcpBuffer* buf, AbstractData* data) {
   }
 
   if (!parse_full_pack) {
-    DebugLog << "parse error, return";
+    DebugLog << "not parse full package, return";
     return;
   }
 

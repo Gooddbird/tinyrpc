@@ -191,7 +191,6 @@ void Reactor::delEventInLoopThread(int fd) {
 }
 
 
-
 void Reactor::loop() {
 
   assert(isLoopThread());
@@ -208,18 +207,18 @@ void Reactor::loop() {
 		DebugLog << "to epoll_wait";
 		int rt = epoll_wait(m_epfd, re_events, MAX_EVENTS, t_max_epoll_timeout);
 
-		DebugLog << "epoll_waiti back";
+		// DebugLog << "epoll_waiti back";
 
 		if (rt < 0) {
-			DebugLog << "epoll_wait error, skip";
+			ErrorLog << "epoll_wait error, skip";
 		} else {
-			DebugLog << "epoll_wait back, rt = " << rt;
+			// DebugLog << "epoll_wait back, rt = " << rt;
 			for (int i = 0; i < rt; ++i) {
 				epoll_event one_event = re_events[i];	
 
 				if (one_event.data.fd == m_wake_fd && (one_event.events & READ)) {
 					// wakeup
-					DebugLog << "epoll wakeup, fd=[" << m_wake_fd << "]";
+					// DebugLog << "epoll wakeup, fd=[" << m_wake_fd << "]";
 					char buf[8];
 					while(1) {
 						if((g_sys_read_fun(m_wake_fd, buf, 8) == -1) && errno == EAGAIN) {
@@ -242,16 +241,16 @@ void Reactor::loop() {
             }
 
             if ((!(one_event.events & EPOLLIN)) && (!(one_event.events & EPOLLOUT))){
-              DebugLog << "socket [" << fd << "] occur other unknow event:[" << one_event.events << "], need unregister this socket";
+              // DebugLog << "socket [" << fd << "] occur other unknow event:[" << one_event.events << "], need unregister this socket";
               delEventInLoopThread(fd);
             } else {
               if (one_event.events & EPOLLIN) {
-                DebugLog << "socket [" << fd << "] occur read event";
+                // DebugLog << "socket [" << fd << "] occur read event";
                 Mutex::Lock lock(m_mutex);
                 m_pending_tasks.push_back(read_cb);						
               }
               if (one_event.events & EPOLLOUT) {
-                DebugLog << "socket [" << fd << "] occur write event";
+                // DebugLog << "socket [" << fd << "] occur write event";
                 Mutex::Lock lock(m_mutex);
                 m_pending_tasks.push_back(write_cb);						
               }
