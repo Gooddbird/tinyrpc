@@ -14,11 +14,13 @@ set(LIB_SRC
   src/net/timer.cc
   src/net/net_address.cc
   src/net/tcp/tcp_server.cc
+  src/net/tcp/tcp_client.cc
   src/net/tcp/tcp_buffer.cc
   src/net/tcp/tcp_connection.cc
   src/net/http/http_codec.cc
   src/net/tinypb/tinypb_codec.cc
   src/net/tinypb/tinypb_rpc_dispatcher.cc
+  src/net/tinypb/tinypb_rpc_channel.cc
 
 )
 
@@ -68,6 +70,10 @@ target_link_libraries(test_tcpserver_cor ${LIBS})
 add_executable(test_rpc_server testcases/test_rpc_server.cc testcases/tinypb.pb.cc)
 add_dependencies(test_rpc_server tinyrpc)
 target_link_libraries(test_rpc_server ${LIBS})
+
+add_executable(test_rpc_client testcases/test_rpc_client.cc testcases/tinypb.pb.cc)
+add_dependencies(test_rpc_client tinyrpc)
+target_link_libraries(test_rpc_client ${LIBS})
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)

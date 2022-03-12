@@ -20,6 +20,8 @@ HOOK_SYS_FUNC(connect);
 
 static int g_hook_enable = false;
 
+static int g_max_timeout = 75000;
+
 extern "C" {
 
 void toEpoll(tinyrpc::FdEvent::ptr fd_event, int events) {
@@ -198,7 +200,6 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 
   toEpoll(fd_event, tinyrpc::IOEvent::WRITE);
 
-  int max_timeout = 75000;		// 最大超时时间
 	bool is_timeout = false;		// 是否超时
 
 	// 超时函数句柄
@@ -208,7 +209,7 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 		tinyrpc::Coroutine::Resume(cur_cor);
   };
 
-  tinyrpc::TimerEvent::ptr event = std::make_shared<tinyrpc::TimerEvent>(max_timeout, false, timeout_cb);
+  tinyrpc::TimerEvent::ptr event = std::make_shared<tinyrpc::TimerEvent>(g_max_timeout, false, timeout_cb);
   
   tinyrpc::Timer* timer = reactor->getTimer();  
   timer->addTimerEvent(event);
@@ -228,7 +229,7 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 	}
 
 	if (is_timeout) {
-    ErrorLog << "connect error,  timeout[ " << max_timeout << "ms]";
+    ErrorLog << "connect error,  timeout[ " << g_max_timeout << "ms]";
 		errno = ETIMEDOUT;
 	} 
 
@@ -252,6 +253,10 @@ void enableHook() {
 
 void disableHook() {
   g_hook_enable = false;
+}
+
+void setMaxTimeOut (int v) {
+	g_max_timeout = (v * 1000);
 }
 
 }

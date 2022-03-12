@@ -56,7 +56,7 @@ void Timer::addTimerEvent(TimerEvent::ptr event, bool need_reset /*=true*/) {
   }
   m_pending_events.emplace(event->m_arrive_time, event);
   if (is_reset && need_reset) {
-    DebugLog << "need reset timer";
+    // DebugLog << "need reset timer";
     resetArriveTime();
   }
   DebugLog << "add timer event succ";
@@ -64,7 +64,7 @@ void Timer::addTimerEvent(TimerEvent::ptr event, bool need_reset /*=true*/) {
 
 void Timer::delTimerEvent(TimerEvent::ptr event) {
   event->m_is_cancled = true;
-  DebugLog << "del timer event succ";
+  // DebugLog << "del timer event succ";
 }
 
 void Timer::resetArriveTime() {

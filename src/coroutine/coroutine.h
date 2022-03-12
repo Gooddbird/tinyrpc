@@ -25,6 +25,10 @@ class Coroutine {
 
   void SetCallBack(std::function<void> cb); 
 
+  int getCorId() const {
+    return m_cor_id;
+  }
+
  public:
   static void Yield();
 

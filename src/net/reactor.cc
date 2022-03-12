@@ -123,7 +123,7 @@ void Reactor::wakeup() {
 // m_tid only can be writed in Reactor::Reactor, so it needn't to lock 
 bool Reactor::isLoopThread() const {
 	if (m_tid == gettid()) {
-		DebugLog << "return true";
+		// DebugLog << "return true";
 		return true;
 	}
 	// DebugLog << "m_tid = "<< m_tid << ", getttid = " << gettid() <<"return false";
@@ -195,7 +195,7 @@ void Reactor::loop() {
 
   assert(isLoopThread());
   if (m_is_looping) {
-    DebugLog << "this reactor is looping!";
+    // DebugLog << "this reactor is looping!";
     return;
   }
   
@@ -241,16 +241,16 @@ void Reactor::loop() {
             }
 
             if ((!(one_event.events & EPOLLIN)) && (!(one_event.events & EPOLLOUT))){
-              // DebugLog << "socket [" << fd << "] occur other unknow event:[" << one_event.events << "], need unregister this socket";
+              DebugLog << "socket [" << fd << "] occur other unknow event:[" << one_event.events << "], need unregister this socket";
               delEventInLoopThread(fd);
             } else {
               if (one_event.events & EPOLLIN) {
-                // DebugLog << "socket [" << fd << "] occur read event";
+                DebugLog << "socket [" << fd << "] occur read event";
                 Mutex::Lock lock(m_mutex);
                 m_pending_tasks.push_back(read_cb);						
               }
               if (one_event.events & EPOLLOUT) {
-                // DebugLog << "socket [" << fd << "] occur write event";
+                DebugLog << "socket [" << fd << "] occur write event";
                 Mutex::Lock lock(m_mutex);
                 m_pending_tasks.push_back(write_cb);						
               }

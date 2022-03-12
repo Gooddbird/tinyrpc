@@ -64,6 +64,7 @@ class LogEvent {
 	LogLevel m_level;
 	pid_t m_pid {0};
 	pid_t m_tid {0};
+	int m_cor_id {0};
 
 	const char* m_file_name;
 	int m_line;

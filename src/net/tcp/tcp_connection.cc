@@ -3,6 +3,7 @@
 #include <sys/socket.h>
 #include "tcp_connection.h"
 #include "tcp_server.h"
+#include "tcp_client.h"
 #include "../tinypb/tinypb_codec.h"
 #include "../tinypb/tinypb_data.h"
 #include "../../coroutine/coroutine_hook.h"
@@ -10,7 +11,7 @@
 namespace tinyrpc {
 
 TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::Reactor* reactor, int fd, int buff_size)
-  : m_fd(fd), m_state(Connected) {	
+  : m_fd(fd), m_state(Connected), m_connection_type(ServerConnection) {	
   assert(reactor != nullptr); 
   m_reactor = reactor;
 
@@ -29,6 +30,34 @@ TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::Reactor* reac
   m_codec = std::make_shared<TinyPbCodeC>();
 
   DebugLog << "succ create tcp connection";
+}
+
+TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reactor, int fd, int buff_size)
+  : m_fd(fd), m_state(NotConnected), m_connection_type(ClientConnection) {	
+  assert(reactor != nullptr); 
+  m_reactor = reactor;
+
+  assert(tcp_cli!= nullptr); 
+  m_tcp_cli = tcp_cli;
+
+  tinyrpc::enableHook();
+  m_fd_event = FdEventContainer::GetFdContainer()->getFdEvent(fd);
+  m_fd_event->setReactor(m_reactor);
+  initBuffer(buff_size); 
+
+  m_read_cor = std::make_shared<Coroutine>(128 * 1024, std::bind(&TcpConnection::MainReadCoFunc, this));
+  m_write_cor = std::make_shared<Coroutine>(128 * 1024, std::bind(&TcpConnection::MainWriteCoFunc, this));
+  // m_reactor->addCoroutine(m_read_cor);
+  
+  m_codec = std::make_shared<TinyPbCodeC>();
+
+  DebugLog << "succ create tcp connection[NotConnected]";
+}
+
+
+void TcpConnection::setUpClient() {
+  m_reactor->addCoroutine(m_read_cor);
+  m_state = Connected;
 }
 
 TcpConnection::~TcpConnection() {
@@ -55,6 +84,7 @@ void TcpConnection::asyncWrite() {
   }
   if (m_write_buffer->readAble() == 0) {
     ErrorLog << "send error! no data in write buffer";
+    DebugLog << Coroutine::GetCurrentCoroutine();
     return;
   }
   //
@@ -63,7 +93,7 @@ void TcpConnection::asyncWrite() {
 
 void TcpConnection::MainReadCoFunc() {
   while(!m_stop_read) {
-    if (m_state == Closed) {
+    if (m_state == Closed || m_state == NotConnected) {
       break;
     }
     bool read_all = false;
@@ -117,6 +147,8 @@ void TcpConnection::MainReadCoFunc() {
 
 void TcpConnection::execute() {
   DebugLog << "begin to do execute";
+
+  // it only server do this
   while(m_read_buffer->readAble() > 0) {
     TinyPbStruct pb_struct; 
     m_codec->decode(m_read_buffer.get(), &pb_struct);
@@ -124,8 +156,13 @@ void TcpConnection::execute() {
     if (!pb_struct.decode_succ) {
       break;
     }
+    if (m_connection_type == ServerConnection) {
+      m_tcp_svr->getDispatcher()->dispatch(&pb_struct, this);
+    } else if (m_connection_type == ClientConnection) {
+      // TODO:
 
-    m_tcp_svr->getDispatcher()->dispatch(&pb_struct, this);
+    }
+
     DebugLog << "contine parse next package";
   }
 }
@@ -179,7 +216,7 @@ void TcpConnection::clearClient() {
 }
 
 void TcpConnection::shutdownConnection() {
-  if (m_state == Closed) {
+  if (m_state == Closed || m_state == NotConnected) {
     DebugLog << "this client has closed";
     return;
   }

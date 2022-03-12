@@ -56,7 +56,7 @@ void FdEvent::addListenEvents(IOEvent event) {
     return;
   }
   m_listen_events |= event;
-  DebugLog << "add succ";
+  // DebugLog << "add succ";
 }
 
 void FdEvent::delListenEvents(IOEvent event) {
@@ -75,7 +75,7 @@ void FdEvent::updateToReactor() {
   epoll_event event;
   event.events = m_listen_events;
   event.data.ptr = this;
-  DebugLog << "reactor = " << m_reactor << "log m_tid =" << m_reactor->getTid();
+  // DebugLog << "reactor = " << m_reactor << "log m_tid =" << m_reactor->getTid();
 
   m_reactor->addEvent(m_fd, event);
 }

@@ -29,6 +29,10 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 
 ssize_t read(int fd, void *buf, size_t count);
 
+
+// set max timeout, s
+void setMaxTimeOut (int v);
+
 }
 
 

@@ -6,9 +6,12 @@
 #include <iostream>
 
 #include "log.h"
+#include "../coroutine/coroutine.h"
 
 
 namespace tinyrpc {
+
+class Coroutine;
 
 static thread_local pid_t t_thread_id = 0;
 static pid_t g_pid = 0;
@@ -87,9 +90,12 @@ std::stringstream& LogEvent::getStringStream() {
     t_thread_id = gettid();
   }
   m_tid = t_thread_id;
+
+  m_cor_id = Coroutine::GetCurrentCoroutine()->getCorId();
   
   m_ss << "[" << m_pid << "]\t" 
 		<< "[" << m_tid << "]\t"
+		<< "[" << m_cor_id << "]\t"
     << "[" << m_file_name << ":" << m_line << "]\t";
     // << "[" << m_func_name << "]\t";
   

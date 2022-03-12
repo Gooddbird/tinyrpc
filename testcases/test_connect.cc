@@ -44,7 +44,7 @@ void connect_co() {
   }
   while(1) {
     int a;
-    DebugLog << "input in integer to send protobuf data";
+    DebugLog << "input in integer to set counts that send protobuf data";
     std::cin >> a;
 
     // char buf[20];
@@ -84,8 +84,12 @@ void connect_co() {
     const char* buf = m_codec.encodePbData(&pb_struct, len);
 
 		// char buf[4] = {'a', 'b', 'c', 'd'};
-    int rt = write(connfd, buf, len);
-    DebugLog << "succ write[" << pb_struct.service_full_name << "], write count=" << rt << ", src count=" << len;
+    int rt = 0;
+    while (a--) {
+      
+      rt = write(connfd, buf, len);
+      DebugLog << "[seq: "<< a << "]succ write[" << pb_struct.service_full_name << "], write count=" << rt << ", src count=" << len;
+    }
   }
  
 }

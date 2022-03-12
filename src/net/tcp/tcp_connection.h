@@ -15,11 +15,13 @@
 namespace tinyrpc {
 
 class TcpServer;
+class TcpClient;
 
 enum TcpConnectionState {
-	Connected = 1,		// can do io
-	HalfClosing = 2,			// server call shutdown, write half close
-	Closed = 3,				// can't do io
+	NotConnected = 1,		// can do io
+	Connected = 2,		// can do io
+	HalfClosing = 3,			// server call shutdown, write half close
+	Closed = 4,				// can't do io
 };
 
 
@@ -30,9 +32,18 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
 	TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::Reactor* reactor, int fd, int buff_size);
 
+	TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reactor, int fd, int buff_size);
+
+  void setUpClient();
+
 	~TcpConnection();
 
   void initBuffer(int size);
+
+  enum ConnectionType {
+    ServerConnection = 1,     // own by server
+    ClientConnection = 2,     // own by client
+  };
 
  public:
 
@@ -50,6 +61,10 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
   TcpBuffer* getOutBuffer();
 
+  TinyPbCodeC* getCodec() const {
+    return m_codec.get();
+  }
+
  private:
   void MainReadCoFunc();
 
@@ -60,9 +75,10 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
   void execute();
 
  private:
-  TcpServer* m_tcp_svr;
-  Reactor* m_reactor;
-  int m_fd = -1;
+  TcpServer* m_tcp_svr {nullptr};
+  TcpClient* m_tcp_cli {nullptr};
+  Reactor* m_reactor {nullptr};
+  int m_fd {-1};
   TcpConnectionState m_state {TcpConnectionState::Connected};
 
 	TcpBuffer::ptr m_read_buffer;
@@ -73,8 +89,11 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
   TinyPbCodeC::ptr m_codec;
 
   FdEvent::ptr m_fd_event;
-  bool m_stop_read = false;
-  bool m_stop_write = false;
+  bool m_stop_read {false};
+  bool m_stop_write {false};
+  ConnectionType m_connection_type {ServerConnection};
+
+
 
 };
 
