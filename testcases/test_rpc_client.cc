@@ -44,8 +44,15 @@ int main(int argc, char* argv[]) {
   
   tinyrpc::TinyPbRpcChannel channel(addr);
   tinyrpc::TinyPbRpcController rpc_controller;
+  DebugLog << "input an integer to set count that send tinypb data";
+  int n;
+  std::cin >> n;
+
+  while (n--) {
+
   QueryReq req;
-  QueryAgeRes res;
+  QueryAgeRes res_age;
+  QueryNameRes res_name;
 
   tinyrpc::TinyPbRpcClosure cb([]() {
     DebugLog << "==========================";
@@ -55,7 +62,10 @@ int main(int argc, char* argv[]) {
 
   QueryService_Stub stub(&channel);
   req.set_id(20200312);
-  stub.query_age(&rpc_controller, &req, &res, &cb);
+  stub.query_age(&rpc_controller, &req, &res_age, &cb);
+  stub.query_name(&rpc_controller, &req, &res_name, &cb);
+
+  }
 
   DebugLog << "================";
   return 0;

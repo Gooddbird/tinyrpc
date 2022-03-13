@@ -24,6 +24,7 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
 
   TinyPbStruct pb_struct;
   pb_struct.service_full_name = method->full_name();
+  DebugLog << "call service_name = " << pb_struct.service_full_name;
   if (!request->SerializeToString(&(pb_struct.pb_data))) {
     ErrorLog << "serialize send package error";
   }

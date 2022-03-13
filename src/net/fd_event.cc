@@ -56,6 +56,7 @@ void FdEvent::addListenEvents(IOEvent event) {
     return;
   }
   m_listen_events |= event;
+  updateToReactor();
   // DebugLog << "add succ";
 }
 
@@ -64,6 +65,7 @@ void FdEvent::delListenEvents(IOEvent event) {
 
     DebugLog << "delete succ";
     m_listen_events &= ~event;
+    updateToReactor();
     return;
   }
   DebugLog << "this event not exist, skip";

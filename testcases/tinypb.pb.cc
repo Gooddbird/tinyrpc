@@ -1023,6 +1023,8 @@ void QueryService_Stub::query_name(::PROTOBUF_NAMESPACE_ID::RpcController* contr
                               const ::QueryReq* request,
                               ::QueryNameRes* response,
                               ::google::protobuf::Closure* done) {
+  
+  GOOGLE_LOG(INFO) << "call query_name";
   channel_->CallMethod(descriptor()->method(0),
                        controller, request, response, done);
 }
@@ -1030,6 +1032,7 @@ void QueryService_Stub::query_age(::PROTOBUF_NAMESPACE_ID::RpcController* contro
                               const ::QueryReq* request,
                               ::QueryAgeRes* response,
                               ::google::protobuf::Closure* done) {
+  GOOGLE_LOG(INFO) << "call query_age";
   channel_->CallMethod(descriptor()->method(1),
                        controller, request, response, done);
 }

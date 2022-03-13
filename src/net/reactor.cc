@@ -149,9 +149,11 @@ void Reactor::addEventInLoopThread(int fd, epoll_event event) {
   assert(isLoopThread());
 
 	int op = EPOLL_CTL_ADD;
+	bool is_add = true;
 	// int tmp_fd = event;
 	auto it = find(m_fds.begin(), m_fds.end(), fd);
 	if (it != m_fds.end()) {
+		is_add = false;
 		op = EPOLL_CTL_MOD;
 	}
 	
@@ -163,8 +165,9 @@ void Reactor::addEventInLoopThread(int fd, epoll_event event) {
 		ErrorLog << "epoo_ctl error, fd[" << fd << "]";
 		return;
 	}
-
-	m_fds.push_back(fd);
+	if (is_add) {
+		m_fds.push_back(fd);
+	}
 	DebugLog << "epoll_ctl add succ, fd[" << fd << "]"; 
 
 }
@@ -200,6 +203,7 @@ void Reactor::loop() {
   }
   
   m_is_looping = true;
+	m_stop_flag = false;
 
 	while(!m_stop_flag) {
 		const int MAX_EVENTS = 10;

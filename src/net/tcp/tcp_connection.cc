@@ -62,6 +62,8 @@ void TcpConnection::setUpClient() {
 
 TcpConnection::~TcpConnection() {
   DebugLog << "~TcpConnection, fd=" << m_fd;
+  m_fd_event->unregisterFromReactor(); 
+  close(m_fd);
 }
 
 void TcpConnection::initBuffer(int size) {
@@ -189,10 +191,11 @@ void TcpConnection::MainWriteCoFunc() {
       ErrorLog << "write empty, error=" << strerror(errno);
     }
     DebugLog << "succ write " << rt << " bytes";
-    m_write_buffer->recycleRead(read_index + rt);
+    m_write_buffer->recycleRead(rt);
     DebugLog << "recycle write index =" << m_write_buffer->writeIndex() << ", read_index =" << m_write_buffer->readIndex() << "readable = " << m_write_buffer->readAble();
     if (m_write_buffer->readAble() <= 0) {
-      DebugLog << "send all data, now yield Coroutine";
+      DebugLog << "send all data, now unregister write event on reactor and yield Coroutine";
+      m_fd_event->delListenEvents(IOEvent::WRITE);
       // if no data to write, need back main coroutine
       Coroutine::Yield();
       DebugLog << "write cor back";

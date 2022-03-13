@@ -68,7 +68,7 @@ void accept_f() {
     fd_event->setCallBack(tinyrpc::IOEvent::READ, read_call_back);
     fd_event->addListenEvents(tinyrpc::IOEvent::READ);
 
-    fd_event->updateToReactor();
+    // fd_event->updateToReactor();
 
     tinyrpc::Coroutine::Yield();
     DebugLog << "resume back, to accept";

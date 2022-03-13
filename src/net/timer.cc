@@ -59,7 +59,7 @@ void Timer::addTimerEvent(TimerEvent::ptr event, bool need_reset /*=true*/) {
     // DebugLog << "need reset timer";
     resetArriveTime();
   }
-  DebugLog << "add timer event succ";
+  // DebugLog << "add timer event succ";
 }
 
 void Timer::delTimerEvent(TimerEvent::ptr event) {
@@ -95,7 +95,7 @@ void Timer::resetArriveTime() {
   if (rt != 0) {
     ErrorLog << "tiemr_settime error, interval=" << interval;
   } else {
-    DebugLog << "reset timer succ, next occur time=" << (*it).first;
+    // DebugLog << "reset timer succ, next occur time=" << (*it).first;
   }
 
 }

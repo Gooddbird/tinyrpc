@@ -138,19 +138,22 @@ void TcpServer::MainAcceptCorFunc() {
 
 
 void TcpServer::MainLoopTimerFunc() {
-  DebugLog << "this TcpServer loop timer excute";
+  // DebugLog << "this TcpServer loop timer excute";
   
   // delete Closed TcpConnection per loop
   // for free memory
   for (auto &i : m_clients) {
-    if ((i.second)->getState() == Closed) {
+    TcpConnection::ptr s_conn = i.second;
+    if (!s_conn.get() && s_conn->getState() == Closed) {
       // need to delete TcpConnection
       DebugLog << "TcpConection [fd:" << i.first << "] will delete";
       (i.second).reset();
+			s_conn.reset();
+			m_tcp_counts--;
     }
   }
 
-  DebugLog << "this TcpServer loop timer end";
+  // DebugLog << "this TcpServer loop timer end";
   
 }
 
@@ -158,9 +161,11 @@ bool TcpServer::addClient(int fd, const TcpConnection::ptr& conn) {
   auto it = m_clients.find(fd);
   if (it != m_clients.end()) {
     TcpConnection::ptr s_conn = it->second;
-    if (s_conn->getState() != Closed) {
-      ErrorLog << "insert error, this fd of TcpConection exist and state not Closed";
-      return false;
+    if (!s_conn.get()) {
+			if (s_conn.use_count() > 0 && s_conn->getState() != Closed) {
+				ErrorLog << "insert error, this fd of TcpConection exist and state not Closed";
+				return false;
+			}
     }
     // src Tcpconnection can delete
     s_conn.reset();
@@ -173,17 +178,6 @@ bool TcpServer::addClient(int fd, const TcpConnection::ptr& conn) {
   return true;
 }
 
-bool TcpServer::delClient(int fd) {
-  auto it = m_clients.find(fd);
-  if (it == m_clients.end()) {
-    ErrorLog << "this fd of TcpConnection not exist";
-    return false;
-  }
-  // only delete this TcpConnection
-  // don't delete map'key
-  ((*it).second).reset();
-  return true;
-}
 
 TinyPbRpcDispacther* TcpServer::getDispatcher() {	
 	return m_dispatcher.get();	

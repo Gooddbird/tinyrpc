@@ -45,7 +45,7 @@ void toEpoll(tinyrpc::FdEvent::ptr fd_event, int events) {
 		);
 		fd_event->addListenEvents(tinyrpc::IOEvent::WRITE);
 	}
-	fd_event->updateToReactor();
+	// fd_event->updateToReactor();
 }
 
 ssize_t read(int fd, void *buf, size_t count) {
@@ -70,12 +70,16 @@ ssize_t read(int fd, void *buf, size_t count) {
 
 	fd_event->setNonBlock();
 
+	// must fitst register read event on epoll
+	// because reactor should always care read event when a connection sockfd was created
+	// so if first call sys read, and read return success, this fucntion will not register read event and return
+	// for this connection sockfd, reactor will never care read event
+	toEpoll(fd_event, tinyrpc::IOEvent::READ);
+
   ssize_t n = g_sys_read_fun(fd, buf, count);
   if (n > 0) {
     return n;
   } 
-	
-	toEpoll(fd_event, tinyrpc::IOEvent::READ);
 
 	DebugLog << "read func to yield";
 	tinyrpc::Coroutine::Yield();
@@ -147,13 +151,13 @@ ssize_t write(int fd, const void *buf, size_t count) {
 	// }
 
 	fd_event->setNonBlock();
+
+	toEpoll(fd_event, tinyrpc::IOEvent::WRITE);
 	
   ssize_t n = g_sys_write_fun(fd, buf, count);
   if (n > 0) {
     return n;
-  } 
-
-	toEpoll(fd_event, tinyrpc::IOEvent::WRITE);
+  }
 
 	DebugLog << "write func to yield";
 	tinyrpc::Coroutine::Yield();
