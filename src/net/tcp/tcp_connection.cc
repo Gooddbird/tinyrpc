@@ -157,14 +157,17 @@ void TcpConnection::execute() {
       break;
     }
     if (m_connection_type == ServerConnection) {
+      DebugLog << "to dispatch this package";
       m_tcp_svr->getDispatcher()->dispatch(&pb_struct, this);
+      DebugLog << "contine parse next package";
     } else if (m_connection_type == ClientConnection) {
       // TODO:
-
+      m_client_res_data = pb_struct;
+      m_tcp_cli->stop();
     }
 
-    DebugLog << "contine parse next package";
   }
+
 }
 
 void TcpConnection::MainWriteCoFunc() {

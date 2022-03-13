@@ -21,6 +21,8 @@ class TcpClient {
 
   void start();
 
+  void stop();
+
   void onReply();
 
   TcpConnection* getConnection();

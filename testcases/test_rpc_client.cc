@@ -44,15 +44,16 @@ int main(int argc, char* argv[]) {
   
   tinyrpc::TinyPbRpcChannel channel(addr);
   tinyrpc::TinyPbRpcController rpc_controller;
+  QueryReq req;
+  QueryAgeRes res;
+
   tinyrpc::TinyPbRpcClosure cb([]() {
     DebugLog << "==========================";
-    DebugLog << "succ get server reply";
+    DebugLog << "succ call rpc";
     DebugLog << "==========================";
   });
 
   QueryService_Stub stub(&channel);
-  QueryReq req;
-  QueryAgeRes res;
   req.set_id(20200312);
   stub.query_age(&rpc_controller, &req, &res, &cb);
 

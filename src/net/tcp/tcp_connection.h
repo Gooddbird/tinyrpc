@@ -65,6 +65,10 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
     return m_codec.get();
   }
 
+  const TinyPbStruct* getResPackageData() {
+    return &m_client_res_data;
+  }
+
  private:
   void MainReadCoFunc();
 
@@ -92,6 +96,7 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
   bool m_stop_read {false};
   bool m_stop_write {false};
   ConnectionType m_connection_type {ServerConnection};
+  TinyPbStruct m_client_res_data;
 
 
 

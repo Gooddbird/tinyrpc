@@ -25,11 +25,22 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
   TinyPbStruct pb_struct;
   pb_struct.service_full_name = method->full_name();
   if (!request->SerializeToString(&(pb_struct.pb_data))) {
-    ErrorLog << "serialize error";
+    ErrorLog << "serialize send package error";
   }
   TinyPbCodeC* m_codec = m_client->getConnection()->getCodec();
   m_codec->encode(m_client->getConnection()->getOutBuffer(), &pb_struct);
+  InfoLog<< "==============================";
+  InfoLog<< "set send request data=[" << request->DebugString() << "]";
+  InfoLog<< "==============================";
   m_client->start();
+
+  const TinyPbStruct* res_data = m_client->getConnection()->getResPackageData();
+  if (!response->ParseFromString(res_data->pb_data)) {
+    ErrorLog << "parse return package error";
+  }
+  InfoLog<< "==============================";
+  InfoLog<< "get reply response data=[" << response->DebugString() << "]";
+  InfoLog<< "==============================";
   done->Run();
 }
 

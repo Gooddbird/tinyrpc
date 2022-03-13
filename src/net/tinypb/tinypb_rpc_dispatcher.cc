@@ -44,6 +44,9 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
     ErrorLog << "parse request error";
     return;
   }
+  InfoLog<< "==============================";
+  InfoLog<< "get send request data=[" << request->DebugString() << "]";
+  InfoLog<< "==============================";
 
   google::protobuf::Message* response = service->GetResponsePrototype(method).New();
 
@@ -67,6 +70,9 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
       ErrorLog << "reply error! encode reply package error";
       return;
     }
+    InfoLog<< "==============================";
+    InfoLog<< "set reply response data=[" << response->DebugString() << "]";
+    InfoLog<< "==============================";
 
     TinyPbCodeC codec;
     codec.encode(buff, dynamic_cast<AbstractData*>(&reply_pk));

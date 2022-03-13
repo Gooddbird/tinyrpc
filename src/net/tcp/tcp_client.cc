@@ -44,8 +44,12 @@ void TcpClient::start() {
     m_reactor->loop();
     return;
   }
-  m_reactor->addCoroutine(m_connect_cor);
+  Coroutine::Resume(m_connect_cor.get());
   m_reactor->loop();
+}
+
+void TcpClient::stop() {
+  m_reactor->stop();
 }
 
 void TcpClient::MainConnectCorFunc() {

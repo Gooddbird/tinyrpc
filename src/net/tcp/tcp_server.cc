@@ -162,7 +162,6 @@ bool TcpServer::addClient(int fd, const TcpConnection::ptr& conn) {
       ErrorLog << "insert error, this fd of TcpConection exist and state not Closed";
       return false;
     }
-    DebugLog << "delete src TcpConnection[fd:6], and insert new TcpConnection[fd:6]";
     // src Tcpconnection can delete
     s_conn.reset();
     // set new Tcpconnection

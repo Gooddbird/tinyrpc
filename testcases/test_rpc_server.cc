@@ -31,6 +31,7 @@ class QueryServiceImpl : public QueryService {
     DebugLog << "this is query_age func";
     response->set_age(20);
     DebugLog << "========================";
+    done->Run();
   }
 
 };
