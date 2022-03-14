@@ -222,7 +222,7 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 
 	// write事件需要删除，因为连接成功后后面会重新监听该fd的写事件。
 	fd_event->delListenEvents(tinyrpc::IOEvent::WRITE); 
-	fd_event->updateToReactor();
+	// fd_event->updateToReactor();
 
 	// 定时器也需要删除
 	timer->delTimerEvent(event);

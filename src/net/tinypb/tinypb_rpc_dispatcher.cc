@@ -45,7 +45,7 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
     return;
   }
   InfoLog<< "==============================";
-  InfoLog<< "get send request data=[" << request->DebugString() << "]";
+  InfoLog<< "get send request data=" << request->DebugString();
   InfoLog<< "==============================";
 
   google::protobuf::Message* response = service->GetResponsePrototype(method).New();
@@ -71,7 +71,7 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
       return;
     }
     InfoLog<< "==============================";
-    InfoLog<< "set reply response data=[" << response->DebugString() << "]";
+    InfoLog<< "set reply response data=" << response->DebugString();
     InfoLog<< "==============================";
 
     TinyPbCodeC codec;

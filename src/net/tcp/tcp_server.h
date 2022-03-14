@@ -47,7 +47,7 @@ class TcpServer {
 
   void start();
 
-  bool addClient(int fd, const TcpConnection::ptr& conn);
+  bool addClient(int fd);
 
   TinyPbRpcDispacther* getDispatcher();
 

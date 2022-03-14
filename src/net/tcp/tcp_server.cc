@@ -125,14 +125,10 @@ void TcpServer::MainAcceptCorFunc() {
       continue;
 		}
 
+    addClient(fd);
 		m_tcp_counts++;
 		DebugLog << "current tcp connection count is [" << m_tcp_counts << "]";
-     
-    TcpConnection::ptr tcp_conn = std::make_shared<TcpConnection> (this, 
-        m_io_pool->getIOThread()->getReactor(), fd, 128);
-
-    addClient(fd, tcp_conn);
-    DebugLog << "insert succ, size=" << m_clients.size();
+    // DebugLog << "insert succ, size=" << m_clients.size();
 	}
 }
 
@@ -157,7 +153,8 @@ void TcpServer::MainLoopTimerFunc() {
   
 }
 
-bool TcpServer::addClient(int fd, const TcpConnection::ptr& conn) {
+bool TcpServer::addClient(int fd) {
+
   auto it = m_clients.find(fd);
   if (it != m_clients.end()) {
     TcpConnection::ptr s_conn = it->second;
@@ -169,11 +166,15 @@ bool TcpServer::addClient(int fd, const TcpConnection::ptr& conn) {
     }
     // src Tcpconnection can delete
     s_conn.reset();
-    // set new Tcpconnection
-    it->second = conn;
+		it->second.reset();
+
+    // set new Tcpconnection	
+		it->second = std::make_shared<TcpConnection> (this, 
+			m_io_pool->getIOThread()->getReactor(), fd, 128);
     
   } else {
-    m_clients.insert(std::make_pair(fd, conn));
+    m_clients.insert(std::make_pair(fd, std::make_shared<TcpConnection> (this, 
+			m_io_pool->getIOThread()->getReactor(), fd, 128)));
   }
   return true;
 }

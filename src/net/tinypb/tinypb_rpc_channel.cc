@@ -31,7 +31,7 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
   TinyPbCodeC* m_codec = m_client->getConnection()->getCodec();
   m_codec->encode(m_client->getConnection()->getOutBuffer(), &pb_struct);
   InfoLog<< "==============================";
-  InfoLog<< "set send request data=[" << request->DebugString() << "]";
+  InfoLog<< "set send request data=" << request->DebugString();
   InfoLog<< "==============================";
   m_client->start();
 
@@ -40,7 +40,7 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
     ErrorLog << "parse return package error";
   }
   InfoLog<< "==============================";
-  InfoLog<< "get reply response data=[" << response->DebugString() << "]";
+  InfoLog<< "get reply response data=[" << response->DebugString();
   InfoLog<< "==============================";
   done->Run();
 }

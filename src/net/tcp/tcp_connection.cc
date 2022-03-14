@@ -62,8 +62,6 @@ void TcpConnection::setUpClient() {
 
 TcpConnection::~TcpConnection() {
   DebugLog << "~TcpConnection, fd=" << m_fd;
-  m_fd_event->unregisterFromReactor(); 
-  close(m_fd);
 }
 
 void TcpConnection::initBuffer(int size) {
@@ -109,8 +107,10 @@ void TcpConnection::MainReadCoFunc() {
       int read_count = m_read_buffer->writeAble();
       int write_index = m_read_buffer->writeIndex();
 
+      DebugLog << "m_read_buffer size=" << m_read_buffer->getBufferVector().size() << "rd=" << m_read_buffer->readIndex() << "wd=" << m_read_buffer->writeIndex();
       int rt = read(m_fd, &(m_read_buffer->m_buffer[write_index]), read_count);
-      m_read_buffer->recycleWrite(rt + write_index); 
+      m_read_buffer->recycleWrite(rt);
+      DebugLog << "m_read_buffer size=" << m_read_buffer->getBufferVector().size() << "rd=" << m_read_buffer->readIndex() << "wd=" << m_read_buffer->writeIndex();
 
       DebugLog << "read data back";
       if (rt <= 0) {

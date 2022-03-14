@@ -62,8 +62,9 @@ int main(int argc, char* argv[]) {
 
   QueryService_Stub stub(&channel);
   req.set_id(20200312);
-  stub.query_age(&rpc_controller, &req, &res_age, &cb);
   stub.query_name(&rpc_controller, &req, &res_name, &cb);
+  stub.query_name(&rpc_controller, &req, &res_name, &cb);
+  stub.query_age(&rpc_controller, &req, &res_age, &cb);
 
   }
 

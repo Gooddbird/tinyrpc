@@ -42,6 +42,7 @@ Reactor::Reactor() {
 	if((m_wake_fd = eventfd(0, EFD_NONBLOCK)) <= 0 ) {
 		ErrorLog << "eventfd error";
 	}
+	DebugLog << "wakefd = " << m_wake_fd;
   assert(m_wake_fd > 0);	
 	addWakeupFd();
 

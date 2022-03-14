@@ -104,23 +104,23 @@ void TinyPbCodeC::decode(TcpBuffer* buf, AbstractData* data) {
   }
 
   std::vector<char> tmp = buf->getBufferVector();
-  int total_size = tmp.size();
-  int start_index = -1;
+  // int total_size = buf->readAble();
+  int start_index = buf->readIndex();
   int end_index = -1;
   int32_t pk_len= -1; 
 
   bool parse_full_pack = false;
   
-  for (int i = 0; i < total_size; ++i) {
+  for (int i = start_index; i < buf->writeIndex(); ++i) {
     // first find start
     if (tmp[i] == PB_START) {
-      if (i + 1 < total_size) {
+      if (i + 1 < buf->writeIndex()) {
         pk_len = getInt32FromNetByte(&tmp[i+1]);
         DebugLog << "prase pk_len =" << pk_len;
         int j = i + pk_len - 1;
         DebugLog << "j =" << j << ", i=" << i;
 
-        if (j >= total_size) {
+        if (j >= buf->writeIndex()) {
           // DebugLog << "recv package not complete, or pk_start find error, continue next parse";
           continue;
         }
@@ -142,7 +142,9 @@ void TinyPbCodeC::decode(TcpBuffer* buf, AbstractData* data) {
     return;
   }
 
-  buf->recycleRead(pk_len);
+  buf->recycleRead(end_index + 1 - start_index);
+
+  DebugLog << "m_read_buffer size=" << buf->getBufferVector().size() << "rd=" << buf->readIndex() << "wd=" << buf->writeIndex();
   
   int service_name_len_index = start_index + sizeof(char) + sizeof(int32_t);
   if (service_name_len_index >= end_index) {

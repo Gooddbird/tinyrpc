@@ -28,13 +28,14 @@ int64_t getNowMs() {
 Timer::Timer(Reactor* reactor) : FdEvent(reactor) {
 
   m_fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK|TFD_CLOEXEC);
+  DebugLog << "m_timer fd = " << m_fd;
   if (m_fd == -1) {
     DebugLog << "timerfd_create error";  
   }
   // DebugLog << "timerfd is [" << m_fd << "]";
 	m_read_callback = std::bind(&Timer::onTimer, this);
   addListenEvents(READ);
-  updateToReactor();
+  // updateToReactor();
 
 }
 
