@@ -54,9 +54,9 @@ add_executable(test_connect testcases/test_connect.cc testcases/tinypb.pb.cc)
 add_dependencies(test_connect tinyrpc)
 target_link_libraries(test_connect ${LIBS})
 
-#add_executable(test_coroutine testcases/test_coroutine.cc)
-#add_dependencies(test_coroutine tinyrpc)
-#target_link_libraries(test_coroutine ${LIBS})
+add_executable(test_coroutine testcases/test_coroutine.cc)
+add_dependencies(test_coroutine tinyrpc)
+target_link_libraries(test_coroutine ${LIBS})
 
 
 add_executable(test_coroutine_hook testcases/test_coroutine_hook.cc)

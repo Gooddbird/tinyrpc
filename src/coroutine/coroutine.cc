@@ -14,15 +14,23 @@ static thread_local Coroutine* t_main_coroutine = nullptr;
 // 线程当前正在执行的协程
 static thread_local Coroutine* t_cur_coroutine = nullptr;
 
-static std::atomic<int> g_coroutine_count(0);
+static thread_local int t_coroutine_count = 0;
 
-static std::atomic<int> g_cur_coroutine_id(1);
+static thread_local int t_cur_coroutine_id = 0;
+
+int getCoroutineIndex() {
+  return t_cur_coroutine_id;
+}
 
 void CoFunction(Coroutine* co) {
 
   if (co!= nullptr) {
+    co->setIsInCoFunc(true);
+
     // 去执行协程回调函数
     co->m_call_back();
+
+    co->setIsInCoFunc(false);
   }
 
   // 执行完协程回调函数返回后,说明协程生命周期结束,此时需恢复到主协程
@@ -30,30 +38,61 @@ void CoFunction(Coroutine* co) {
 }
 
 Coroutine::Coroutine() {
-  m_cor_id = g_cur_coroutine_id++;
-  g_coroutine_count++;
+  m_cor_id = t_cur_coroutine_id++;
+  t_coroutine_count++;
   memset(&m_coctx, 0, sizeof(m_coctx));
-
-  t_main_coroutine = this;
-  t_cur_coroutine = this;
-  DebugLog << "main coroutine created, id[" << m_cor_id << "]"; 
 }
 
-Coroutine::Coroutine(int size, std::function<void()> cb)
-  : m_stack_size(size), m_call_back(cb) {
-  
+Coroutine::Coroutine(int size) : m_stack_size(size) {
+
   if (t_main_coroutine == nullptr) {
     t_main_coroutine = new Coroutine();
   }
-
   assert(t_main_coroutine != nullptr);
 
-  // 申请堆起始地址
-  m_stack_sp =  reinterpret_cast<char*>(malloc(size));
+  m_stack_sp =  reinterpret_cast<char*>(malloc(m_stack_size));
+  assert(m_stack_sp != nullptr);
 
-  // 堆最高地址 
-  char* top = m_stack_sp + size;
-  // 字节对齐。 因为要作为栈底,所以地址必须是 8字节的整数倍(64位机一个字为8个字节)
+  m_cor_id = t_cur_coroutine_id++;
+  t_coroutine_count++;
+  DebugLog << "coroutine[null callback] created, id[" << m_cor_id << "]";
+}
+
+Coroutine::Coroutine(int size, std::function<void()> cb)
+  : m_stack_size(size) {
+
+  if (t_main_coroutine == nullptr) {
+    t_main_coroutine = new Coroutine();
+  }
+  assert(t_main_coroutine != nullptr);
+
+  m_stack_sp =  reinterpret_cast<char*>(malloc(m_stack_size));
+  assert(m_stack_sp != nullptr);
+
+  setCallBack(cb);
+  m_cor_id = t_cur_coroutine_id++;
+  t_coroutine_count++;
+  DebugLog << "coroutine created, id[" << m_cor_id << "]";
+}
+
+bool Coroutine::setCallBack(std::function<void()> cb) {
+
+  if (this == t_main_coroutine) {
+    ErrorLog << "main coroutine can't set callback";
+    return false;
+  }
+  if (m_is_in_cofunc) {
+    ErrorLog << "this coroutine is in CoFunction";
+    return false;
+  }
+
+  m_call_back = cb;
+
+  assert(m_stack_sp != nullptr);
+
+  char* top = m_stack_sp + m_stack_size;
+  // first set 0 to stack
+  // memset(&top, 0, m_stack_size);
 
   top = reinterpret_cast<char*>((reinterpret_cast<unsigned long>(top)) & -16LL);
 
@@ -64,13 +103,12 @@ Coroutine::Coroutine(int size, std::function<void()> cb)
   m_coctx.regs[kRETAddr] = reinterpret_cast<char*>(CoFunction); 
   m_coctx.regs[kRDI] = reinterpret_cast<char*>(this);
 
-  m_cor_id = g_cur_coroutine_id++;
-  g_coroutine_count++;
-  DebugLog << "coroutine created, id[" << m_cor_id << "]"; 
+  return true;
+
 }
 
 Coroutine::~Coroutine() {
-  g_coroutine_count--;
+  t_coroutine_count--;
 
   if (m_stack_sp != nullptr) {
     free(m_stack_sp);
@@ -81,7 +119,8 @@ Coroutine::~Coroutine() {
 
 Coroutine* Coroutine::GetCurrentCoroutine() {
   if (t_cur_coroutine == nullptr) {
-    t_cur_coroutine = new Coroutine();
+    t_main_coroutine = new Coroutine();
+    t_cur_coroutine = t_main_coroutine;
   }
   return t_cur_coroutine;
 }
