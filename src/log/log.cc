@@ -4,6 +4,7 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 #include <iostream>
+#include <stdio.h>
 
 #include "log.h"
 #include "../coroutine/coroutine.h"
@@ -15,12 +16,17 @@ class Coroutine;
 
 static thread_local pid_t t_thread_id = 0;
 static pid_t g_pid = 0;
+static LogLevel g_log_level = DEBUG;
 
 pid_t gettid() {
   if (t_thread_id == 0) {
     t_thread_id = syscall(SYS_gettid);
   }
   return t_thread_id;
+}
+
+void setLogLevel(LogLevel level) {
+  g_log_level = level;
 }
 
 
@@ -103,9 +109,13 @@ std::stringstream& LogEvent::getStringStream() {
 }
 
 void LogEvent::log() {
-  Mutex::Lock lock(m_mutex);
 	m_ss << "\n";
-  std::cout << m_ss.str();
+  if (m_level >= g_log_level) {
+
+    // Mutex::Lock lock(m_mutex);
+    // std::cout << m_ss.str();
+    printf(m_ss.str().c_str());
+  }
 }
 
 
@@ -120,11 +130,5 @@ std::stringstream& LogTmp::getStringStream() {
 LogTmp::~LogTmp() {
   m_event->log(); 
 }
-
-
-
-
-
-
 
 }

@@ -50,9 +50,18 @@ int main(int argc, char* argv[]) {
 
   while (n--) {
 
-  QueryReq req;
-  QueryAgeRes res_age;
-  QueryNameRes res_name;
+  queryNameReq req_name;
+  req_name.set_req_no(20220315);
+  req_name.set_id(1234);
+  req_name.set_type(1);
+
+  queryNameRes res_name;
+
+  queryAgeReq req_age;
+  req_age.set_req_no(00001111);
+  req_age.set_id(6781);
+
+  queryAgeRes res_age;
 
   tinyrpc::TinyPbRpcClosure cb([]() {
     DebugLog << "==========================";
@@ -61,10 +70,12 @@ int main(int argc, char* argv[]) {
   });
 
   QueryService_Stub stub(&channel);
-  req.set_id(20200312);
-  stub.query_name(&rpc_controller, &req, &res_name, &cb);
-  stub.query_name(&rpc_controller, &req, &res_name, &cb);
-  stub.query_age(&rpc_controller, &req, &res_age, &cb);
+  stub.query_name(&rpc_controller, &req_name, &res_name, &cb);
+  
+  stub.query_age(&rpc_controller, &req_age, &res_age, &cb);
+
+  DebugLog << "get res_name.age = " << res_name.name();
+  DebugLog << "get res_age.age = " << res_age.age();
 
   }
 

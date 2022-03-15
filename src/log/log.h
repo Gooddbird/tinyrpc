@@ -13,6 +13,8 @@
 #include "../net/mutex.h"
 
 
+namespace tinyrpc {
+
 #define DebugLog \
 	tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::DEBUG, __FILE__, __LINE__, __func__))).getStringStream()
 
@@ -29,18 +31,16 @@
 	tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::ERROR, __FILE__, __LINE__, __func__))).getStringStream()
 
 
-namespace tinyrpc {
-
-
-pid_t gettid();
-
-
 enum LogLevel {
 	DEBUG = 1,
 	INFO = 2,
 	WARN = 3,
 	ERROR = 4
 };
+
+void setLogLevel(LogLevel level);
+
+pid_t gettid();
 
 class LogEvent {
 
@@ -103,5 +103,6 @@ class LogPrinter {
 };
 
 }
+
 
 #endif

@@ -12,23 +12,32 @@ class QueryServiceImpl : public QueryService {
   ~QueryServiceImpl() {}
 
   void query_name(google::protobuf::RpcController* controller,
-                       const ::QueryReq* request,
-                       ::QueryNameRes* response,
+                       const ::queryNameReq* request,
+                       ::queryNameRes* response,
                        ::google::protobuf::Closure* done) {
     
     DebugLog << "========================";
     DebugLog << "this is query_name func";
+    response->set_ret_code(0);
+    response->set_res_info("OK");
+    response->set_req_no(request->req_no());
+    response->set_id(request->id());
     response->set_name("ikerli");
+    
     DebugLog << "========================";
     done->Run();
   }
   void query_age(google::protobuf::RpcController* controller,
-                       const ::QueryReq* request,
-                       ::QueryAgeRes* response,
+                       const ::queryAgeReq* request,
+                       ::queryAgeRes* response,
                        ::google::protobuf::Closure* done) {
 
     DebugLog << "========================";
     DebugLog << "this is query_age func";
+    response->set_ret_code(0);
+    response->set_res_info("OK");
+    response->set_req_no(request->req_no());
+    response->set_id(request->id());
     response->set_age(20);
     DebugLog << "========================";
     done->Run();

@@ -1,7 +1,7 @@
-## tinyrpc
-use c++ to make a tiny rpc
+# TinyRpc
+Use c++ to make a tiny rpc framework.
 
-## Quick Start
+## 1. How to Build
 
 1. git clone
 2. cd tinyrpc
@@ -12,11 +12,11 @@ use c++ to make a tiny rpc
 7. cd ../bin
 8. ./test_xxxx
 
-## Design of RPC
-#### first design a simple rpc protocal:
-(it reference to an acticle [chenshuo: https://www.cnblogs.com/Solstice/archive/2011/04/03/2004458.html])
+## 2. Design of RPC
+#### First design a simple rpc protocal:
+(It reference to an acticle [chenshuo: https://www.cnblogs.com/Solstice/archive/2011/04/03/2004458.html])
 
-```
+```c++
 char* start;    // 0x02
 int32_t pk_len;
 int32_t service_full_name_len;
@@ -25,11 +25,10 @@ pb binary data;
 int32_t checknum;
 char* end;      // 0x03
 ```
-- pk_len is the length of all package(including **[strat]** and **[end]**)
+- **Notice**: **pk_len** is the length of all package(including **[strat]** and **[end]**)
 
-
-for example, define a proto:
-```
+For example, define a proto:
+```c++
 message QueryReq {
   int32 req_no = 1;
   int32 id = 2;
@@ -54,9 +53,9 @@ service QueryService {
   rpc query_age(QueryReq) returns (QueryAgeRes);
 }
 ```
-so, it will be encode like this progress:
+So, it will be encode like this progress:
 
-```
+```c++
 stringstream ss;
 QueryReq req;
 req.set_id(1);
@@ -67,10 +66,11 @@ pk_len = 2* sizeof(char*) + 3 * sizeof(int32_t) + service_name.length() + pb_bin
 
 ss << 0x02 << pk_len(to net byte order) << sizeof(service_name)(to net byte order) << service_name << pb_binary_data << checksum(to net byte order) << 0x03;
 ```
-- Notice: all integer parameters will be transform to net byte order(big endian byte order) !!!
+- **Notice**: All integer parameters will be transform to **net byte order**(**big endian byte order**) !!!
 
 
-## reference
+
+## Reference
 libco: https://github.com/Tencent/libco
 
 sylar: https://github.com/sylar-yin/sylar

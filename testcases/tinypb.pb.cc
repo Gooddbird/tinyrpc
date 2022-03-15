@@ -20,110 +20,142 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::PROTOBUF_NAMESPACE_ID;
 namespace _pbi = _pb::internal;
 
-PROTOBUF_CONSTEXPR QueryReq::QueryReq(
+PROTOBUF_CONSTEXPR queryAgeReq::queryAgeReq(
     ::_pbi::ConstantInitialized)
   : req_no_(0)
   , id_(0){}
-struct QueryReqDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR QueryReqDefaultTypeInternal()
+struct queryAgeReqDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR queryAgeReqDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
-  ~QueryReqDefaultTypeInternal() {}
+  ~queryAgeReqDefaultTypeInternal() {}
   union {
-    QueryReq _instance;
+    queryAgeReq _instance;
   };
 };
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 QueryReqDefaultTypeInternal _QueryReq_default_instance_;
-PROTOBUF_CONSTEXPR QueryNameRes::QueryNameRes(
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 queryAgeReqDefaultTypeInternal _queryAgeReq_default_instance_;
+PROTOBUF_CONSTEXPR queryAgeRes::queryAgeRes(
+    ::_pbi::ConstantInitialized)
+  : res_info_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , ret_code_(0)
+  , req_no_(0)
+  , id_(0)
+  , age_(0){}
+struct queryAgeResDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR queryAgeResDefaultTypeInternal()
+      : _instance(::_pbi::ConstantInitialized{}) {}
+  ~queryAgeResDefaultTypeInternal() {}
+  union {
+    queryAgeRes _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 queryAgeResDefaultTypeInternal _queryAgeRes_default_instance_;
+PROTOBUF_CONSTEXPR queryNameReq::queryNameReq(
+    ::_pbi::ConstantInitialized)
+  : req_no_(0)
+  , id_(0)
+  , type_(0){}
+struct queryNameReqDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR queryNameReqDefaultTypeInternal()
+      : _instance(::_pbi::ConstantInitialized{}) {}
+  ~queryNameReqDefaultTypeInternal() {}
+  union {
+    queryNameReq _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 queryNameReqDefaultTypeInternal _queryNameReq_default_instance_;
+PROTOBUF_CONSTEXPR queryNameRes::queryNameRes(
     ::_pbi::ConstantInitialized)
   : res_info_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , ret_code_(0)
+  , req_no_(0)
   , id_(0){}
-struct QueryNameResDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR QueryNameResDefaultTypeInternal()
+struct queryNameResDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR queryNameResDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
-  ~QueryNameResDefaultTypeInternal() {}
+  ~queryNameResDefaultTypeInternal() {}
   union {
-    QueryNameRes _instance;
+    queryNameRes _instance;
   };
 };
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 QueryNameResDefaultTypeInternal _QueryNameRes_default_instance_;
-PROTOBUF_CONSTEXPR QueryAgeRes::QueryAgeRes(
-    ::_pbi::ConstantInitialized)
-  : res_info_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
-  , ret_code_(0)
-  , id_(0)
-  , age_(0){}
-struct QueryAgeResDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR QueryAgeResDefaultTypeInternal()
-      : _instance(::_pbi::ConstantInitialized{}) {}
-  ~QueryAgeResDefaultTypeInternal() {}
-  union {
-    QueryAgeRes _instance;
-  };
-};
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 QueryAgeResDefaultTypeInternal _QueryAgeRes_default_instance_;
-static ::_pb::Metadata file_level_metadata_tinypb_2eproto[3];
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 queryNameResDefaultTypeInternal _queryNameRes_default_instance_;
+static ::_pb::Metadata file_level_metadata_tinypb_2eproto[4];
 static constexpr ::_pb::EnumDescriptor const** file_level_enum_descriptors_tinypb_2eproto = nullptr;
 static const ::_pb::ServiceDescriptor* file_level_service_descriptors_tinypb_2eproto[1];
 
 const uint32_t TableStruct_tinypb_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   ~0u,  // no _has_bits_
-  PROTOBUF_FIELD_OFFSET(::QueryReq, _internal_metadata_),
+  PROTOBUF_FIELD_OFFSET(::queryAgeReq, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::QueryReq, req_no_),
-  PROTOBUF_FIELD_OFFSET(::QueryReq, id_),
+  PROTOBUF_FIELD_OFFSET(::queryAgeReq, req_no_),
+  PROTOBUF_FIELD_OFFSET(::queryAgeReq, id_),
   ~0u,  // no _has_bits_
-  PROTOBUF_FIELD_OFFSET(::QueryNameRes, _internal_metadata_),
+  PROTOBUF_FIELD_OFFSET(::queryAgeRes, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::QueryNameRes, ret_code_),
-  PROTOBUF_FIELD_OFFSET(::QueryNameRes, res_info_),
-  PROTOBUF_FIELD_OFFSET(::QueryNameRes, id_),
-  PROTOBUF_FIELD_OFFSET(::QueryNameRes, name_),
+  PROTOBUF_FIELD_OFFSET(::queryAgeRes, ret_code_),
+  PROTOBUF_FIELD_OFFSET(::queryAgeRes, res_info_),
+  PROTOBUF_FIELD_OFFSET(::queryAgeRes, req_no_),
+  PROTOBUF_FIELD_OFFSET(::queryAgeRes, id_),
+  PROTOBUF_FIELD_OFFSET(::queryAgeRes, age_),
   ~0u,  // no _has_bits_
-  PROTOBUF_FIELD_OFFSET(::QueryAgeRes, _internal_metadata_),
+  PROTOBUF_FIELD_OFFSET(::queryNameReq, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::QueryAgeRes, ret_code_),
-  PROTOBUF_FIELD_OFFSET(::QueryAgeRes, res_info_),
-  PROTOBUF_FIELD_OFFSET(::QueryAgeRes, id_),
-  PROTOBUF_FIELD_OFFSET(::QueryAgeRes, age_),
+  PROTOBUF_FIELD_OFFSET(::queryNameReq, req_no_),
+  PROTOBUF_FIELD_OFFSET(::queryNameReq, id_),
+  PROTOBUF_FIELD_OFFSET(::queryNameReq, type_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::queryNameRes, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  ~0u,  // no _inlined_string_donated_
+  PROTOBUF_FIELD_OFFSET(::queryNameRes, ret_code_),
+  PROTOBUF_FIELD_OFFSET(::queryNameRes, res_info_),
+  PROTOBUF_FIELD_OFFSET(::queryNameRes, req_no_),
+  PROTOBUF_FIELD_OFFSET(::queryNameRes, id_),
+  PROTOBUF_FIELD_OFFSET(::queryNameRes, name_),
 };
 static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, -1, -1, sizeof(::QueryReq)},
-  { 8, -1, -1, sizeof(::QueryNameRes)},
-  { 18, -1, -1, sizeof(::QueryAgeRes)},
+  { 0, -1, -1, sizeof(::queryAgeReq)},
+  { 8, -1, -1, sizeof(::queryAgeRes)},
+  { 19, -1, -1, sizeof(::queryNameReq)},
+  { 28, -1, -1, sizeof(::queryNameRes)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
-  &::_QueryReq_default_instance_._instance,
-  &::_QueryNameRes_default_instance_._instance,
-  &::_QueryAgeRes_default_instance_._instance,
+  &::_queryAgeReq_default_instance_._instance,
+  &::_queryAgeRes_default_instance_._instance,
+  &::_queryNameReq_default_instance_._instance,
+  &::_queryNameRes_default_instance_._instance,
 };
 
 const char descriptor_table_protodef_tinypb_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\014tinypb.proto\"&\n\010QueryReq\022\016\n\006req_no\030\001 \001"
-  "(\005\022\n\n\002id\030\002 \001(\005\"L\n\014QueryNameRes\022\020\n\010ret_co"
-  "de\030\001 \001(\005\022\020\n\010res_info\030\002 \001(\t\022\n\n\002id\030\003 \001(\005\022\014"
-  "\n\004name\030\004 \001(\t\"J\n\013QueryAgeRes\022\020\n\010ret_code\030"
-  "\001 \001(\005\022\020\n\010res_info\030\002 \001(\t\022\n\n\002id\030\003 \001(\005\022\013\n\003a"
-  "ge\030\004 \001(\0052\\\n\014QueryService\022&\n\nquery_name\022\t"
-  ".QueryReq\032\r.QueryNameRes\022$\n\tquery_age\022\t."
-  "QueryReq\032\014.QueryAgeResB\003\200\001\001b\006proto3"
+  "\n\014tinypb.proto\")\n\013queryAgeReq\022\016\n\006req_no\030"
+  "\001 \001(\005\022\n\n\002id\030\002 \001(\005\"Z\n\013queryAgeRes\022\020\n\010ret_"
+  "code\030\001 \001(\005\022\020\n\010res_info\030\002 \001(\t\022\016\n\006req_no\030\003"
+  " \001(\005\022\n\n\002id\030\004 \001(\005\022\013\n\003age\030\005 \001(\005\"8\n\014queryNa"
+  "meReq\022\016\n\006req_no\030\001 \001(\005\022\n\n\002id\030\002 \001(\005\022\014\n\004typ"
+  "e\030\003 \001(\005\"\\\n\014queryNameRes\022\020\n\010ret_code\030\001 \001("
+  "\005\022\020\n\010res_info\030\002 \001(\t\022\016\n\006req_no\030\003 \001(\005\022\n\n\002i"
+  "d\030\004 \001(\005\022\014\n\004name\030\005 \001(\t2c\n\014QueryService\022*\n"
+  "\nquery_name\022\r.queryNameReq\032\r.queryNameRe"
+  "s\022\'\n\tquery_age\022\014.queryAgeReq\032\014.queryAgeR"
+  "esB\003\200\001\001b\006proto3"
   ;
 static ::_pbi::once_flag descriptor_table_tinypb_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_tinypb_2eproto = {
-    false, false, 315, descriptor_table_protodef_tinypb_2eproto,
+    false, false, 415, descriptor_table_protodef_tinypb_2eproto,
     "tinypb.proto",
-    &descriptor_table_tinypb_2eproto_once, nullptr, 0, 3,
+    &descriptor_table_tinypb_2eproto_once, nullptr, 0, 4,
     schemas, file_default_instances, TableStruct_tinypb_2eproto::offsets,
     file_level_metadata_tinypb_2eproto, file_level_enum_descriptors_tinypb_2eproto,
     file_level_service_descriptors_tinypb_2eproto,
@@ -137,34 +169,34 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 static ::_pbi::AddDescriptorsRunner dynamic_in
 
 // ===================================================================
 
-class QueryReq::_Internal {
+class queryAgeReq::_Internal {
  public:
 };
 
-QueryReq::QueryReq(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+queryAgeReq::queryAgeReq(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  // @@protoc_insertion_point(arena_constructor:QueryReq)
+  // @@protoc_insertion_point(arena_constructor:queryAgeReq)
 }
-QueryReq::QueryReq(const QueryReq& from)
+queryAgeReq::queryAgeReq(const queryAgeReq& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::memcpy(&req_no_, &from.req_no_,
     static_cast<size_t>(reinterpret_cast<char*>(&id_) -
     reinterpret_cast<char*>(&req_no_)) + sizeof(id_));
-  // @@protoc_insertion_point(copy_constructor:QueryReq)
+  // @@protoc_insertion_point(copy_constructor:queryAgeReq)
 }
 
-inline void QueryReq::SharedCtor() {
+inline void queryAgeReq::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&req_no_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&id_) -
     reinterpret_cast<char*>(&req_no_)) + sizeof(id_));
 }
 
-QueryReq::~QueryReq() {
-  // @@protoc_insertion_point(destructor:QueryReq)
+queryAgeReq::~queryAgeReq() {
+  // @@protoc_insertion_point(destructor:queryAgeReq)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
   (void)arena;
     return;
@@ -172,16 +204,16 @@ QueryReq::~QueryReq() {
   SharedDtor();
 }
 
-inline void QueryReq::SharedDtor() {
+inline void queryAgeReq::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
-void QueryReq::SetCachedSize(int size) const {
+void queryAgeReq::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 
-void QueryReq::Clear() {
-// @@protoc_insertion_point(message_clear_start:QueryReq)
+void queryAgeReq::Clear() {
+// @@protoc_insertion_point(message_clear_start:queryAgeReq)
   uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -192,7 +224,7 @@ void QueryReq::Clear() {
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-const char* QueryReq::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+const char* queryAgeReq::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
@@ -237,9 +269,9 @@ failure:
 #undef CHK_
 }
 
-uint8_t* QueryReq::_InternalSerialize(
+uint8_t* queryAgeReq::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:QueryReq)
+  // @@protoc_insertion_point(serialize_to_array_start:queryAgeReq)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -259,12 +291,12 @@ uint8_t* QueryReq::_InternalSerialize(
     target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:QueryReq)
+  // @@protoc_insertion_point(serialize_to_array_end:queryAgeReq)
   return target;
 }
 
-size_t QueryReq::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:QueryReq)
+size_t queryAgeReq::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:queryAgeReq)
   size_t total_size = 0;
 
   uint32_t cached_has_bits = 0;
@@ -284,21 +316,21 @@ size_t QueryReq::ByteSizeLong() const {
   return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
 }
 
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData QueryReq::_class_data_ = {
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData queryAgeReq::_class_data_ = {
     ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
-    QueryReq::MergeImpl
+    queryAgeReq::MergeImpl
 };
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*QueryReq::GetClassData() const { return &_class_data_; }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*queryAgeReq::GetClassData() const { return &_class_data_; }
 
-void QueryReq::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
+void queryAgeReq::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
                       const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<QueryReq *>(to)->MergeFrom(
-      static_cast<const QueryReq &>(from));
+  static_cast<queryAgeReq *>(to)->MergeFrom(
+      static_cast<const queryAgeReq &>(from));
 }
 
 
-void QueryReq::MergeFrom(const QueryReq& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:QueryReq)
+void queryAgeReq::MergeFrom(const queryAgeReq& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:queryAgeReq)
   GOOGLE_DCHECK_NE(&from, this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -312,29 +344,29 @@ void QueryReq::MergeFrom(const QueryReq& from) {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
-void QueryReq::CopyFrom(const QueryReq& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:QueryReq)
+void queryAgeReq::CopyFrom(const queryAgeReq& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:queryAgeReq)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-bool QueryReq::IsInitialized() const {
+bool queryAgeReq::IsInitialized() const {
   return true;
 }
 
-void QueryReq::InternalSwap(QueryReq* other) {
+void queryAgeReq::InternalSwap(queryAgeReq* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(QueryReq, id_)
-      + sizeof(QueryReq::id_)
-      - PROTOBUF_FIELD_OFFSET(QueryReq, req_no_)>(
+      PROTOBUF_FIELD_OFFSET(queryAgeReq, id_)
+      + sizeof(queryAgeReq::id_)
+      - PROTOBUF_FIELD_OFFSET(queryAgeReq, req_no_)>(
           reinterpret_cast<char*>(&req_no_),
           reinterpret_cast<char*>(&other->req_no_));
 }
 
-::PROTOBUF_NAMESPACE_ID::Metadata QueryReq::GetMetadata() const {
+::PROTOBUF_NAMESPACE_ID::Metadata queryAgeReq::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_tinypb_2eproto_getter, &descriptor_table_tinypb_2eproto_once,
       file_level_metadata_tinypb_2eproto[0]);
@@ -342,320 +374,17 @@ void QueryReq::InternalSwap(QueryReq* other) {
 
 // ===================================================================
 
-class QueryNameRes::_Internal {
+class queryAgeRes::_Internal {
  public:
 };
 
-QueryNameRes::QueryNameRes(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+queryAgeRes::queryAgeRes(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  // @@protoc_insertion_point(arena_constructor:QueryNameRes)
+  // @@protoc_insertion_point(arena_constructor:queryAgeRes)
 }
-QueryNameRes::QueryNameRes(const QueryNameRes& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message() {
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  res_info_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    res_info_.Set("", GetArenaForAllocation());
-  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (!from._internal_res_info().empty()) {
-    res_info_.Set(from._internal_res_info(), 
-      GetArenaForAllocation());
-  }
-  name_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    name_.Set("", GetArenaForAllocation());
-  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (!from._internal_name().empty()) {
-    name_.Set(from._internal_name(), 
-      GetArenaForAllocation());
-  }
-  ::memcpy(&ret_code_, &from.ret_code_,
-    static_cast<size_t>(reinterpret_cast<char*>(&id_) -
-    reinterpret_cast<char*>(&ret_code_)) + sizeof(id_));
-  // @@protoc_insertion_point(copy_constructor:QueryNameRes)
-}
-
-inline void QueryNameRes::SharedCtor() {
-res_info_.InitDefault();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  res_info_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-name_.InitDefault();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  name_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
-    reinterpret_cast<char*>(&ret_code_) - reinterpret_cast<char*>(this)),
-    0, static_cast<size_t>(reinterpret_cast<char*>(&id_) -
-    reinterpret_cast<char*>(&ret_code_)) + sizeof(id_));
-}
-
-QueryNameRes::~QueryNameRes() {
-  // @@protoc_insertion_point(destructor:QueryNameRes)
-  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
-  (void)arena;
-    return;
-  }
-  SharedDtor();
-}
-
-inline void QueryNameRes::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
-  res_info_.Destroy();
-  name_.Destroy();
-}
-
-void QueryNameRes::SetCachedSize(int size) const {
-  _cached_size_.Set(size);
-}
-
-void QueryNameRes::Clear() {
-// @@protoc_insertion_point(message_clear_start:QueryNameRes)
-  uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  res_info_.ClearToEmpty();
-  name_.ClearToEmpty();
-  ::memset(&ret_code_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&id_) -
-      reinterpret_cast<char*>(&ret_code_)) + sizeof(id_));
-  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
-}
-
-const char* QueryNameRes::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  while (!ctx->Done(&ptr)) {
-    uint32_t tag;
-    ptr = ::_pbi::ReadTag(ptr, &tag);
-    switch (tag >> 3) {
-      // int32 ret_code = 1;
-      case 1:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
-          ret_code_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
-          CHK_(ptr);
-        } else
-          goto handle_unusual;
-        continue;
-      // string res_info = 2;
-      case 2:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 18)) {
-          auto str = _internal_mutable_res_info();
-          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(ptr);
-          CHK_(::_pbi::VerifyUTF8(str, "QueryNameRes.res_info"));
-        } else
-          goto handle_unusual;
-        continue;
-      // int32 id = 3;
-      case 3:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 24)) {
-          id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
-          CHK_(ptr);
-        } else
-          goto handle_unusual;
-        continue;
-      // string name = 4;
-      case 4:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 34)) {
-          auto str = _internal_mutable_name();
-          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(ptr);
-          CHK_(::_pbi::VerifyUTF8(str, "QueryNameRes.name"));
-        } else
-          goto handle_unusual;
-        continue;
-      default:
-        goto handle_unusual;
-    }  // switch
-  handle_unusual:
-    if ((tag == 0) || ((tag & 7) == 4)) {
-      CHK_(ptr);
-      ctx->SetLastTag(tag);
-      goto message_done;
-    }
-    ptr = UnknownFieldParse(
-        tag,
-        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
-        ptr, ctx);
-    CHK_(ptr != nullptr);
-  }  // while
-message_done:
-  return ptr;
-failure:
-  ptr = nullptr;
-  goto message_done;
-#undef CHK_
-}
-
-uint8_t* QueryNameRes::_InternalSerialize(
-    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:QueryNameRes)
-  uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // int32 ret_code = 1;
-  if (this->_internal_ret_code() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(1, this->_internal_ret_code(), target);
-  }
-
-  // string res_info = 2;
-  if (!this->_internal_res_info().empty()) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_res_info().data(), static_cast<int>(this->_internal_res_info().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "QueryNameRes.res_info");
-    target = stream->WriteStringMaybeAliased(
-        2, this->_internal_res_info(), target);
-  }
-
-  // int32 id = 3;
-  if (this->_internal_id() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(3, this->_internal_id(), target);
-  }
-
-  // string name = 4;
-  if (!this->_internal_name().empty()) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_name().data(), static_cast<int>(this->_internal_name().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "QueryNameRes.name");
-    target = stream->WriteStringMaybeAliased(
-        4, this->_internal_name(), target);
-  }
-
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
-  }
-  // @@protoc_insertion_point(serialize_to_array_end:QueryNameRes)
-  return target;
-}
-
-size_t QueryNameRes::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:QueryNameRes)
-  size_t total_size = 0;
-
-  uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  // string res_info = 2;
-  if (!this->_internal_res_info().empty()) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-        this->_internal_res_info());
-  }
-
-  // string name = 4;
-  if (!this->_internal_name().empty()) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-        this->_internal_name());
-  }
-
-  // int32 ret_code = 1;
-  if (this->_internal_ret_code() != 0) {
-    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_ret_code());
-  }
-
-  // int32 id = 3;
-  if (this->_internal_id() != 0) {
-    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_id());
-  }
-
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
-}
-
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData QueryNameRes::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
-    QueryNameRes::MergeImpl
-};
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*QueryNameRes::GetClassData() const { return &_class_data_; }
-
-void QueryNameRes::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<QueryNameRes *>(to)->MergeFrom(
-      static_cast<const QueryNameRes &>(from));
-}
-
-
-void QueryNameRes::MergeFrom(const QueryNameRes& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:QueryNameRes)
-  GOOGLE_DCHECK_NE(&from, this);
-  uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  if (!from._internal_res_info().empty()) {
-    _internal_set_res_info(from._internal_res_info());
-  }
-  if (!from._internal_name().empty()) {
-    _internal_set_name(from._internal_name());
-  }
-  if (from._internal_ret_code() != 0) {
-    _internal_set_ret_code(from._internal_ret_code());
-  }
-  if (from._internal_id() != 0) {
-    _internal_set_id(from._internal_id());
-  }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-}
-
-void QueryNameRes::CopyFrom(const QueryNameRes& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:QueryNameRes)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool QueryNameRes::IsInitialized() const {
-  return true;
-}
-
-void QueryNameRes::InternalSwap(QueryNameRes* other) {
-  using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
-  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &res_info_, lhs_arena,
-      &other->res_info_, rhs_arena
-  );
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &name_, lhs_arena,
-      &other->name_, rhs_arena
-  );
-  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(QueryNameRes, id_)
-      + sizeof(QueryNameRes::id_)
-      - PROTOBUF_FIELD_OFFSET(QueryNameRes, ret_code_)>(
-          reinterpret_cast<char*>(&ret_code_),
-          reinterpret_cast<char*>(&other->ret_code_));
-}
-
-::PROTOBUF_NAMESPACE_ID::Metadata QueryNameRes::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_tinypb_2eproto_getter, &descriptor_table_tinypb_2eproto_once,
-      file_level_metadata_tinypb_2eproto[1]);
-}
-
-// ===================================================================
-
-class QueryAgeRes::_Internal {
- public:
-};
-
-QueryAgeRes::QueryAgeRes(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor();
-  // @@protoc_insertion_point(arena_constructor:QueryAgeRes)
-}
-QueryAgeRes::QueryAgeRes(const QueryAgeRes& from)
+queryAgeRes::queryAgeRes(const queryAgeRes& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   res_info_.InitDefault();
@@ -669,10 +398,10 @@ QueryAgeRes::QueryAgeRes(const QueryAgeRes& from)
   ::memcpy(&ret_code_, &from.ret_code_,
     static_cast<size_t>(reinterpret_cast<char*>(&age_) -
     reinterpret_cast<char*>(&ret_code_)) + sizeof(age_));
-  // @@protoc_insertion_point(copy_constructor:QueryAgeRes)
+  // @@protoc_insertion_point(copy_constructor:queryAgeRes)
 }
 
-inline void QueryAgeRes::SharedCtor() {
+inline void queryAgeRes::SharedCtor() {
 res_info_.InitDefault();
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   res_info_.Set("", GetArenaForAllocation());
@@ -683,8 +412,8 @@ res_info_.InitDefault();
     reinterpret_cast<char*>(&ret_code_)) + sizeof(age_));
 }
 
-QueryAgeRes::~QueryAgeRes() {
-  // @@protoc_insertion_point(destructor:QueryAgeRes)
+queryAgeRes::~queryAgeRes() {
+  // @@protoc_insertion_point(destructor:queryAgeRes)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
   (void)arena;
     return;
@@ -692,17 +421,17 @@ QueryAgeRes::~QueryAgeRes() {
   SharedDtor();
 }
 
-inline void QueryAgeRes::SharedDtor() {
+inline void queryAgeRes::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   res_info_.Destroy();
 }
 
-void QueryAgeRes::SetCachedSize(int size) const {
+void queryAgeRes::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 
-void QueryAgeRes::Clear() {
-// @@protoc_insertion_point(message_clear_start:QueryAgeRes)
+void queryAgeRes::Clear() {
+// @@protoc_insertion_point(message_clear_start:queryAgeRes)
   uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -714,7 +443,7 @@ void QueryAgeRes::Clear() {
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-const char* QueryAgeRes::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+const char* queryAgeRes::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
@@ -734,21 +463,29 @@ const char* QueryAgeRes::_InternalParse(const char* ptr, ::_pbi::ParseContext* c
           auto str = _internal_mutable_res_info();
           ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
           CHK_(ptr);
-          CHK_(::_pbi::VerifyUTF8(str, "QueryAgeRes.res_info"));
+          CHK_(::_pbi::VerifyUTF8(str, "queryAgeRes.res_info"));
         } else
           goto handle_unusual;
         continue;
-      // int32 id = 3;
+      // int32 req_no = 3;
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 24)) {
+          req_no_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // int32 id = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 32)) {
           id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
         continue;
-      // int32 age = 4;
-      case 4:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 32)) {
+      // int32 age = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 40)) {
           age_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else
@@ -777,9 +514,9 @@ failure:
 #undef CHK_
 }
 
-uint8_t* QueryAgeRes::_InternalSerialize(
+uint8_t* queryAgeRes::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:QueryAgeRes)
+  // @@protoc_insertion_point(serialize_to_array_start:queryAgeRes)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -794,33 +531,39 @@ uint8_t* QueryAgeRes::_InternalSerialize(
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
       this->_internal_res_info().data(), static_cast<int>(this->_internal_res_info().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "QueryAgeRes.res_info");
+      "queryAgeRes.res_info");
     target = stream->WriteStringMaybeAliased(
         2, this->_internal_res_info(), target);
   }
 
-  // int32 id = 3;
-  if (this->_internal_id() != 0) {
+  // int32 req_no = 3;
+  if (this->_internal_req_no() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(3, this->_internal_id(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(3, this->_internal_req_no(), target);
   }
 
-  // int32 age = 4;
+  // int32 id = 4;
+  if (this->_internal_id() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(4, this->_internal_id(), target);
+  }
+
+  // int32 age = 5;
   if (this->_internal_age() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(4, this->_internal_age(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(5, this->_internal_age(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:QueryAgeRes)
+  // @@protoc_insertion_point(serialize_to_array_end:queryAgeRes)
   return target;
 }
 
-size_t QueryAgeRes::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:QueryAgeRes)
+size_t queryAgeRes::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:queryAgeRes)
   size_t total_size = 0;
 
   uint32_t cached_has_bits = 0;
@@ -839,12 +582,17 @@ size_t QueryAgeRes::ByteSizeLong() const {
     total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_ret_code());
   }
 
-  // int32 id = 3;
+  // int32 req_no = 3;
+  if (this->_internal_req_no() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_req_no());
+  }
+
+  // int32 id = 4;
   if (this->_internal_id() != 0) {
     total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_id());
   }
 
-  // int32 age = 4;
+  // int32 age = 5;
   if (this->_internal_age() != 0) {
     total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_age());
   }
@@ -852,21 +600,21 @@ size_t QueryAgeRes::ByteSizeLong() const {
   return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
 }
 
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData QueryAgeRes::_class_data_ = {
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData queryAgeRes::_class_data_ = {
     ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
-    QueryAgeRes::MergeImpl
+    queryAgeRes::MergeImpl
 };
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*QueryAgeRes::GetClassData() const { return &_class_data_; }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*queryAgeRes::GetClassData() const { return &_class_data_; }
 
-void QueryAgeRes::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
+void queryAgeRes::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
                       const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<QueryAgeRes *>(to)->MergeFrom(
-      static_cast<const QueryAgeRes &>(from));
+  static_cast<queryAgeRes *>(to)->MergeFrom(
+      static_cast<const queryAgeRes &>(from));
 }
 
 
-void QueryAgeRes::MergeFrom(const QueryAgeRes& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:QueryAgeRes)
+void queryAgeRes::MergeFrom(const queryAgeRes& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:queryAgeRes)
   GOOGLE_DCHECK_NE(&from, this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -877,6 +625,9 @@ void QueryAgeRes::MergeFrom(const QueryAgeRes& from) {
   if (from._internal_ret_code() != 0) {
     _internal_set_ret_code(from._internal_ret_code());
   }
+  if (from._internal_req_no() != 0) {
+    _internal_set_req_no(from._internal_req_no());
+  }
   if (from._internal_id() != 0) {
     _internal_set_id(from._internal_id());
   }
@@ -886,18 +637,18 @@ void QueryAgeRes::MergeFrom(const QueryAgeRes& from) {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
-void QueryAgeRes::CopyFrom(const QueryAgeRes& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:QueryAgeRes)
+void queryAgeRes::CopyFrom(const queryAgeRes& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:queryAgeRes)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-bool QueryAgeRes::IsInitialized() const {
+bool queryAgeRes::IsInitialized() const {
   return true;
 }
 
-void QueryAgeRes::InternalSwap(QueryAgeRes* other) {
+void queryAgeRes::InternalSwap(queryAgeRes* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -907,17 +658,569 @@ void QueryAgeRes::InternalSwap(QueryAgeRes* other) {
       &other->res_info_, rhs_arena
   );
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(QueryAgeRes, age_)
-      + sizeof(QueryAgeRes::age_)
-      - PROTOBUF_FIELD_OFFSET(QueryAgeRes, ret_code_)>(
+      PROTOBUF_FIELD_OFFSET(queryAgeRes, age_)
+      + sizeof(queryAgeRes::age_)
+      - PROTOBUF_FIELD_OFFSET(queryAgeRes, ret_code_)>(
           reinterpret_cast<char*>(&ret_code_),
           reinterpret_cast<char*>(&other->ret_code_));
 }
 
-::PROTOBUF_NAMESPACE_ID::Metadata QueryAgeRes::GetMetadata() const {
+::PROTOBUF_NAMESPACE_ID::Metadata queryAgeRes::GetMetadata() const {
+  return ::_pbi::AssignDescriptors(
+      &descriptor_table_tinypb_2eproto_getter, &descriptor_table_tinypb_2eproto_once,
+      file_level_metadata_tinypb_2eproto[1]);
+}
+
+// ===================================================================
+
+class queryNameReq::_Internal {
+ public:
+};
+
+queryNameReq::queryNameReq(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+  SharedCtor();
+  // @@protoc_insertion_point(arena_constructor:queryNameReq)
+}
+queryNameReq::queryNameReq(const queryNameReq& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::memcpy(&req_no_, &from.req_no_,
+    static_cast<size_t>(reinterpret_cast<char*>(&type_) -
+    reinterpret_cast<char*>(&req_no_)) + sizeof(type_));
+  // @@protoc_insertion_point(copy_constructor:queryNameReq)
+}
+
+inline void queryNameReq::SharedCtor() {
+::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
+    reinterpret_cast<char*>(&req_no_) - reinterpret_cast<char*>(this)),
+    0, static_cast<size_t>(reinterpret_cast<char*>(&type_) -
+    reinterpret_cast<char*>(&req_no_)) + sizeof(type_));
+}
+
+queryNameReq::~queryNameReq() {
+  // @@protoc_insertion_point(destructor:queryNameReq)
+  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
+  (void)arena;
+    return;
+  }
+  SharedDtor();
+}
+
+inline void queryNameReq::SharedDtor() {
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+}
+
+void queryNameReq::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+
+void queryNameReq::Clear() {
+// @@protoc_insertion_point(message_clear_start:queryNameReq)
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  ::memset(&req_no_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&type_) -
+      reinterpret_cast<char*>(&req_no_)) + sizeof(type_));
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* queryNameReq::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    uint32_t tag;
+    ptr = ::_pbi::ReadTag(ptr, &tag);
+    switch (tag >> 3) {
+      // int32 req_no = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
+          req_no_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // int32 id = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 16)) {
+          id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // int32 type = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 24)) {
+          type_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      default:
+        goto handle_unusual;
+    }  // switch
+  handle_unusual:
+    if ((tag == 0) || ((tag & 7) == 4)) {
+      CHK_(ptr);
+      ctx->SetLastTag(tag);
+      goto message_done;
+    }
+    ptr = UnknownFieldParse(
+        tag,
+        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+        ptr, ctx);
+    CHK_(ptr != nullptr);
+  }  // while
+message_done:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto message_done;
+#undef CHK_
+}
+
+uint8_t* queryNameReq::_InternalSerialize(
+    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:queryNameReq)
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // int32 req_no = 1;
+  if (this->_internal_req_no() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(1, this->_internal_req_no(), target);
+  }
+
+  // int32 id = 2;
+  if (this->_internal_id() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(2, this->_internal_id(), target);
+  }
+
+  // int32 type = 3;
+  if (this->_internal_type() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(3, this->_internal_type(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:queryNameReq)
+  return target;
+}
+
+size_t queryNameReq::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:queryNameReq)
+  size_t total_size = 0;
+
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // int32 req_no = 1;
+  if (this->_internal_req_no() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_req_no());
+  }
+
+  // int32 id = 2;
+  if (this->_internal_id() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_id());
+  }
+
+  // int32 type = 3;
+  if (this->_internal_type() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_type());
+  }
+
+  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+}
+
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData queryNameReq::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    queryNameReq::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*queryNameReq::GetClassData() const { return &_class_data_; }
+
+void queryNameReq::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+  static_cast<queryNameReq *>(to)->MergeFrom(
+      static_cast<const queryNameReq &>(from));
+}
+
+
+void queryNameReq::MergeFrom(const queryNameReq& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:queryNameReq)
+  GOOGLE_DCHECK_NE(&from, this);
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (from._internal_req_no() != 0) {
+    _internal_set_req_no(from._internal_req_no());
+  }
+  if (from._internal_id() != 0) {
+    _internal_set_id(from._internal_id());
+  }
+  if (from._internal_type() != 0) {
+    _internal_set_type(from._internal_type());
+  }
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void queryNameReq::CopyFrom(const queryNameReq& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:queryNameReq)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool queryNameReq::IsInitialized() const {
+  return true;
+}
+
+void queryNameReq::InternalSwap(queryNameReq* other) {
+  using std::swap;
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(queryNameReq, type_)
+      + sizeof(queryNameReq::type_)
+      - PROTOBUF_FIELD_OFFSET(queryNameReq, req_no_)>(
+          reinterpret_cast<char*>(&req_no_),
+          reinterpret_cast<char*>(&other->req_no_));
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata queryNameReq::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_tinypb_2eproto_getter, &descriptor_table_tinypb_2eproto_once,
       file_level_metadata_tinypb_2eproto[2]);
+}
+
+// ===================================================================
+
+class queryNameRes::_Internal {
+ public:
+};
+
+queryNameRes::queryNameRes(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+  SharedCtor();
+  // @@protoc_insertion_point(arena_constructor:queryNameRes)
+}
+queryNameRes::queryNameRes(const queryNameRes& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  res_info_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    res_info_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (!from._internal_res_info().empty()) {
+    res_info_.Set(from._internal_res_info(), 
+      GetArenaForAllocation());
+  }
+  name_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    name_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (!from._internal_name().empty()) {
+    name_.Set(from._internal_name(), 
+      GetArenaForAllocation());
+  }
+  ::memcpy(&ret_code_, &from.ret_code_,
+    static_cast<size_t>(reinterpret_cast<char*>(&id_) -
+    reinterpret_cast<char*>(&ret_code_)) + sizeof(id_));
+  // @@protoc_insertion_point(copy_constructor:queryNameRes)
+}
+
+inline void queryNameRes::SharedCtor() {
+res_info_.InitDefault();
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  res_info_.Set("", GetArenaForAllocation());
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+name_.InitDefault();
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  name_.Set("", GetArenaForAllocation());
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
+    reinterpret_cast<char*>(&ret_code_) - reinterpret_cast<char*>(this)),
+    0, static_cast<size_t>(reinterpret_cast<char*>(&id_) -
+    reinterpret_cast<char*>(&ret_code_)) + sizeof(id_));
+}
+
+queryNameRes::~queryNameRes() {
+  // @@protoc_insertion_point(destructor:queryNameRes)
+  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
+  (void)arena;
+    return;
+  }
+  SharedDtor();
+}
+
+inline void queryNameRes::SharedDtor() {
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  res_info_.Destroy();
+  name_.Destroy();
+}
+
+void queryNameRes::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+
+void queryNameRes::Clear() {
+// @@protoc_insertion_point(message_clear_start:queryNameRes)
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  res_info_.ClearToEmpty();
+  name_.ClearToEmpty();
+  ::memset(&ret_code_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&id_) -
+      reinterpret_cast<char*>(&ret_code_)) + sizeof(id_));
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* queryNameRes::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    uint32_t tag;
+    ptr = ::_pbi::ReadTag(ptr, &tag);
+    switch (tag >> 3) {
+      // int32 ret_code = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
+          ret_code_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // string res_info = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 18)) {
+          auto str = _internal_mutable_res_info();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+          CHK_(::_pbi::VerifyUTF8(str, "queryNameRes.res_info"));
+        } else
+          goto handle_unusual;
+        continue;
+      // int32 req_no = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 24)) {
+          req_no_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // int32 id = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 32)) {
+          id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // string name = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 42)) {
+          auto str = _internal_mutable_name();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+          CHK_(::_pbi::VerifyUTF8(str, "queryNameRes.name"));
+        } else
+          goto handle_unusual;
+        continue;
+      default:
+        goto handle_unusual;
+    }  // switch
+  handle_unusual:
+    if ((tag == 0) || ((tag & 7) == 4)) {
+      CHK_(ptr);
+      ctx->SetLastTag(tag);
+      goto message_done;
+    }
+    ptr = UnknownFieldParse(
+        tag,
+        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+        ptr, ctx);
+    CHK_(ptr != nullptr);
+  }  // while
+message_done:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto message_done;
+#undef CHK_
+}
+
+uint8_t* queryNameRes::_InternalSerialize(
+    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:queryNameRes)
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // int32 ret_code = 1;
+  if (this->_internal_ret_code() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(1, this->_internal_ret_code(), target);
+  }
+
+  // string res_info = 2;
+  if (!this->_internal_res_info().empty()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_res_info().data(), static_cast<int>(this->_internal_res_info().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "queryNameRes.res_info");
+    target = stream->WriteStringMaybeAliased(
+        2, this->_internal_res_info(), target);
+  }
+
+  // int32 req_no = 3;
+  if (this->_internal_req_no() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(3, this->_internal_req_no(), target);
+  }
+
+  // int32 id = 4;
+  if (this->_internal_id() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(4, this->_internal_id(), target);
+  }
+
+  // string name = 5;
+  if (!this->_internal_name().empty()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_name().data(), static_cast<int>(this->_internal_name().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "queryNameRes.name");
+    target = stream->WriteStringMaybeAliased(
+        5, this->_internal_name(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:queryNameRes)
+  return target;
+}
+
+size_t queryNameRes::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:queryNameRes)
+  size_t total_size = 0;
+
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // string res_info = 2;
+  if (!this->_internal_res_info().empty()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_res_info());
+  }
+
+  // string name = 5;
+  if (!this->_internal_name().empty()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_name());
+  }
+
+  // int32 ret_code = 1;
+  if (this->_internal_ret_code() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_ret_code());
+  }
+
+  // int32 req_no = 3;
+  if (this->_internal_req_no() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_req_no());
+  }
+
+  // int32 id = 4;
+  if (this->_internal_id() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_id());
+  }
+
+  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+}
+
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData queryNameRes::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    queryNameRes::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*queryNameRes::GetClassData() const { return &_class_data_; }
+
+void queryNameRes::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+  static_cast<queryNameRes *>(to)->MergeFrom(
+      static_cast<const queryNameRes &>(from));
+}
+
+
+void queryNameRes::MergeFrom(const queryNameRes& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:queryNameRes)
+  GOOGLE_DCHECK_NE(&from, this);
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (!from._internal_res_info().empty()) {
+    _internal_set_res_info(from._internal_res_info());
+  }
+  if (!from._internal_name().empty()) {
+    _internal_set_name(from._internal_name());
+  }
+  if (from._internal_ret_code() != 0) {
+    _internal_set_ret_code(from._internal_ret_code());
+  }
+  if (from._internal_req_no() != 0) {
+    _internal_set_req_no(from._internal_req_no());
+  }
+  if (from._internal_id() != 0) {
+    _internal_set_id(from._internal_id());
+  }
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void queryNameRes::CopyFrom(const queryNameRes& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:queryNameRes)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool queryNameRes::IsInitialized() const {
+  return true;
+}
+
+void queryNameRes::InternalSwap(queryNameRes* other) {
+  using std::swap;
+  auto* lhs_arena = GetArenaForAllocation();
+  auto* rhs_arena = other->GetArenaForAllocation();
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &res_info_, lhs_arena,
+      &other->res_info_, rhs_arena
+  );
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &name_, lhs_arena,
+      &other->name_, rhs_arena
+  );
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(queryNameRes, id_)
+      + sizeof(queryNameRes::id_)
+      - PROTOBUF_FIELD_OFFSET(queryNameRes, ret_code_)>(
+          reinterpret_cast<char*>(&ret_code_),
+          reinterpret_cast<char*>(&other->ret_code_));
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata queryNameRes::GetMetadata() const {
+  return ::_pbi::AssignDescriptors(
+      &descriptor_table_tinypb_2eproto_getter, &descriptor_table_tinypb_2eproto_once,
+      file_level_metadata_tinypb_2eproto[3]);
 }
 
 // ===================================================================
@@ -934,16 +1237,16 @@ const ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor* QueryService::GetDescriptor() 
 }
 
 void QueryService::query_name(::PROTOBUF_NAMESPACE_ID::RpcController* controller,
-                         const ::QueryReq*,
-                         ::QueryNameRes*,
+                         const ::queryNameReq*,
+                         ::queryNameRes*,
                          ::google::protobuf::Closure* done) {
   controller->SetFailed("Method query_name() not implemented.");
   done->Run();
 }
 
 void QueryService::query_age(::PROTOBUF_NAMESPACE_ID::RpcController* controller,
-                         const ::QueryReq*,
-                         ::QueryAgeRes*,
+                         const ::queryAgeReq*,
+                         ::queryAgeRes*,
                          ::google::protobuf::Closure* done) {
   controller->SetFailed("Method query_age() not implemented.");
   done->Run();
@@ -958,17 +1261,17 @@ void QueryService::CallMethod(const ::PROTOBUF_NAMESPACE_ID::MethodDescriptor* m
   switch(method->index()) {
     case 0:
       query_name(controller,
-             ::PROTOBUF_NAMESPACE_ID::internal::DownCast<const ::QueryReq*>(
+             ::PROTOBUF_NAMESPACE_ID::internal::DownCast<const ::queryNameReq*>(
                  request),
-             ::PROTOBUF_NAMESPACE_ID::internal::DownCast<::QueryNameRes*>(
+             ::PROTOBUF_NAMESPACE_ID::internal::DownCast<::queryNameRes*>(
                  response),
              done);
       break;
     case 1:
       query_age(controller,
-             ::PROTOBUF_NAMESPACE_ID::internal::DownCast<const ::QueryReq*>(
+             ::PROTOBUF_NAMESPACE_ID::internal::DownCast<const ::queryAgeReq*>(
                  request),
-             ::PROTOBUF_NAMESPACE_ID::internal::DownCast<::QueryAgeRes*>(
+             ::PROTOBUF_NAMESPACE_ID::internal::DownCast<::queryAgeRes*>(
                  response),
              done);
       break;
@@ -983,9 +1286,9 @@ const ::PROTOBUF_NAMESPACE_ID::Message& QueryService::GetRequestPrototype(
   GOOGLE_DCHECK_EQ(method->service(), descriptor());
   switch(method->index()) {
     case 0:
-      return ::QueryReq::default_instance();
+      return ::queryNameReq::default_instance();
     case 1:
-      return ::QueryReq::default_instance();
+      return ::queryAgeReq::default_instance();
     default:
       GOOGLE_LOG(FATAL) << "Bad method index; this should never happen.";
       return *::PROTOBUF_NAMESPACE_ID::MessageFactory::generated_factory()
@@ -998,9 +1301,9 @@ const ::PROTOBUF_NAMESPACE_ID::Message& QueryService::GetResponsePrototype(
   GOOGLE_DCHECK_EQ(method->service(), descriptor());
   switch(method->index()) {
     case 0:
-      return ::QueryNameRes::default_instance();
+      return ::queryNameRes::default_instance();
     case 1:
-      return ::QueryAgeRes::default_instance();
+      return ::queryAgeRes::default_instance();
     default:
       GOOGLE_LOG(FATAL) << "Bad method index; this should never happen.";
       return *::PROTOBUF_NAMESPACE_ID::MessageFactory::generated_factory()
@@ -1020,36 +1323,37 @@ QueryService_Stub::~QueryService_Stub() {
 }
 
 void QueryService_Stub::query_name(::PROTOBUF_NAMESPACE_ID::RpcController* controller,
-                              const ::QueryReq* request,
-                              ::QueryNameRes* response,
+                              const ::queryNameReq* request,
+                              ::queryNameRes* response,
                               ::google::protobuf::Closure* done) {
-  
-  GOOGLE_LOG(INFO) << "call query_name";
   channel_->CallMethod(descriptor()->method(0),
                        controller, request, response, done);
 }
 void QueryService_Stub::query_age(::PROTOBUF_NAMESPACE_ID::RpcController* controller,
-                              const ::QueryReq* request,
-                              ::QueryAgeRes* response,
+                              const ::queryAgeReq* request,
+                              ::queryAgeRes* response,
                               ::google::protobuf::Closure* done) {
-  GOOGLE_LOG(INFO) << "call query_age";
   channel_->CallMethod(descriptor()->method(1),
                        controller, request, response, done);
 }
 
 // @@protoc_insertion_point(namespace_scope)
 PROTOBUF_NAMESPACE_OPEN
-template<> PROTOBUF_NOINLINE ::QueryReq*
-Arena::CreateMaybeMessage< ::QueryReq >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::QueryReq >(arena);
+template<> PROTOBUF_NOINLINE ::queryAgeReq*
+Arena::CreateMaybeMessage< ::queryAgeReq >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::queryAgeReq >(arena);
 }
-template<> PROTOBUF_NOINLINE ::QueryNameRes*
-Arena::CreateMaybeMessage< ::QueryNameRes >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::QueryNameRes >(arena);
+template<> PROTOBUF_NOINLINE ::queryAgeRes*
+Arena::CreateMaybeMessage< ::queryAgeRes >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::queryAgeRes >(arena);
 }
-template<> PROTOBUF_NOINLINE ::QueryAgeRes*
-Arena::CreateMaybeMessage< ::QueryAgeRes >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::QueryAgeRes >(arena);
+template<> PROTOBUF_NOINLINE ::queryNameReq*
+Arena::CreateMaybeMessage< ::queryNameReq >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::queryNameReq >(arena);
+}
+template<> PROTOBUF_NOINLINE ::queryNameRes*
+Arena::CreateMaybeMessage< ::queryNameRes >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::queryNameRes >(arena);
 }
 PROTOBUF_NAMESPACE_CLOSE
 

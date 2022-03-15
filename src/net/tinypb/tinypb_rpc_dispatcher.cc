@@ -44,9 +44,10 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
     ErrorLog << "parse request error";
     return;
   }
-  InfoLog<< "==============================";
-  InfoLog<< "get send request data=" << request->DebugString();
-  InfoLog<< "==============================";
+
+  InfoLog<< "============================================================";
+  InfoLog<< "Get client send request data:" << std::endl << request->DebugString();
+  InfoLog<< "============================================================";
 
   google::protobuf::Message* response = service->GetResponsePrototype(method).New();
 
@@ -57,7 +58,7 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
   std::function<void()> reply_package_func = [tmp, &conn, response]()
   {
     // DebugLog << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<";
-    DebugLog << "call [" << tmp->service_full_name << "] succ, now send reply package";
+    InfoLog << "Call [" << tmp->service_full_name << "] succ, now send reply package";
     TcpBuffer* buff = conn->getOutBuffer();
     if (!buff) {
       ErrorLog << "reply error! tcp write buffer nullptr";
@@ -70,9 +71,9 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
       ErrorLog << "reply error! encode reply package error";
       return;
     }
-    InfoLog<< "==============================";
-    InfoLog<< "set reply response data=" << response->DebugString();
-    InfoLog<< "==============================";
+    InfoLog<< "============================================================";
+    InfoLog<< "Set server reply response data:" << std::endl << response->DebugString();
+    InfoLog<< "============================================================";
 
     TinyPbCodeC codec;
     codec.encode(buff, dynamic_cast<AbstractData*>(&reply_pk));

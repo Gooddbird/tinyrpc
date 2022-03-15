@@ -63,7 +63,7 @@ void connect_co() {
     // memcpy(&buf[15], &checksum, 4);
     // buf[19] = 0x03;
 
-    QueryReq req;
+    queryAgeReq req;
     req.set_id(9876); 
     tinyrpc::TinyPbStruct pb_struct;
     pb_struct.service_full_name = "QueryService.query_name";
@@ -71,7 +71,7 @@ void connect_co() {
 
     DebugLog << "pb size = " << pb_struct.pb_data.size();
 
-    QueryReq req_test;
+    queryAgeReq req_test;
     if (!req_test.ParseFromString(pb_struct.pb_data))
     {
       ErrorLog << "parse request error";

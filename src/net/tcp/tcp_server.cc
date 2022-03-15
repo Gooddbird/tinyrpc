@@ -79,7 +79,7 @@ int TcpAcceptor::toAccept() {
 		return -1;
 	}
 
-	DebugLog << "new client coming! fd:[" << rt <<  ", addr:[" << m_peer_addr->toString() << "]";
+	InfoLog << "New client accepted succ! fd:[" << rt <<  ", addr:[" << m_peer_addr->toString() << "]";
 	return rt;	
 }
 
