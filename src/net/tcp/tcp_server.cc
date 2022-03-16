@@ -140,20 +140,25 @@ void TcpServer::MainAcceptCorFunc() {
 
 
 void TcpServer::MainLoopTimerFunc() {
-  // DebugLog << "this TcpServer loop timer excute";
+  DebugLog << "this TcpServer loop timer excute";
   
   // delete Closed TcpConnection per loop
   // for free memory
+	DebugLog << "m_clients.size=" << m_clients.size();
   for (auto &i : m_clients) {
     TcpConnection::ptr s_conn = i.second;
-    if (!s_conn.get() && s_conn->getState() == Closed) {
-      // need to delete TcpConnection
-      DebugLog << "TcpConection [fd:" << i.first << "] will delete";
-      (i.second).reset();
-			s_conn.reset();
-			m_tcp_counts--;
-    }
-  }
+		// DebugLog << "state = " << s_conn->getState();
+		if (s_conn.get() != nullptr) {
+			if (s_conn->getState() == Closed) {
+				// need to delete TcpConnection
+				DebugLog << "TcpConection [fd:" << i.first << "] will delete";
+				(i.second).reset();
+				s_conn.reset();
+				m_tcp_counts--;
+			}
+	
+		}
+ }
 
   // DebugLog << "this TcpServer loop timer end";
   
@@ -173,6 +178,7 @@ bool TcpServer::addClient(int fd) {
     // src Tcpconnection can delete
     s_conn.reset();
 		it->second.reset();
+		m_tcp_counts--;
 
     // set new Tcpconnection	
 		it->second = std::make_shared<TcpConnection> (this, 
