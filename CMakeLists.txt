@@ -9,6 +9,7 @@ set(LIB_SRC
   src/coroutine/coctx_swap.S
   src/coroutine/coroutine.cc
   src/coroutine/coroutine_hook.cc
+  src/coroutine/coroutine_pool.cc
   src/net/fd_event.cc
   src/net/reactor.cc
   src/net/timer.cc

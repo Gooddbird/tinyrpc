@@ -55,7 +55,7 @@ Coroutine::Coroutine(int size) : m_stack_size(size) {
 
   m_cor_id = t_cur_coroutine_id++;
   t_coroutine_count++;
-  DebugLog << "coroutine[null callback] created, id[" << m_cor_id << "]";
+  // DebugLog << "coroutine[null callback] created, id[" << m_cor_id << "]";
 }
 
 Coroutine::Coroutine(int size, std::function<void()> cb)
@@ -72,7 +72,7 @@ Coroutine::Coroutine(int size, std::function<void()> cb)
   setCallBack(cb);
   m_cor_id = t_cur_coroutine_id++;
   t_coroutine_count++;
-  DebugLog << "coroutine created, id[" << m_cor_id << "]";
+  // DebugLog << "coroutine created, id[" << m_cor_id << "]";
 }
 
 bool Coroutine::setCallBack(std::function<void()> cb) {

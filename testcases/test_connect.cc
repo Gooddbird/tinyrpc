@@ -10,6 +10,7 @@
 #include "../src/coroutine/coroutine_hook.h"
 #include "../src/net/reactor.h"
 #include "../src/coroutine/coroutine.h"
+#include "../src/coroutine/coroutine_pool.h"
 #include "../src/net/tinypb/tinypb_codec.h"
 #include "../src/net/tinypb/tinypb_data.h"
 #include "tinypb.pb.h"

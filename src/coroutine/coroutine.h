@@ -34,7 +34,11 @@ class Coroutine {
 
   void setIsInCoFunc(const bool v) {
     m_is_in_cofunc = v;
-  } 
+  }
+
+  bool getIsInCoFunc() const {
+    return m_is_in_cofunc;
+  }
 
  public:
   static void Yield();

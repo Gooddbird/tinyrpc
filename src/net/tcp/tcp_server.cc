@@ -7,6 +7,7 @@
 #include "io_thread.h"
 #include "../../coroutine/coroutine.h"
 #include "../../coroutine/coroutine_hook.h"
+#include "../../coroutine/coroutine_pool.h"
 
 namespace tinyrpc {
 
@@ -93,7 +94,11 @@ void TcpServer::start() {
 
 	m_main_reactor = tinyrpc::Reactor::GetReactor();
 	m_acceptor.reset(new TcpAcceptor(m_addr));
-	m_accept_cor = std::make_shared<tinyrpc::Coroutine>(128 * 1024, std::bind(&TcpServer::MainAcceptCorFunc, this)); 
+	// m_accept_cor = std::make_shared<tinyrpc::Coroutine>(128 * 1024, std::bind(&TcpServer::MainAcceptCorFunc, this)); 
+
+	m_accept_cor = GetCoroutinePool()->getCoroutineInstanse();
+	m_accept_cor->setCallBack(std::bind(&TcpServer::MainAcceptCorFunc, this));
+
 	tinyrpc::Coroutine::Resume(m_accept_cor.get());
 
   m_timer.reset(m_main_reactor->getTimer());
@@ -108,6 +113,7 @@ void TcpServer::start() {
 }
 
 TcpServer::~TcpServer() {
+	GetCoroutinePool()->returnCoroutine(m_accept_cor->getCorId());
   DebugLog << "~TcpServer";
 }
 

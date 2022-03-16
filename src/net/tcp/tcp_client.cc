@@ -3,6 +3,7 @@
 #include "../../log/log.h"
 #include "../../coroutine/coroutine.h"
 #include "../../coroutine/coroutine_hook.h"
+#include "../../coroutine/coroutine_pool.h"
 #include "../net_address.h"
 #include "tcp_client.h" 
 
@@ -12,7 +13,10 @@ TcpClient::TcpClient(NetAddress::ptr addr) : m_peer_addr(addr) {
 
   m_family = m_peer_addr->getFamily();
   m_fd = socket(AF_INET, SOCK_STREAM, 0);
-  m_connect_cor = std::make_shared<Coroutine>(128 * 1024, std::bind(&TcpClient::MainConnectCorFunc, this));
+  // m_connect_cor = std::make_shared<Coroutine>(128 * 1024, std::bind(&TcpClient::MainConnectCorFunc, this));
+  m_connect_cor = GetCoroutinePool()->getCoroutineInstanse();
+  m_connect_cor->setCallBack(std::bind(&TcpClient::MainConnectCorFunc, this));
+
   m_reactor = Reactor::GetReactor();
   m_connection = std::make_shared<TcpConnection>(this, m_reactor, m_fd, 128);
   assert(m_reactor != nullptr);
@@ -20,6 +24,7 @@ TcpClient::TcpClient(NetAddress::ptr addr) : m_peer_addr(addr) {
 }
 
 TcpClient::~TcpClient() {
+  GetCoroutinePool()->returnCoroutine(m_connect_cor->getCorId());
   if (m_fd > 0) {
     close(m_fd);
   }

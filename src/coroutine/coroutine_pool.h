@@ -19,11 +19,18 @@ class CoroutinePool {
  private:
   int m_index {0};
   int m_pool_size {0};
-  std::vector<Coroutine::ptr> m_free_cors;    // free cors, can be dispatched
-  std::vector<Coroutine::ptr> m_busy_cors;
+  int m_stack_size {0};
 
-}
+  // first--ptr of cor
+  // second
+  //    false -- can be dispatched
+  //    true -- can't be dispatched
+  std::vector<std::pair<Coroutine::ptr, bool>> m_free_cors;
 
+};
+
+
+CoroutinePool* GetCoroutinePool();
 
 }
 

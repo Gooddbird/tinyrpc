@@ -1,5 +1,6 @@
 #include "../src/log/log.h"
 #include "../src/coroutine/coroutine.h"
+#include "../src/coroutine/coroutine_pool.h"
 #include <functional>
 
 void fun() {
@@ -21,26 +22,45 @@ void fun3() {
 	DebugLog << "function 33333333333 end";
 }
 
+void fun4() {
+	DebugLog << "this is test coroutine return pool";
+  tinyrpc::Coroutine::Yield();
+}
+
 int main(int argc, char* argv[]) {
 
   tinyrpc::Coroutine::GetCurrentCoroutine();
 
-  tinyrpc::Coroutine::ptr co = std::make_shared<tinyrpc::Coroutine>(128*1024, &fun);
+  tinyrpc::CoroutinePool* cor_pool = tinyrpc::GetCoroutinePool();
+
+  // tinyrpc::Coroutine::ptr co = std::make_shared<tinyrpc::Coroutine>(128*1024, &fun);
+
+  tinyrpc::Coroutine::ptr co1 = cor_pool->getCoroutineInstanse();
+  co1->setCallBack(&fun);
 
   DebugLog << "this is main co";
-  tinyrpc::Coroutine::Resume(co.get());
+  tinyrpc::Coroutine::Resume(co1.get());
   DebugLog << "main co back 1";
 
-  tinyrpc::Coroutine::Resume(co.get());
+  tinyrpc::Coroutine::Resume(co1.get());
   DebugLog << "main co back 2";
 
-  tinyrpc::Coroutine::ptr co2 = std::make_shared<tinyrpc::Coroutine>(128*1024);
+  // tinyrpc::Coroutine::ptr co2 = std::make_shared<tinyrpc::Coroutine>(128*1024);
+
+  tinyrpc::Coroutine::ptr co2 = cor_pool->getCoroutineInstanse();
   co2->setCallBack(&fun2);
   
 	tinyrpc::Coroutine::Resume(co2.get());
 
   co2->setCallBack(&fun3);
 	tinyrpc::Coroutine::Resume(co2.get());
+
+  cor_pool->returnCoroutine(co1->getCorId());
+
+  tinyrpc::Coroutine::ptr co3 = cor_pool->getCoroutineInstanse();
+  co3->setCallBack(&fun4);
+  tinyrpc::Coroutine::Resume(co3.get());
+
 
   return 0;
 

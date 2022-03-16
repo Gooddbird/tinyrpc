@@ -7,6 +7,7 @@
 #include "../tinypb/tinypb_codec.h"
 #include "../tinypb/tinypb_data.h"
 #include "../../coroutine/coroutine_hook.h"
+#include "../../coroutine/coroutine_pool.h"
 
 namespace tinyrpc {
 
@@ -23,8 +24,14 @@ TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::Reactor* reac
   m_fd_event->setReactor(m_reactor);
   initBuffer(buff_size); 
 
-  m_read_cor = std::make_shared<Coroutine>(128 * 1024, std::bind(&TcpConnection::MainReadCoFunc, this));
-  m_write_cor = std::make_shared<Coroutine>(128 * 1024, std::bind(&TcpConnection::MainWriteCoFunc, this));
+  // m_read_cor = std::make_shared<Coroutine>(128 * 1024, std::bind(&TcpConnection::MainReadCoFunc, this));
+  // m_write_cor = std::make_shared<Coroutine>(128 * 1024, std::bind(&TcpConnection::MainWriteCoFunc, this));
+  m_read_cor = GetCoroutinePool()->getCoroutineInstanse();
+  m_read_cor->setCallBack(std::bind(&TcpConnection::MainReadCoFunc, this));
+
+  m_write_cor = GetCoroutinePool()->getCoroutineInstanse();
+  m_write_cor->setCallBack(std::bind(&TcpConnection::MainWriteCoFunc, this));
+
   m_reactor->addCoroutine(m_read_cor);
   
   m_codec = std::make_shared<TinyPbCodeC>();
@@ -61,6 +68,9 @@ void TcpConnection::setUpClient() {
 }
 
 TcpConnection::~TcpConnection() {
+  GetCoroutinePool()->returnCoroutine(m_read_cor->getCorId());
+  GetCoroutinePool()->returnCoroutine(m_write_cor->getCorId());
+
   DebugLog << "~TcpConnection, fd=" << m_fd;
 }
 
