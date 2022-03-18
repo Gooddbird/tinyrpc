@@ -5,7 +5,8 @@ ENABLE_LANGUAGE(ASM)
 set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -rdynamic -O3 -g -std=c++11 -Wall -Wno-deprecated -Werror -Wno-dev")
 
 set(LIB_SRC
-  src/log/log.cc  
+  src/log/log.cc
+  src/thread/thread_pool.cc
   src/coroutine/coctx_swap.S
   src/coroutine/coroutine.cc
   src/coroutine/coroutine_hook.cc
@@ -37,6 +38,10 @@ set(LIBS
 add_executable(test_log testcases/test_log.cc)
 add_dependencies(test_log tinyrpc)
 target_link_libraries(test_log ${LIBS})
+
+add_executable(test_thread_pool testcases/test_thread_pool.cc)
+add_dependencies(test_thread_pool tinyrpc)
+target_link_libraries(test_thread_pool ${LIBS})
 
 #add_executable(test_reactor testcases/test_reactor.cc)
 #add_dependencies(test_reactor tinyrpc)

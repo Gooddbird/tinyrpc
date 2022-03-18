@@ -198,7 +198,7 @@ void TinyPbCodeC::decode(TcpBuffer* buf, AbstractData* data) {
 }
 
 CodeCType TinyPbCodeC::type() const {
-  return CODEC_HTTP;
+  return CODEC_TINYPB;
 }
 
 }
