@@ -29,6 +29,14 @@ IPAddress::IPAddress(sockaddr_in addr) : m_addr(addr) {
   m_ip = std::string(inet_ntoa(m_addr.sin_addr));
   m_port = ntohs(m_addr.sin_port);
 }
+IPAddress::IPAddress(uint16_t port) : m_port(port) {
+  memset(&m_addr, 0, sizeof(m_addr));
+  m_addr.sin_family = AF_INET;
+  m_addr.sin_addr.s_addr = INADDR_ANY;
+  m_addr.sin_port = htons(m_port);
+ 
+  DebugLog << "create ipv4 address succ [" << toString() << "]";
+}
 
 int IPAddress::getFamily() const {
   return m_addr.sin_family;

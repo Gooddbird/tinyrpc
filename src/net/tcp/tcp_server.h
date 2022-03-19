@@ -75,8 +75,8 @@ class TcpServer {
 
   Coroutine::ptr m_accept_cor;
   
-  TimerEvent::ptr m_timer_event;
-  Timer::ptr m_timer;
+  // TimerEvent::ptr m_timer_event;
+  // Timer::ptr m_timer;
   TinyPbRpcDispacther::ptr m_dispatcher;
 
   IOThreadPool::ptr m_io_pool;

@@ -47,7 +47,7 @@ class QueryServiceImpl : public QueryService {
 
 int main(int argc, char* argv[]) {
 
-  tinyrpc::IPAddress::ptr addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
+  tinyrpc::IPAddress::ptr addr = std::make_shared<tinyrpc::IPAddress>("192.168.245.7", 39999);
   
   tinyrpc::TcpServer server(addr);
   tinyrpc::TinyPbRpcDispacther* dispatcher = server.getDispatcher();

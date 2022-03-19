@@ -73,6 +73,8 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
     return &m_client_res_data;
   }
 
+  void registerToTimeWheel();
+
  private:
   void MainReadCoFunc();
 
@@ -81,6 +83,7 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
   void clearClient();
   
   void execute();
+
 
  private:
   TcpServer* m_tcp_svr {nullptr};

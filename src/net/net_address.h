@@ -36,6 +36,8 @@ class IPAddress : public NetAddress {
  public:
   IPAddress(const std::string& ip, uint16_t port);
 
+  IPAddress(uint16_t port);
+
   IPAddress(sockaddr_in addr);
 
   sockaddr* getSockAddr();

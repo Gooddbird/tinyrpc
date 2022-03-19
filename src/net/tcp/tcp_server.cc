@@ -37,7 +37,10 @@ void TcpAcceptor::init() {
 		ErrorLog << "bind error, errno=" << errno << ", error=" << strerror(errno);
 	}
   assert(rt == 0);
-
+	int val = 1;
+	if (setsockopt(m_fd, SOL_SOCKET, SO_REUSEPORT, &val, sizeof(val)) < 0) {
+		ErrorLog << "set reuseport error";
+	}		
 	rt = listen(m_fd, 10);
 	if (rt != 0) {
 		ErrorLog << "listen error, fd= " << m_fd << ", errno=" << errno << ", error=" << strerror(errno);
@@ -102,12 +105,12 @@ void TcpServer::start() {
 
 	tinyrpc::Coroutine::Resume(m_accept_cor.get());
 
-  m_timer.reset(m_main_reactor->getTimer());
+  // m_timer.reset(m_main_reactor->getTimer());
 
-  m_timer_event = std::make_shared<TimerEvent>(10000, true, 
-    std::bind(&TcpServer::MainLoopTimerFunc, this));
+  // m_timer_event = std::make_shared<TimerEvent>(10000, true, 
+  //   std::bind(&TcpServer::MainLoopTimerFunc, this));
   
-  m_timer->addTimerEvent(m_timer_event);
+  // m_timer->addTimerEvent(m_timer_event);
 
 	// m_time_wheel = std::make_shared<TcpTimeWheel>(m_main_reactor, 6, 10);
 
@@ -146,57 +149,57 @@ void TcpServer::MainAcceptCorFunc() {
 }
 
 
-void TcpServer::MainLoopTimerFunc() {
-  DebugLog << "this TcpServer loop timer excute";
+// void TcpServer::MainLoopTimerFunc() {
+//   DebugLog << "this TcpServer loop timer excute";
   
-  // delete Closed TcpConnection per loop
-  // for free memory
-	DebugLog << "m_clients.size=" << m_clients.size();
-  for (auto &i : m_clients) {
-    TcpConnection::ptr s_conn = i.second;
-		// DebugLog << "state = " << s_conn->getState();
-		if (s_conn.get() != nullptr) {
-			if (s_conn->getState() == Closed) {
-				// need to delete TcpConnection
-				DebugLog << "TcpConection [fd:" << i.first << "] will delete";
-				(i.second).reset();
-				s_conn.reset();
-				m_tcp_counts--;
-			}
+//   // delete Closed TcpConnection per loop
+//   // for free memory
+// 	DebugLog << "m_clients.size=" << m_clients.size();
+//   for (auto &i : m_clients) {
+//     TcpConnection::ptr s_conn = i.second;
+// 		// DebugLog << "state = " << s_conn->getState();
+// 		if (s_conn.get() != nullptr) {
+// 			if (s_conn->getState() == Closed) {
+// 				// need to delete TcpConnection
+// 				DebugLog << "TcpConection [fd:" << i.first << "] will delete";
+// 				(i.second).reset();
+// 				s_conn.reset();
+// 				m_tcp_counts--;
+// 			}
 	
-		}
- }
+// 		}
+//  }
 
-  // DebugLog << "this TcpServer loop timer end";
+//   // DebugLog << "this TcpServer loop timer end";
   
-}
+// }
 
-bool TcpServer::addClient(int fd) {
+// bool TcpServer::addClient(int fd) {
 
-  auto it = m_clients.find(fd);
-  if (it != m_clients.end()) {
-    TcpConnection::ptr s_conn = it->second;
-    if (!s_conn.get()) {
-			if (s_conn.use_count() > 0 && s_conn->getState() != Closed) {
-				ErrorLog << "insert error, this fd of TcpConection exist and state not Closed";
-				return false;
-			}
-    }
-    // src Tcpconnection can delete
-    s_conn.reset();
-		it->second.reset();
-		m_tcp_counts--;
+//   auto it = m_clients.find(fd);
+//   if (it != m_clients.end()) {
+//     TcpConnection::ptr s_conn = it->second;
+//     if (!s_conn.get()) {
+// 			if (s_conn.use_count() > 0 && s_conn->getState() != Closed) {
+// 				ErrorLog << "insert error, this fd of TcpConection exist and state not Closed";
+// 				return false;
+// 			}
+//     }
+//     // src Tcpconnection can delete
+//     s_conn.reset();
+// 		it->second.reset();
+// 		m_tcp_counts--;
 
-    // set new Tcpconnection	
-		it->second = std::make_shared<TcpConnection> (this, 
-			m_io_pool->getIOThread(), fd, 128);
+//     // set new Tcpconnection	
+// 		it->second = std::make_shared<TcpConnection> (this, 
+// 			m_io_pool->getIOThread(), fd, 128);
     
-  } else {
-    m_clients.insert(std::make_pair(fd, std::make_shared<TcpConnection> (this, 
-			m_io_pool->getIOThread(), fd, 128)));
-  }
-  return true;
-}
+//   } else {
+//     m_clients.insert(std::make_pair(fd, std::make_shared<TcpConnection> (this, 
+// 			m_io_pool->getIOThread(), fd, 128)));
+//   }
+//   return true;
+// }
 
 
 TinyPbRpcDispacther* TcpServer::getDispatcher() {	

@@ -35,11 +35,6 @@ TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_
   m_reactor->addCoroutine(m_read_cor);
   
   m_codec = std::make_shared<TinyPbCodeC>();
-  auto cb = [] (TcpConnection::ptr conn) {
-    DebugLog << "server ready to close this connection";
-    conn->shutdownConnection();
-  };
-  m_conn_slot = new AbstractSlot<TcpConnection>(shared_from_this(), cb);
   DebugLog << "succ create tcp connection";
 }
 
@@ -63,8 +58,20 @@ TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reac
   m_codec = std::make_shared<TinyPbCodeC>();
 
   DebugLog << "succ create tcp connection[NotConnected]";
+
 }
 
+void TcpConnection::registerToTimeWheel() {
+  auto cb = [] (TcpConnection::ptr conn) {
+    DebugLog << "server ready to shutdown this connection";
+    conn->shutdownConnection();
+  };
+  m_conn_slot = new AbstractSlot<TcpConnection>(shared_from_this(), cb);
+  TcpTimeWheel::TcpConnectionSlot::ptr tmp;
+  tmp.reset(m_conn_slot);
+  m_io_thread->getTimeWheel()->fresh(tmp);
+
+}
 
 void TcpConnection::setUpClient() {
   m_reactor->addCoroutine(m_read_cor);

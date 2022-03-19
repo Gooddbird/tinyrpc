@@ -41,11 +41,11 @@ void* IOThread::main(void* arg) {
   IOThread* thread = static_cast<IOThread*>(arg);
   thread->m_reactor = t_reactor_ptr;
 
-  m_timer_event = std::make_shared<TimerEvent>(10000, true, 
-    std::bind(&IOThread::MainLoopTimerFunc, this));
+  thread->m_timer_event = std::make_shared<TimerEvent>(10000, true, 
+    std::bind(&IOThread::MainLoopTimerFunc, thread));
   
-  thread->getReactor()->getTimer()->addTimerEvent(m_timer_event);
-  thread->m_time_wheel = std::make_shared<TcpTimeWheel>(thread->m_reactor, 6, 10);
+  thread->getReactor()->getTimer()->addTimerEvent(thread->m_timer_event);
+  thread->m_time_wheel = std::make_shared<TcpTimeWheel>(thread->m_reactor, 2, 10);
 
   Coroutine::GetCurrentCoroutine();
 
@@ -69,12 +69,14 @@ bool IOThread::addClient(TcpServer* tcp_svr, int fd) {
     s_conn.reset();
 		it->second.reset();
     // set new Tcpconnection	
-		it->second = std::make_shared<TcpConnection>(tcp_svr, 
-			this, fd, 128);
-    
+		it->second = std::make_shared<TcpConnection>(tcp_svr, this, fd, 128);
+    it->second->registerToTimeWheel();
+
   } else {
-    m_clients.insert(std::make_pair(fd, std::make_shared<TcpConnection> (tcp_svr, 
-			this, fd, 128)));
+    TcpConnection::ptr conn = std::make_shared<TcpConnection>(tcp_svr, this, fd, 128); 
+    m_clients.insert(std::make_pair(fd, conn));
+    conn->registerToTimeWheel();
+    
   }
   return true;
 }
@@ -97,6 +99,7 @@ void IOThread::MainLoopTimerFunc() {
 			}
 	
 		}
+  }
 }
 
 
@@ -104,7 +107,7 @@ IOThreadPool::IOThreadPool(int size) : m_size(size) {
   m_io_threads.resize(size);
   for (int i = 0; i < size; ++i) {
     m_io_threads[i] = std::make_shared<IOThread>();
-  }  
+  }
 }
 
 IOThread* IOThreadPool::getIOThread() {
