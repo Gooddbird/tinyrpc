@@ -19,6 +19,8 @@ set(LIB_SRC
   src/net/tcp/tcp_client.cc
   src/net/tcp/tcp_buffer.cc
   src/net/tcp/tcp_connection.cc
+  src/net/tcp/io_thread.cc
+  src/net/tcp/tcp_connection_time_wheel.cc
   src/net/http/http_codec.cc
   src/net/tinypb/tinypb_codec.cc
   src/net/tinypb/tinypb_rpc_dispatcher.cc

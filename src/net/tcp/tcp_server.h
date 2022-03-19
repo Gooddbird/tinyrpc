@@ -9,6 +9,7 @@
 #include "../net_address.h"
 #include "tcp_connection.h"
 #include "io_thread.h"
+#include "tcp_connection_time_wheel.h"
 #include "../tinypb/tinypb_rpc_dispatcher.h"
 
 
@@ -51,6 +52,8 @@ class TcpServer {
 
   TinyPbRpcDispacther* getDispatcher();
 
+  TcpTimeWheel* getTimeWheel();
+
  private:
   void MainAcceptCorFunc();
 
@@ -64,7 +67,7 @@ class TcpServer {
 
   int m_tcp_counts {0};
 
-  Reactor* m_main_reactor;
+  Reactor* m_main_reactor {nullptr};
 
   std::map<int, TcpConnection::ptr> m_clients;
 
@@ -77,6 +80,7 @@ class TcpServer {
   TinyPbRpcDispacther::ptr m_dispatcher;
 
   IOThreadPool::ptr m_io_pool;
+
 
 };
 

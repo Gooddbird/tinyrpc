@@ -8,13 +8,15 @@
 #include "../tinypb/tinypb_data.h"
 #include "../../coroutine/coroutine_hook.h"
 #include "../../coroutine/coroutine_pool.h"
+#include "tcp_connection_time_wheel.h"
+#include "abstract_slot.h"
+#include "../timer.h"
 
 namespace tinyrpc {
 
-TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::Reactor* reactor, int fd, int buff_size)
-  : m_fd(fd), m_state(Connected), m_connection_type(ServerConnection) {	
-  assert(reactor != nullptr); 
-  m_reactor = reactor;
+TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_thread, int fd, int buff_size)
+  : m_io_thread(io_thread), m_fd(fd), m_state(Connected), m_connection_type(ServerConnection) {	
+  m_reactor = m_io_thread->getReactor();
 
   assert(tcp_svr!= nullptr); 
   m_tcp_svr = tcp_svr;
@@ -24,8 +26,6 @@ TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::Reactor* reac
   m_fd_event->setReactor(m_reactor);
   initBuffer(buff_size); 
 
-  // m_read_cor = std::make_shared<Coroutine>(128 * 1024, std::bind(&TcpConnection::MainReadCoFunc, this));
-  // m_write_cor = std::make_shared<Coroutine>(128 * 1024, std::bind(&TcpConnection::MainWriteCoFunc, this));
   m_read_cor = GetCoroutinePool()->getCoroutineInstanse();
   m_read_cor->setCallBack(std::bind(&TcpConnection::MainReadCoFunc, this));
 
@@ -35,7 +35,11 @@ TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::Reactor* reac
   m_reactor->addCoroutine(m_read_cor);
   
   m_codec = std::make_shared<TinyPbCodeC>();
-
+  auto cb = [] (TcpConnection::ptr conn) {
+    DebugLog << "server ready to close this connection";
+    conn->shutdownConnection();
+  };
+  m_conn_slot = new AbstractSlot<TcpConnection>(shared_from_this(), cb);
   DebugLog << "succ create tcp connection";
 }
 
@@ -143,13 +147,17 @@ void TcpConnection::MainReadCoFunc() {
           break;
         } 
       }
-      // m_read_buffer->writeToBuffer(buf, rt);
     }
     if (close_flag) {
       break;
     }
     if (!read_all) {
       ErrorLog << "not read all data in socket buffer";
+    }
+    if (m_connection_type == ServerConnection) {
+      TcpTimeWheel::TcpConnectionSlot::ptr tmp;
+      tmp.reset(m_conn_slot);
+      m_io_thread->getTimeWheel()->fresh(tmp);
     }
     m_reactor->addTask(std::bind(&TcpConnection::execute, this)); 
     Coroutine::Yield();

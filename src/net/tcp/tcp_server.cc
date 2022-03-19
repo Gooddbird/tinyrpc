@@ -5,6 +5,7 @@
 #include "tcp_server.h"
 #include "tcp_connection.h"
 #include "io_thread.h"
+#include "tcp_connection_time_wheel.h"
 #include "../../coroutine/coroutine.h"
 #include "../../coroutine/coroutine_hook.h"
 #include "../../coroutine/coroutine_pool.h"
@@ -108,6 +109,8 @@ void TcpServer::start() {
   
   m_timer->addTimerEvent(m_timer_event);
 
+	// m_time_wheel = std::make_shared<TcpTimeWheel>(m_main_reactor, 6, 10);
+
 	m_main_reactor->loop();
 
 }
@@ -130,8 +133,12 @@ void TcpServer::MainAcceptCorFunc() {
       Coroutine::Yield();
       continue;
 		}
-
-    addClient(fd);
+		IOThread* io_thread = m_io_pool->getIOThread();
+		auto cb = [this, io_thread, fd]() {
+			io_thread->addClient(this, fd);
+		};
+		io_thread->getReactor()->addTask(cb);
+    // addClient(fd);
 		m_tcp_counts++;
 		DebugLog << "current tcp connection count is [" << m_tcp_counts << "]";
     // DebugLog << "insert succ, size=" << m_clients.size();
@@ -182,11 +189,11 @@ bool TcpServer::addClient(int fd) {
 
     // set new Tcpconnection	
 		it->second = std::make_shared<TcpConnection> (this, 
-			m_io_pool->getIOThread()->getReactor(), fd, 128);
+			m_io_pool->getIOThread(), fd, 128);
     
   } else {
     m_clients.insert(std::make_pair(fd, std::make_shared<TcpConnection> (this, 
-			m_io_pool->getIOThread()->getReactor(), fd, 128)));
+			m_io_pool->getIOThread(), fd, 128)));
   }
   return true;
 }
@@ -195,5 +202,9 @@ bool TcpServer::addClient(int fd) {
 TinyPbRpcDispacther* TcpServer::getDispatcher() {	
 	return m_dispatcher.get();	
 }
+
+// TcpTimeWheel* TcpServer::getTimeWheel() {
+// 	return m_time_wheel.get();
+// }
 
 }

@@ -11,11 +11,15 @@
 #include "../../coroutine/coroutine.h"
 #include "../http/http_request.h"
 #include "../tinypb/tinypb_codec.h"
+#include "io_thread.h"
+#include "tcp_connection_time_wheel.h"
+#include "abstract_slot.h"
 
 namespace tinyrpc {
 
 class TcpServer;
 class TcpClient;
+class IOThread;
 
 enum TcpConnectionState {
 	NotConnected = 1,		// can do io
@@ -30,7 +34,7 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
  public:
  	typedef std::shared_ptr<TcpConnection> ptr;
 
-	TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::Reactor* reactor, int fd, int buff_size);
+	TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_thread, int fd, int buff_size);
 
 	TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reactor, int fd, int buff_size);
 
@@ -81,6 +85,7 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
  private:
   TcpServer* m_tcp_svr {nullptr};
   TcpClient* m_tcp_cli {nullptr};
+  IOThread* m_io_thread {nullptr};
   Reactor* m_reactor {nullptr};
   int m_fd {-1};
   TcpConnectionState m_state {TcpConnectionState::Connected};
@@ -98,7 +103,7 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
   ConnectionType m_connection_type {ServerConnection};
   TinyPbStruct m_client_res_data;
 
-
+  AbstractSlot<TcpConnection>* m_conn_slot {nullptr};
 
 };
 
