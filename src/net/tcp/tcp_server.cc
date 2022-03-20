@@ -123,6 +123,10 @@ TcpServer::~TcpServer() {
   DebugLog << "~TcpServer";
 }
 
+NetAddress::ptr TcpServer::getPeerAddr() {
+	return m_acceptor->getPeerAddr();
+}
+
 void TcpServer::MainAcceptCorFunc() {
   DebugLog << "enable Hook here";
 	tinyrpc::enableHook();

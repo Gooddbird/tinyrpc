@@ -14,6 +14,7 @@
 #include "io_thread.h"
 #include "tcp_connection_time_wheel.h"
 #include "abstract_slot.h"
+#include "../net_address.h"
 
 namespace tinyrpc {
 
@@ -34,9 +35,9 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
  public:
  	typedef std::shared_ptr<TcpConnection> ptr;
 
-	TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_thread, int fd, int buff_size);
+	TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_thread, int fd, int buff_size, NetAddress::ptr peer_addr);
 
-	TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reactor, int fd, int buff_size);
+	TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reactor, int fd, int buff_size, NetAddress::ptr peer_addr);
 
   void setUpClient();
 
@@ -90,8 +91,13 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
   TcpClient* m_tcp_cli {nullptr};
   IOThread* m_io_thread {nullptr};
   Reactor* m_reactor {nullptr};
+
   int m_fd {-1};
   TcpConnectionState m_state {TcpConnectionState::Connected};
+  ConnectionType m_connection_type {ServerConnection};
+
+  NetAddress::ptr m_peer_addr;
+
 
 	TcpBuffer::ptr m_read_buffer;
 	TcpBuffer::ptr m_write_buffer;
@@ -103,7 +109,6 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
   FdEvent::ptr m_fd_event;
   bool m_stop_read {false};
   bool m_stop_write {false};
-  ConnectionType m_connection_type {ServerConnection};
   TinyPbStruct m_client_res_data;
 
   // AbstractSlot<TcpConnection>* m_conn_slot {nullptr};

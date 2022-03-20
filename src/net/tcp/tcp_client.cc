@@ -18,7 +18,7 @@ TcpClient::TcpClient(NetAddress::ptr addr) : m_peer_addr(addr) {
   m_connect_cor->setCallBack(std::bind(&TcpClient::MainConnectCorFunc, this));
 
   m_reactor = Reactor::GetReactor();
-  m_connection = std::make_shared<TcpConnection>(this, m_reactor, m_fd, 128);
+  m_connection = std::make_shared<TcpConnection>(this, m_reactor, m_fd, 128, m_peer_addr);
   assert(m_reactor != nullptr);
 
 }
@@ -37,7 +37,7 @@ void TcpClient::onReply() {
 
 TcpConnection* TcpClient::getConnection() {
   if (!m_connection.get()) {
-  m_connection = std::make_shared<TcpConnection>(this, m_reactor, m_fd, 128);
+    m_connection = std::make_shared<TcpConnection>(this, m_reactor, m_fd, 128, m_peer_addr);
   }
   return m_connection.get();
 }

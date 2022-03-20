@@ -27,6 +27,14 @@ class TcpAcceptor {
   int toAccept();
 
   ~TcpAcceptor();
+
+  NetAddress::ptr getPeerAddr() {
+    return m_peer_addr;
+  }
+
+  NetAddress::ptr geLocalAddr() {
+    return m_local_addr;
+  }
  
  private:
   int m_family;
@@ -53,6 +61,8 @@ class TcpServer {
   TinyPbRpcDispacther* getDispatcher();
 
   TcpTimeWheel* getTimeWheel();
+
+  NetAddress::ptr getPeerAddr();
 
  private:
   void MainAcceptCorFunc();

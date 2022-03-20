@@ -27,11 +27,11 @@ TcpTimeWheel::~TcpTimeWheel() {
 }
 
 void TcpTimeWheel::loopFunc() {
-  DebugLog << "pop src bucket";
+  // DebugLog << "pop src bucket";
   m_wheel.pop();
   std::vector<TcpConnectionSlot::ptr> tmp;
   m_wheel.push(tmp);
-  DebugLog << "push new bucket";
+  // DebugLog << "push new bucket";
 }
 
 void TcpTimeWheel::fresh(TcpConnectionSlot::ptr slot) {

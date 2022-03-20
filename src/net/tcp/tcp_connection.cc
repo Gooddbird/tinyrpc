@@ -14,8 +14,8 @@
 
 namespace tinyrpc {
 
-TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_thread, int fd, int buff_size)
-  : m_io_thread(io_thread), m_fd(fd), m_state(Connected), m_connection_type(ServerConnection) {	
+TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_thread, int fd, int buff_size, NetAddress::ptr peer_addr)
+  : m_io_thread(io_thread), m_fd(fd), m_state(Connected), m_connection_type(ServerConnection), m_peer_addr(peer_addr) {	
   m_reactor = m_io_thread->getReactor();
 
   assert(tcp_svr!= nullptr); 
@@ -38,8 +38,8 @@ TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_
   DebugLog << "succ create tcp connection";
 }
 
-TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reactor, int fd, int buff_size)
-  : m_fd(fd), m_state(NotConnected), m_connection_type(ClientConnection) {	
+TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reactor, int fd, int buff_size, NetAddress::ptr peer_addr)
+  : m_fd(fd), m_state(NotConnected), m_connection_type(ClientConnection), m_peer_addr(peer_addr) {
   assert(reactor != nullptr); 
   m_reactor = reactor;
 
@@ -63,7 +63,6 @@ TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reac
 
 void TcpConnection::registerToTimeWheel() {
   auto cb = [] (TcpConnection::ptr conn) {
-    DebugLog << "server ready to shutdown this connection";
     conn->shutdownConnection();
   };
   // m_conn_slot = new AbstractSlot<TcpConnection>(shared_from_this(), cb);
@@ -119,6 +118,7 @@ void TcpConnection::MainReadCoFunc() {
     }
     bool read_all = false;
     bool close_flag = false;
+    int count = 0;
     while (!read_all) {
 
       if (m_read_buffer->writeAble() == 0) {
@@ -134,6 +134,7 @@ void TcpConnection::MainReadCoFunc() {
       DebugLog << "m_read_buffer size=" << m_read_buffer->getBufferVector().size() << "rd=" << m_read_buffer->readIndex() << "wd=" << m_read_buffer->writeIndex();
 
       DebugLog << "read data back";
+      count += rt;
       if (rt <= 0) {
         DebugLog << "rt <= 0";
         ErrorLog << "read empty while occur read event, because of peer close, sys error=" << strerror(errno) << ", now to clear tcp connection";
@@ -161,6 +162,7 @@ void TcpConnection::MainReadCoFunc() {
     if (!read_all) {
       ErrorLog << "not read all data in socket buffer";
     }
+    InfoLog << "recv [" << count << "] bytes data from [" << m_peer_addr->toString() << "], fd [" << m_fd << "]";
     if (m_connection_type == ServerConnection) {
       TcpTimeWheel::TcpConnectionSlot::ptr tmp = m_weak_slot.lock();
       if (tmp) {
@@ -219,6 +221,7 @@ void TcpConnection::MainWriteCoFunc() {
     DebugLog << "succ write " << rt << " bytes";
     m_write_buffer->recycleRead(rt);
     DebugLog << "recycle write index =" << m_write_buffer->writeIndex() << ", read_index =" << m_write_buffer->readIndex() << "readable = " << m_write_buffer->readAble();
+    InfoLog << "send[" << rt << "] bytes data to [" << m_peer_addr->toString() << "], fd [" << m_fd << "]";
     if (m_write_buffer->readAble() <= 0) {
       DebugLog << "send all data, now unregister write event on reactor and yield Coroutine";
       m_fd_event->delListenEvents(IOEvent::WRITE);
@@ -253,11 +256,12 @@ void TcpConnection::shutdownConnection() {
     return;
   }
   m_state = HalfClosing; 
+  InfoLog << "shutdown conn[" << m_peer_addr->toString() << "]";
   // call sys shutdown to send FIN
   // wait client done something, client will send FIN
   // and fd occur read event but byte count is 0
   // then will call clearClient to set CLOSED
-  shutdown(m_fd_event->getFd(), SHUT_WR);
+  shutdown(m_fd_event->getFd(), SHUT_RDWR);
 
 }
 
