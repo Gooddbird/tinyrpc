@@ -25,9 +25,13 @@ typedef int (*socket_fun_ptr_t)(int domain, int type, int protocol);
 
 extern "C" {
 
-int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+int accept_hook(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 
-ssize_t read(int fd, void *buf, size_t count);
+ssize_t read_hook(int fd, void *buf, size_t count);
+
+ssize_t write_hook(int fd, const void *buf, size_t count);
+
+int connect_hook(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 
 
 // set max timeout, s

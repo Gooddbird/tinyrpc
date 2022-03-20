@@ -59,11 +59,9 @@ bool IOThread::addClient(TcpServer* tcp_svr, int fd) {
   auto it = m_clients.find(fd);
   if (it != m_clients.end()) {
     TcpConnection::ptr s_conn = it->second;
-    if (!s_conn.get()) {
-			if (s_conn.use_count() > 0 && s_conn->getState() != Closed) {
-				ErrorLog << "insert error, this fd of TcpConection exist and state not Closed";
-				return false;
-			}
+    if (s_conn && s_conn.use_count() > 0 && s_conn->getState() != Closed) {
+      ErrorLog << "insert error, this fd of TcpConection exist and state not Closed";
+      return false;
     }
     // src Tcpconnection can delete
     s_conn.reset();
@@ -88,17 +86,15 @@ void IOThread::MainLoopTimerFunc() {
   // for free memory
 	DebugLog << "m_clients.size=" << m_clients.size();
   for (auto &i : m_clients) {
-    TcpConnection::ptr s_conn = i.second;
+    // TcpConnection::ptr s_conn = i.second;
 		// DebugLog << "state = " << s_conn->getState();
-		if (s_conn.get() != nullptr) {
-			if (s_conn->getState() == Closed) {
-				// need to delete TcpConnection
-				DebugLog << "TcpConection [fd:" << i.first << "] will delete";
-				(i.second).reset();
-				s_conn.reset();
-			}
+    if (i.second && i.second.use_count() > 0 && i.second->getState() == Closed) {
+      // need to delete TcpConnection
+      DebugLog << "TcpConection [fd:" << i.first << "] will delete";
+      (i.second).reset();
+      // s_conn.reset();
+    }
 	
-		}
   }
 }
 

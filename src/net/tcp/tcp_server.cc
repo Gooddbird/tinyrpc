@@ -63,7 +63,7 @@ int TcpAcceptor::toAccept() {
 	sockaddr cli_addr;
 	
 	// call hook accept
-	int rt = accept(m_fd, reinterpret_cast<sockaddr*>(&cli_addr), &len);
+	int rt = accept_hook(m_fd, reinterpret_cast<sockaddr*>(&cli_addr), &len);
 	if (rt == -1) {
 		DebugLog << "error, no new client coming, errno=" << errno << "error=" << strerror(errno);
 		return -1;

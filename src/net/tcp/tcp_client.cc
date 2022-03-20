@@ -60,7 +60,7 @@ void TcpClient::stop() {
 void TcpClient::MainConnectCorFunc() {
   int n = m_try_counts;
   while (n > 0) {
-    int rt = connect(m_fd, reinterpret_cast<sockaddr*>(m_peer_addr->getSockAddr()), m_peer_addr->getSockLen());
+    int rt = connect_hook(m_fd, reinterpret_cast<sockaddr*>(m_peer_addr->getSockAddr()), m_peer_addr->getSockLen());
     if (rt == 0) {
       m_connection->setUpClient();
       DebugLog << "connect [" << m_peer_addr->toString() << "] succ!";

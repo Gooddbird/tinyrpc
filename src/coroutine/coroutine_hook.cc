@@ -48,7 +48,7 @@ void toEpoll(tinyrpc::FdEvent::ptr fd_event, int events) {
 	// fd_event->updateToReactor();
 }
 
-ssize_t read(int fd, void *buf, size_t count) {
+ssize_t read_hook(int fd, void *buf, size_t count) {
 	DebugLog << "this is hook read";
   if (!g_hook_enable) {
     DebugLog << "hook disable, call sys func";
@@ -92,7 +92,7 @@ ssize_t read(int fd, void *buf, size_t count) {
 
 }
 
-int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
+int accept_hook(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	DebugLog << "this is hook accept";
   if (!g_hook_enable) {
     DebugLog << "hook disable, call sys func";
@@ -131,7 +131,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 
 }
 
-ssize_t write(int fd, const void *buf, size_t count) {
+ssize_t write_hook(int fd, const void *buf, size_t count) {
 	DebugLog << "this is hook write";
   if (!g_hook_enable) {
     DebugLog << "hook disable, call sys func";
@@ -170,7 +170,7 @@ ssize_t write(int fd, const void *buf, size_t count) {
 
 }
 
-int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
+int connect_hook(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 	DebugLog << "this is hook connect";
   if (!g_hook_enable) {
     DebugLog << "hook disable, call sys func";

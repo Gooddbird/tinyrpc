@@ -42,7 +42,7 @@ class TcpServer {
 
  public:
 
-	TcpServer(NetAddress::ptr addr, int pool_size = 2);
+	TcpServer(NetAddress::ptr addr, int pool_size = 10);
 
   ~TcpServer();
 

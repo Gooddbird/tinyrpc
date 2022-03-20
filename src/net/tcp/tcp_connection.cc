@@ -66,9 +66,9 @@ void TcpConnection::registerToTimeWheel() {
     DebugLog << "server ready to shutdown this connection";
     conn->shutdownConnection();
   };
-  m_conn_slot = new AbstractSlot<TcpConnection>(shared_from_this(), cb);
-  TcpTimeWheel::TcpConnectionSlot::ptr tmp;
-  tmp.reset(m_conn_slot);
+  // m_conn_slot = new AbstractSlot<TcpConnection>(shared_from_this(), cb);
+  TcpTimeWheel::TcpConnectionSlot::ptr tmp = std::make_shared<AbstractSlot<TcpConnection>>(shared_from_this(), cb);
+  m_weak_slot = tmp;
   m_io_thread->getTimeWheel()->fresh(tmp);
 
 }
@@ -129,7 +129,7 @@ void TcpConnection::MainReadCoFunc() {
       int write_index = m_read_buffer->writeIndex();
 
       DebugLog << "m_read_buffer size=" << m_read_buffer->getBufferVector().size() << "rd=" << m_read_buffer->readIndex() << "wd=" << m_read_buffer->writeIndex();
-      int rt = read(m_fd, &(m_read_buffer->m_buffer[write_index]), read_count);
+      int rt = read_hook(m_fd, &(m_read_buffer->m_buffer[write_index]), read_count);
       m_read_buffer->recycleWrite(rt);
       DebugLog << "m_read_buffer size=" << m_read_buffer->getBufferVector().size() << "rd=" << m_read_buffer->readIndex() << "wd=" << m_read_buffer->writeIndex();
 
@@ -162,9 +162,10 @@ void TcpConnection::MainReadCoFunc() {
       ErrorLog << "not read all data in socket buffer";
     }
     if (m_connection_type == ServerConnection) {
-      TcpTimeWheel::TcpConnectionSlot::ptr tmp;
-      tmp.reset(m_conn_slot);
-      m_io_thread->getTimeWheel()->fresh(tmp);
+      TcpTimeWheel::TcpConnectionSlot::ptr tmp = m_weak_slot.lock();
+      if (tmp) {
+        m_io_thread->getTimeWheel()->fresh(tmp);
+      }
     }
     m_reactor->addTask(std::bind(&TcpConnection::execute, this)); 
     Coroutine::Yield();
@@ -211,7 +212,7 @@ void TcpConnection::MainWriteCoFunc() {
     
     int total_size = m_write_buffer->readAble();
     int read_index = m_write_buffer->readIndex();
-    int rt = write(m_fd, &(m_write_buffer->m_buffer[read_index]), total_size);
+    int rt = write_hook(m_fd, &(m_write_buffer->m_buffer[read_index]), total_size);
     if (rt <= 0) {
       ErrorLog << "write empty, error=" << strerror(errno);
     }

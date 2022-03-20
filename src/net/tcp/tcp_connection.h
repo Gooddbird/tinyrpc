@@ -106,7 +106,8 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
   ConnectionType m_connection_type {ServerConnection};
   TinyPbStruct m_client_res_data;
 
-  AbstractSlot<TcpConnection>* m_conn_slot {nullptr};
+  // AbstractSlot<TcpConnection>* m_conn_slot {nullptr};
+  std::weak_ptr<AbstractSlot<TcpConnection>> m_weak_slot;
 
 };
 
