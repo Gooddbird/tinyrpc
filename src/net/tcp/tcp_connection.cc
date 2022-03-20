@@ -21,7 +21,7 @@ TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_
   assert(tcp_svr!= nullptr); 
   m_tcp_svr = tcp_svr;
 
-  tinyrpc::enableHook();
+  // tinyrpc::enableHook();
   m_fd_event = FdEventContainer::GetFdContainer()->getFdEvent(fd);
   m_fd_event->setReactor(m_reactor);
   initBuffer(buff_size); 
@@ -46,7 +46,7 @@ TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reac
   assert(tcp_cli!= nullptr); 
   m_tcp_cli = tcp_cli;
 
-  tinyrpc::enableHook();
+  // tinyrpc::enableHook();
   m_fd_event = FdEventContainer::GetFdContainer()->getFdEvent(fd);
   m_fd_event->setReactor(m_reactor);
   initBuffer(buff_size); 
@@ -261,6 +261,7 @@ void TcpConnection::shutdownConnection() {
   // wait client done something, client will send FIN
   // and fd occur read event but byte count is 0
   // then will call clearClient to set CLOSED
+  // IOThread::MainLoopTimerFunc will delete CLOSED connection
   shutdown(m_fd_event->getFd(), SHUT_RDWR);
 
 }

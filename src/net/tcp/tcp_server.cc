@@ -30,17 +30,19 @@ void TcpAcceptor::init() {
 		// ErrorLog << "fcntl set nonblock error, errno=" << errno << ", error=" << strerror(errno);
 	// }
 
-	socklen_t len = m_local_addr->getSockLen();
+	int val = 1;
+	if (setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) < 0) {
+		ErrorLog << "set REUSEADDR error";
+	}
 
+	socklen_t len = m_local_addr->getSockLen();
 	int rt = bind(m_fd, m_local_addr->getSockAddr(), len);
 	if (rt != 0) {
 		ErrorLog << "bind error, errno=" << errno << ", error=" << strerror(errno);
 	}
   assert(rt == 0);
-	int val = 1;
-	if (setsockopt(m_fd, SOL_SOCKET, SO_REUSEPORT, &val, sizeof(val)) < 0) {
-		ErrorLog << "set reuseport error";
-	}		
+
+	DebugLog << "set REUSEADDR succ";
 	rt = listen(m_fd, 10);
 	if (rt != 0) {
 		ErrorLog << "listen error, fd= " << m_fd << ", errno=" << errno << ", error=" << strerror(errno);
@@ -129,7 +131,7 @@ NetAddress::ptr TcpServer::getPeerAddr() {
 
 void TcpServer::MainAcceptCorFunc() {
   DebugLog << "enable Hook here";
-	tinyrpc::enableHook();
+	// tinyrpc::enableHook();
 
 	m_acceptor->init();	
 	while(!m_is_stop_accept) {

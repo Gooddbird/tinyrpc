@@ -6,9 +6,9 @@
 #include <sys/types.h>
 
 namespace tinyrpc {
-	void enableHook();
+	// void enableHook();
 
-	void disableHook();
+	// void disableHook();
 }
 
 

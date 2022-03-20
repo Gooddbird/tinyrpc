@@ -18,7 +18,7 @@ HOOK_SYS_FUNC(read);
 HOOK_SYS_FUNC(write);
 HOOK_SYS_FUNC(connect);
 
-static int g_hook_enable = false;
+// static int g_hook_enable = false;
 
 static int g_max_timeout = 75000;
 
@@ -50,10 +50,10 @@ void toEpoll(tinyrpc::FdEvent::ptr fd_event, int events) {
 
 ssize_t read_hook(int fd, void *buf, size_t count) {
 	DebugLog << "this is hook read";
-  if (!g_hook_enable) {
-    DebugLog << "hook disable, call sys func";
-    return g_sys_read_fun(fd, buf, count);
-  }
+  // if (!g_hook_enable) {
+  //   DebugLog << "hook disable, call sys func";
+  //   return g_sys_read_fun(fd, buf, count);
+  // }
 
 	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
 	assert(reactor != nullptr);
@@ -94,10 +94,10 @@ ssize_t read_hook(int fd, void *buf, size_t count) {
 
 int accept_hook(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	DebugLog << "this is hook accept";
-  if (!g_hook_enable) {
-    DebugLog << "hook disable, call sys func";
-    return g_sys_accept_fun(sockfd, addr, addrlen);
-  }
+  // if (!g_hook_enable) {
+  //   DebugLog << "hook disable, call sys func";
+  //   return g_sys_accept_fun(sockfd, addr, addrlen);
+  // }
 	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
 	assert(reactor != nullptr);
 
@@ -133,10 +133,10 @@ int accept_hook(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 
 ssize_t write_hook(int fd, const void *buf, size_t count) {
 	DebugLog << "this is hook write";
-  if (!g_hook_enable) {
-    DebugLog << "hook disable, call sys func";
-    return g_sys_write_fun(fd, buf, count);
-  }
+  // if (!g_hook_enable) {
+  //   DebugLog << "hook disable, call sys func";
+  //   return g_sys_write_fun(fd, buf, count);
+  // }
 	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
 	assert(reactor != nullptr);
 
@@ -172,10 +172,10 @@ ssize_t write_hook(int fd, const void *buf, size_t count) {
 
 int connect_hook(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 	DebugLog << "this is hook connect";
-  if (!g_hook_enable) {
-    DebugLog << "hook disable, call sys func";
-    return g_sys_connect_fun(sockfd, addr, addrlen);
-  }
+  // if (!g_hook_enable) {
+  //   DebugLog << "hook disable, call sys func";
+  //   return g_sys_connect_fun(sockfd, addr, addrlen);
+  // }
 	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
 	assert(reactor != nullptr);
 
@@ -251,14 +251,13 @@ typedef int (*socket_fun_ptr_t)(int domain, int type, int protocol);
 
 namespace tinyrpc {
 
-void enableHook() {
-  g_hook_enable = true;
+// void enableHook() {
+//   g_hook_enable = true;
+// }
 
-}
-
-void disableHook() {
-  g_hook_enable = false;
-}
+// void disableHook() {
+//   g_hook_enable = false;
+// }
 
 void setMaxTimeOut (int v) {
 	g_max_timeout = (v * 1000);

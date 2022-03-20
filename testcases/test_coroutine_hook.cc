@@ -44,7 +44,7 @@ void fun1() {
 
 int main(int argc, char* argv[]) {
 
-  tinyrpc::enableHook();
+  // tinyrpc::enableHook();
   tinyrpc::Coroutine::GetCurrentCoroutine();
   DebugLog << "this is main co";
   tinyrpc::Coroutine::ptr cor1 = std::make_shared<tinyrpc::Coroutine>(1024 * 128, fun1); 
