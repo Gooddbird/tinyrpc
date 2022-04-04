@@ -27,11 +27,12 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
   DebugLog << "call service_name = " << pb_struct.service_full_name;
   if (!request->SerializeToString(&(pb_struct.pb_data))) {
     ErrorLog << "serialize send package error";
+    return;
   }
   TinyPbCodeC* m_codec = m_client->getConnection()->getCodec();
   m_codec->encode(m_client->getConnection()->getOutBuffer(), &pb_struct);
   InfoLog<< "============================================================";
-  InfoLog<< "Set client send request data:" << std::endl << request->DebugString();
+  InfoLog<< "Set client send request data:\n" << request->DebugString();
   InfoLog<< "============================================================";
   m_client->start();
 
@@ -40,7 +41,7 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
     ErrorLog << "parse return package error";
   }
   InfoLog<< "============================================================";
-  InfoLog<< "Get server reply response data:" << std::endl << response->DebugString();
+  InfoLog<< "Get server reply response data:\n" << response->DebugString();
   InfoLog<< "============================================================";
   done->Run();
 }

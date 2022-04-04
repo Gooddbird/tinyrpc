@@ -29,7 +29,7 @@ class TinyPbRpcDispacther : public AbstractDispatcher {
 
  public:
 
-  // all services should be registerd on there before progress strat
+  // all services should be registerd on there before progress start
   // key: service_name
   std::map<std::string, google::protobuf::Service*> m_service_map;
 

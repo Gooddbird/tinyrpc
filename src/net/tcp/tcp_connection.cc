@@ -215,6 +215,7 @@ void TcpConnection::MainWriteCoFunc() {
     int total_size = m_write_buffer->readAble();
     int read_index = m_write_buffer->readIndex();
     int rt = write_hook(m_fd, &(m_write_buffer->m_buffer[read_index]), total_size);
+    // InfoLog << "write end";
     if (rt <= 0) {
       ErrorLog << "write empty, error=" << strerror(errno);
     }

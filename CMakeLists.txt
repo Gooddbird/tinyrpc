@@ -25,6 +25,7 @@ set(LIB_SRC
   src/net/tinypb/tinypb_codec.cc
   src/net/tinypb/tinypb_rpc_dispatcher.cc
   src/net/tinypb/tinypb_rpc_channel.cc
+  src/net/tinypb/tinypb_rpc_controller.cc
 
 )
 

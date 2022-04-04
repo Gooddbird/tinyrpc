@@ -1,5 +1,5 @@
-#ifndef TINYRPC_COMM_LOG_H
-#define TINYRPC_COMM_LOG_H
+#ifndef TINYRPC_LOG_LOG_H
+#define TINYRPC_LOG_LOG_H
 
 #include <sstream>
 #include <sstream>
@@ -15,28 +15,31 @@
 
 namespace tinyrpc {
 
-#define DebugLog \
-	tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::DEBUG, __FILE__, __LINE__, __func__))).getStringStream()
-
-
-#define InfoLog\
-	tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::INFO, __FILE__, __LINE__, __func__))).getStringStream()
-
-
-#define WarnLog\
-	tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::WARN, __FILE__, __LINE__, __func__))).getStringStream()
-
-
-#define ErrorLog\
-	tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::ERROR, __FILE__, __LINE__, __func__))).getStringStream()
-
-
 enum LogLevel {
 	DEBUG = 1,
 	INFO = 2,
 	WARN = 3,
 	ERROR = 4
 };
+
+extern LogLevel g_log_level;
+
+#define DebugLog \
+	if (tinyrpc::LogLevel::DEBUG >= tinyrpc::g_log_level) \
+		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::DEBUG, __FILE__, __LINE__, __func__))).getStringStream()
+
+#define InfoLog \
+	if (tinyrpc::LogLevel::INFO >= tinyrpc::g_log_level) \
+		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::INFO, __FILE__, __LINE__, __func__))).getStringStream()
+
+#define WarnLog \
+	if (tinyrpc::LogLevel::WARN >= tinyrpc::g_log_level) \
+		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::WARN, __FILE__, __LINE__, __func__))).getStringStream()
+
+#define ErrorLog \
+	if (tinyrpc::LogLevel::ERROR >= tinyrpc::g_log_level) \
+		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::ERROR, __FILE__, __LINE__, __func__))).getStringStream()
+
 
 void setLogLevel(LogLevel level);
 

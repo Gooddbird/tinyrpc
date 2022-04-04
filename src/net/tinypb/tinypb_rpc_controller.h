@@ -3,6 +3,7 @@
 
 #include <google/protobuf/service.h>
 #include <google/protobuf/stubs/callback.h>
+#include "../net_address.h"
 
 namespace tinyrpc {
 
@@ -10,32 +11,48 @@ class TinyPbRpcController : public google::protobuf::RpcController {
 
  public:
 
-  TinyPbRpcController() {}
+  // Client-side methods ---------------------------------------------
 
-  ~TinyPbRpcController() {}
+  TinyPbRpcController() = default;
 
-  void Reset() {}
+  ~TinyPbRpcController() = default;
 
-  bool Failed() const {
-    return false;
-  }
+  void Reset() override;
 
-  std::string ErrorText() const {
-    std::string s = "";
-    return s;
-  }
+  bool Failed() const override;
 
-  void StartCancel() {}
 
-  void SetFailed(const std::string& reason) {}
+  // Server-side methods ---------------------------------------------
 
-  bool IsCanceled() const {
-    return false;
-  }
+  std::string ErrorText() const override;
 
-  void NotifyOnCancel(google::protobuf::Closure* callback) {
+  void StartCancel() override;
 
-  }
+  void SetFailed(const std::string& reason) override;
+
+  bool IsCanceled() const override;
+
+  void NotifyOnCancel(google::protobuf::Closure* callback) override;
+
+  int ErrorCode() const;
+
+  void SetErrorCode(const int error_code);
+
+  std::string MsgSeq() const;
+
+  void SetMsgReq(const std::string& msg_req);
+
+  void SetError(const int err_code, std::string& err_info);
+  
+
+ private:
+  int m_error_code {0};
+  std::string m_error_info;
+  std::string m_msg_req;
+  bool m_is_failed {false};
+  bool m_is_cancled {false};
+  NetAddress::ptr m_peer_addr;
+  NetAddress::ptr m_local_addr;
 
 
 };

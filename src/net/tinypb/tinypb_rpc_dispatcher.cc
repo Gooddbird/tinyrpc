@@ -19,6 +19,7 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
   if (tmp == nullptr) {
     ErrorLog << "dynamic_cast error";
   }
+
   assert(tmp != nullptr);
   std::string service_name;
   std::string method_name;
@@ -46,7 +47,7 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
   }
 
   InfoLog<< "============================================================";
-  InfoLog<< "Get client send request data:" << std::endl << request->DebugString();
+  InfoLog<< "Get client send request data:\n" << request->DebugString();
   InfoLog<< "============================================================";
 
   google::protobuf::Message* response = service->GetResponsePrototype(method).New();
@@ -66,13 +67,12 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
     }
     TinyPbStruct reply_pk;
     reply_pk.service_full_name = tmp->service_full_name;
-    reply_pk.pb_data = tmp->service_full_name;
     if (!(response->SerializeToString(&(reply_pk.pb_data)))) {
       ErrorLog << "reply error! encode reply package error";
       return;
     }
     InfoLog<< "============================================================";
-    InfoLog<< "Set server reply response data:" << std::endl << response->DebugString();
+    InfoLog<< "Set server reply response data:\n" << response->DebugString();
     InfoLog<< "============================================================";
 
     TinyPbCodeC codec;

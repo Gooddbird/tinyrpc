@@ -16,7 +16,8 @@ class Coroutine;
 
 static thread_local pid_t t_thread_id = 0;
 static pid_t g_pid = 0;
-static LogLevel g_log_level = DEBUG;
+
+LogLevel g_log_level = DEBUG;
 
 pid_t gettid() {
   if (t_thread_id == 0) {
