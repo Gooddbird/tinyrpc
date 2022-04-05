@@ -192,8 +192,9 @@ void TcpConnection::execute() {
       DebugLog << "contine parse next package";
     } else if (m_connection_type == ClientConnection) {
       // TODO:
-      m_client_res_data = pb_struct;
-      m_tcp_cli->stop();
+      m_client_res_data_queue.push(&pb_struct);
+      // m_tcp_cli->stop();
+      // m_tcp_
     }
 
   }
@@ -275,5 +276,17 @@ TcpBuffer* TcpConnection::getOutBuffer() {
   return m_write_buffer.get();
 }
 
+const TinyPbStruct* TcpConnection::getResPackageData() {
+  return &m_client_res_data;
+}
+
+
+TinyPbCodeC* TcpConnection::getCodec() const {
+  return m_codec.get();
+}
+
+TcpConnectionState TcpConnection::getState() const {
+  return m_state;
+}
 
 }

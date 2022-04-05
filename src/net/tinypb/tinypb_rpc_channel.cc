@@ -7,7 +7,7 @@
 #include "tinypb_rpc_channel.h"
 #include "tinypb_codec.h"
 #include "tinypb_data.h"
-#include "../../log/log.h"
+#include "../../comm/log.h"
 
 
 namespace tinyrpc {

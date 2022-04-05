@@ -3,7 +3,7 @@
 #include <string.h>
 #include <atomic>
 #include "coroutine.h"
-#include "../log/log.h"
+#include "../comm/log.h"
 
 namespace tinyrpc {
 

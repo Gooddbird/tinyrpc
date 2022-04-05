@@ -5,7 +5,7 @@
 #include <string.h>
 #include "tinypb_codec.h"
 #include "../byte.h"
-#include "../../log/log.h"
+#include "../../comm/log.h"
 #include "../abstract_data.h"
 #include "tinypb_data.h"
 

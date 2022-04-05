@@ -2,7 +2,7 @@
 #include "../src/net/tcp/tcp_server.h"
 #include "../src/net/net_address.h"
 #include "../src/net/tinypb/tinypb_rpc_dispatcher.h"
-#include "../src/log/log.h"
+#include "../src/comm/log.h"
 #include "tinypb.pb.h"
 
 

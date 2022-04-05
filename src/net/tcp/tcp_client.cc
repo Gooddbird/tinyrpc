@@ -1,6 +1,6 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include "../../log/log.h"
+#include "../../comm/log.h"
 #include "../../coroutine/coroutine.h"
 #include "../../coroutine/coroutine_hook.h"
 #include "../../coroutine/coroutine_pool.h"
@@ -17,6 +17,9 @@ TcpClient::TcpClient(NetAddress::ptr addr) : m_peer_addr(addr) {
   m_connect_cor = GetCoroutinePool()->getCoroutineInstanse();
   m_connect_cor->setCallBack(std::bind(&TcpClient::MainConnectCorFunc, this));
 
+  m_wait_reply_cor = GetCoroutinePool()->getCoroutineInstanse();
+  m_wait_reply_cor->setCallBack(std::bind(&TcpClient::WaitReplyCorFunc, this));
+
   m_reactor = Reactor::GetReactor();
   m_connection = std::make_shared<TcpConnection>(this, m_reactor, m_fd, 128, m_peer_addr);
   assert(m_reactor != nullptr);
@@ -30,10 +33,7 @@ TcpClient::~TcpClient() {
   }
 }
 
-void TcpClient::onReply() {
 
-
-}
 
 TcpConnection* TcpClient::getConnection() {
   if (!m_connection.get()) {
@@ -42,19 +42,45 @@ TcpConnection* TcpClient::getConnection() {
   return m_connection.get();
 }
 
-void TcpClient::start() {
+bool TcpClient::connectAndSend() {
   if (m_connection->getState() == Connected) {
     m_connection->setUpClient();
     m_reactor->addTask(std::bind(&TcpConnection::asyncWrite, m_connection.get()));
-    m_reactor->loop();
-    return;
+    // m_reactor->loop();
+  } else {
+    // when this coroutine back identify: 
+    // case1: connect succ and put task to send data
+    // case2: connect error
+    Coroutine::Resume(m_connect_cor.get());
   }
-  Coroutine::Resume(m_connect_cor.get());
+
+  if (m_connection->getState() != Connected) {
+    ErrorLog << "connect error, peer addr:[" << m_peer_addr->toString() << "]";
+    return false;
+  }
+  // when this coroutine identify: 
+  // case1: succ recv server back package
+  // case2: failed recv server back package, it is possible timeout or other resons. I will finish it in the fiture.
+  Coroutine::Resume(m_wait_reply_cor.get());
+
+  return true;
+  // m_reactor->loop();
+}
+
+void TcpClient::onGetReply() {
+  Coroutine::Resume(m_wait_reply_cor.get());
+}
+
+void TcpClient::start() {
+  m_is_stop = false;
   m_reactor->loop();
 }
 
 void TcpClient::stop() {
-  m_reactor->stop();
+  if (!m_is_stop) {
+    m_is_stop = true;
+    m_reactor->stop();
+  }
 }
 
 void TcpClient::MainConnectCorFunc() {
@@ -71,6 +97,12 @@ void TcpClient::MainConnectCorFunc() {
   }
 }
 
+void TcpClient::WaitReplyCorFunc() {
+  while(!m_is_stop) {
+    sleep_hook(5);
+    break;
+  }
+}
 
 
   

@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <string.h>
 #include <algorithm>
-#include "../log/log.h"
+#include "../comm/log.h"
 #include "reactor.h"
 #include "mutex.h"
 #include "fd_event.h"

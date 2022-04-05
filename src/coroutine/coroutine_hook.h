@@ -33,6 +33,8 @@ ssize_t write_hook(int fd, const void *buf, size_t count);
 
 int connect_hook(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 
+unsigned int sleep_hook(unsigned int seconds);
+
 
 // set max timeout, s
 void setMaxTimeOut (int v);

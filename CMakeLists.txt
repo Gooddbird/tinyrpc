@@ -5,7 +5,7 @@ ENABLE_LANGUAGE(ASM)
 set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -rdynamic -O3 -g -std=c++11 -Wall -Wno-deprecated -Werror -Wno-dev")
 
 set(LIB_SRC
-  src/log/log.cc
+  src/comm/log.cc
   src/thread/thread_pool.cc
   src/coroutine/coctx_swap.S
   src/coroutine/coroutine.cc
@@ -26,7 +26,6 @@ set(LIB_SRC
   src/net/tinypb/tinypb_rpc_dispatcher.cc
   src/net/tinypb/tinypb_rpc_channel.cc
   src/net/tinypb/tinypb_rpc_controller.cc
-
 )
 
 add_library(tinyrpc SHARED ${LIB_SRC})

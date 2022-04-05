@@ -7,7 +7,7 @@
 #include <sys/epoll.h>
 #include <assert.h>
 #include "reactor.h"
-#include "../log/log.h"
+#include "../comm/log.h"
 #include "../coroutine/coroutine.h"
 #include "mutex.h"
 

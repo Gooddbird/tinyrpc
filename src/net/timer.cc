@@ -6,7 +6,7 @@
 #include <sys/time.h>
 #include <functional>
 #include <map>
-#include "../log/log.h"
+#include "../comm/log.h"
 #include "timer.h"
 #include "mutex.h"
 #include "fd_event.h"

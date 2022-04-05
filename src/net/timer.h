@@ -8,7 +8,7 @@
 #include "mutex.h"
 #include "reactor.h"
 #include "fd_event.h"
-#include "../log/log.h"
+#include "../comm/log.h"
 
 
 namespace tinyrpc {

@@ -6,7 +6,7 @@
 #include <fcntl.h>
 #include <iostream>
 #include <sstream>
-#include "../src/log/log.h"
+#include "../src/comm/log.h"
 #include "../src/coroutine/coroutine_hook.h"
 #include "../src/net/reactor.h"
 #include "../src/coroutine/coroutine.h"

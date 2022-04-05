@@ -8,7 +8,7 @@
 #include "../net/fd_event.h"
 #include "../net/reactor.h"
 #include "../net/timer.h"
-#include "../log/log.h"
+#include "../comm/log.h"
 
 #define HOOK_SYS_FUNC(name) name##_fun_ptr_t g_sys_##name##_fun = (name##_fun_ptr_t)dlsym(RTLD_NEXT, #name);
 
@@ -238,13 +238,35 @@ int connect_hook(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 		errno = ETIMEDOUT;
 	} 
 
-	DebugLog << "connect error and errno=" << errno <<  ",error=" << strerror(errno);
+	DebugLog << "connect error and errno=" << errno <<  ", error=" << strerror(errno);
 	return -1;
 
 
 }
 
-typedef int (*socket_fun_ptr_t)(int domain, int type, int protocol);
+unsigned int sleep_hook(unsigned int seconds) {
+	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
+	assert(reactor != nullptr);
+
+	tinyrpc::Coroutine* cur_cor = tinyrpc::Coroutine::GetCurrentCoroutine();
+	assert(cur_cor != nullptr);
+
+	auto timeout_cb = [cur_cor](){
+		DebugLog << "onTime, now resume cor";
+		// 设置超时标志，然后唤醒协程
+		tinyrpc::Coroutine::Resume(cur_cor);
+  };
+
+  tinyrpc::TimerEvent::ptr event = std::make_shared<tinyrpc::TimerEvent>(1000 * seconds, false, timeout_cb);
+  
+  reactor->getTimer()->addTimerEvent(event);
+
+  tinyrpc::Coroutine::Yield();
+
+	return 0;
+
+}
+
 
 }
 

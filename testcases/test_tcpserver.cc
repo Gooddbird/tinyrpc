@@ -1,6 +1,6 @@
 #include "../src/net/tcp/tcp_server.h"
 #include "../src/net/net_address.h"
-#include "../src/log/log.h"
+#include "../src/comm/log.h"
 
 
 int main(int argc, char* argv[]) {

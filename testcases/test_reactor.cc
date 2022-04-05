@@ -10,7 +10,7 @@
 
 #include "../src/net/reactor.h"
 #include "../src/net/timer.h"
-#include "../src/log/log.h"
+#include "../src/comm/log.h"
 #include "../src/coroutine/coroutine.h"
 
 tinyrpc::Reactor reactor;

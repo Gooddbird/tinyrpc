@@ -5,7 +5,7 @@
 #include "../src/net/tinypb/tinypb_rpc_channel.h"
 #include "../src/net/tinypb/tinypb_rpc_closure.h"
 #include "../src/net/tinypb/tinypb_rpc_controller.h"
-#include "../src/log/log.h"
+#include "../src/comm/log.h"
 #include "tinypb.pb.h"
 
 

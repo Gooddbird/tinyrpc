@@ -1,4 +1,4 @@
-#include "../src/log/log.h"
+#include "../src/comm/log.h"
 #include <unistd.h>
 #include "../src/net/net_address.h"
 

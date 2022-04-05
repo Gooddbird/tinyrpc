@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 #include <queue>
-#include "../../log/log.h"
+#include "../../comm/log.h"
 #include "../fd_event.h"
 #include "../reactor.h"
 #include "tcp_buffer.h"
@@ -58,21 +58,15 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
   void shutdownConnection();
 
-  TcpConnectionState getState() const {
-    return m_state;
-  }
+  TcpConnectionState getState() const;
 
   TcpBuffer* getInBuffer();
 
   TcpBuffer* getOutBuffer();
 
-  TinyPbCodeC* getCodec() const {
-    return m_codec.get();
-  }
+  TinyPbCodeC* getCodec() const;
 
-  const TinyPbStruct* getResPackageData() {
-    return &m_client_res_data;
-  }
+  const TinyPbStruct* getResPackageData();
 
   void registerToTimeWheel();
 
@@ -109,7 +103,7 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
   FdEvent::ptr m_fd_event;
   bool m_stop_read {false};
   bool m_stop_write {false};
-  TinyPbStruct m_client_res_data;
+  std::queue<TinyPbStruct*> m_client_res_data_queue;
 
   // AbstractSlot<TcpConnection>* m_conn_slot {nullptr};
   std::weak_ptr<AbstractSlot<TcpConnection>> m_weak_slot;
