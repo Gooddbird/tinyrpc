@@ -94,11 +94,11 @@ int TcpAcceptor::toAccept() {
 TcpServer::TcpServer(NetAddress::ptr addr, int pool_size /*=10*/) : m_addr(addr) {
   m_io_pool = std::make_shared<IOThreadPool>(pool_size);
 	m_dispatcher = std::make_shared<TinyPbRpcDispacther>();
+	m_main_reactor = tinyrpc::Reactor::GetReactor();
 }
 
 void TcpServer::start() {
 
-	m_main_reactor = tinyrpc::Reactor::GetReactor();
 	m_acceptor.reset(new TcpAcceptor(m_addr));
 	// m_accept_cor = std::make_shared<tinyrpc::Coroutine>(128 * 1024, std::bind(&TcpServer::MainAcceptCorFunc, this)); 
 
@@ -147,73 +147,18 @@ void TcpServer::MainAcceptCorFunc() {
 			io_thread->addClient(this, fd);
 		};
 		io_thread->getReactor()->addTask(cb);
-    // addClient(fd);
 		m_tcp_counts++;
 		DebugLog << "current tcp connection count is [" << m_tcp_counts << "]";
-    // DebugLog << "insert succ, size=" << m_clients.size();
 	}
 }
-
-
-// void TcpServer::MainLoopTimerFunc() {
-//   DebugLog << "this TcpServer loop timer excute";
-  
-//   // delete Closed TcpConnection per loop
-//   // for free memory
-// 	DebugLog << "m_clients.size=" << m_clients.size();
-//   for (auto &i : m_clients) {
-//     TcpConnection::ptr s_conn = i.second;
-// 		// DebugLog << "state = " << s_conn->getState();
-// 		if (s_conn.get() != nullptr) {
-// 			if (s_conn->getState() == Closed) {
-// 				// need to delete TcpConnection
-// 				DebugLog << "TcpConection [fd:" << i.first << "] will delete";
-// 				(i.second).reset();
-// 				s_conn.reset();
-// 				m_tcp_counts--;
-// 			}
-	
-// 		}
-//  }
-
-//   // DebugLog << "this TcpServer loop timer end";
-  
-// }
-
-// bool TcpServer::addClient(int fd) {
-
-//   auto it = m_clients.find(fd);
-//   if (it != m_clients.end()) {
-//     TcpConnection::ptr s_conn = it->second;
-//     if (!s_conn.get()) {
-// 			if (s_conn.use_count() > 0 && s_conn->getState() != Closed) {
-// 				ErrorLog << "insert error, this fd of TcpConection exist and state not Closed";
-// 				return false;
-// 			}
-//     }
-//     // src Tcpconnection can delete
-//     s_conn.reset();
-// 		it->second.reset();
-// 		m_tcp_counts--;
-
-//     // set new Tcpconnection	
-// 		it->second = std::make_shared<TcpConnection> (this, 
-// 			m_io_pool->getIOThread(), fd, 128);
-    
-//   } else {
-//     m_clients.insert(std::make_pair(fd, std::make_shared<TcpConnection> (this, 
-// 			m_io_pool->getIOThread(), fd, 128)));
-//   }
-//   return true;
-// }
 
 
 TinyPbRpcDispacther* TcpServer::getDispatcher() {	
 	return m_dispatcher.get();	
 }
 
-// TcpTimeWheel* TcpServer::getTimeWheel() {
-// 	return m_time_wheel.get();
-// }
+void TcpServer::addCoroutine(Coroutine::ptr cor) {
+	m_main_reactor->addCoroutine(cor);
+}
 
 }

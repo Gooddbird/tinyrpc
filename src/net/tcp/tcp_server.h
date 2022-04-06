@@ -56,6 +56,8 @@ class TcpServer {
 
   void start();
 
+  void addCoroutine(tinyrpc::Coroutine::ptr cor);
+
   bool addClient(int fd);
 
   TinyPbRpcDispacther* getDispatcher();

@@ -47,6 +47,8 @@ class Coroutine {
 
   static Coroutine* GetCurrentCoroutine();
 
+  static bool IsMainCoroutine();
+
  private:
   int m_cor_id {0};       // 协程id
   coctx m_coctx;      // 协程寄存器上下文

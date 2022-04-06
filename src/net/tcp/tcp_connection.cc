@@ -92,9 +92,13 @@ void TcpConnection::initBuffer(int size) {
 
 }
 
-// void TcpConnection::asyncRead(std::vector<char>& re, int& size) {
-// 	m_read_buffer->readFromBuffer(re, size);	
-// }
+void TcpConnection::asyncRead() {
+  if (m_state != Connected) {
+    ErrorLog << "read error! TcpConnection is not Connected";
+    return;
+  }
+  Coroutine::Resume(m_read_cor.get());
+}
 
 void TcpConnection::asyncWrite() {
 
@@ -169,9 +173,15 @@ void TcpConnection::MainReadCoFunc() {
         m_io_thread->getTimeWheel()->fresh(tmp);
       }
     }
-    m_reactor->addTask(std::bind(&TcpConnection::execute, this)); 
-    Coroutine::Yield();
-    DebugLog << "read yield back";
+    // m_reactor->addTask(std::bind(&TcpConnection::execute, this)); 
+    execute();
+    if (m_connection_type == ConnectionType::ServerConnection) {
+      DebugLog << "read yield back";
+      Coroutine::Yield();
+    } else {
+      DebugLog << "client call ReadCorFunc, should return";
+      return;
+    }
   }
 }
 
@@ -193,8 +203,6 @@ void TcpConnection::execute() {
     } else if (m_connection_type == ClientConnection) {
       // TODO:
       m_client_res_data_queue.push(&pb_struct);
-      // m_tcp_cli->stop();
-      // m_tcp_
     }
 
   }
@@ -228,6 +236,14 @@ void TcpConnection::MainWriteCoFunc() {
       DebugLog << "send all data, now unregister write event on reactor and yield Coroutine";
       m_fd_event->delListenEvents(IOEvent::WRITE);
       // if no data to write, need back main coroutine
+      if (m_connection_type == ConnectionType::ServerConnection) {
+        DebugLog << "read yield back";
+        Coroutine::Yield();
+      }
+      else {
+        DebugLog << "client call WriteCoFunc, write finish should return";
+        return;
+      }
       Coroutine::Yield();
       DebugLog << "write cor back";
     }
@@ -277,7 +293,12 @@ TcpBuffer* TcpConnection::getOutBuffer() {
 }
 
 const TinyPbStruct* TcpConnection::getResPackageData() {
-  return &m_client_res_data;
+  if (!m_client_res_data_queue.empty()) {
+    TinyPbStruct* tmp = m_client_res_data_queue.front();
+    m_client_res_data_queue.pop();
+    return tmp;
+  }
+  return nullptr;
 }
 
 
@@ -288,5 +309,14 @@ TinyPbCodeC* TcpConnection::getCodec() const {
 TcpConnectionState TcpConnection::getState() const {
   return m_state;
 }
+
+// void TcpConnection::resumeReadCoroutine() {
+//   Coroutine::Resume(m_read_cor.get());
+// }
+
+// void TcpConnection::resumeWriteCoroutine() {
+//   Coroutine::Resume(m_write_cor.get());
+// }
+
 
 }

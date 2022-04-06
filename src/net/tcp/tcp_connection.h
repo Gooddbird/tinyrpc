@@ -52,7 +52,7 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
  public:
 
-  // void asyncRead(std::vector<char>& re, int& size);
+  void asyncRead();
 
 	void asyncWrite();
 
@@ -70,11 +70,16 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
   void registerToTimeWheel();
 
- private:
+  // void resumeReadCoroutine();
+
+  // void resumeWriteCoroutine();
+
+ public:
   void MainReadCoFunc();
 
   void MainWriteCoFunc();
 
+ private:
   void clearClient();
   
   void execute();

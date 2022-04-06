@@ -125,6 +125,13 @@ Coroutine* Coroutine::GetCurrentCoroutine() {
   return t_cur_coroutine;
 }
 
+bool Coroutine::IsMainCoroutine() {
+  if (t_main_coroutine == nullptr || t_cur_coroutine == t_main_coroutine) {
+    return true;
+  }
+  return false;
+}
+
 /********
 让出执行权,切换到主协程
 ********/

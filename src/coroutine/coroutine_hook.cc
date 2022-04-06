@@ -50,10 +50,10 @@ void toEpoll(tinyrpc::FdEvent::ptr fd_event, int events) {
 
 ssize_t read_hook(int fd, void *buf, size_t count) {
 	DebugLog << "this is hook read";
-  // if (!g_hook_enable) {
-  //   DebugLog << "hook disable, call sys func";
-  //   return g_sys_read_fun(fd, buf, count);
-  // }
+  if (tinyrpc::Coroutine::IsMainCoroutine()) {
+    DebugLog << "hook disable, call sys read func";
+    return g_sys_read_fun(fd, buf, count);
+  }
 
 	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
 	assert(reactor != nullptr);
@@ -94,10 +94,10 @@ ssize_t read_hook(int fd, void *buf, size_t count) {
 
 int accept_hook(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	DebugLog << "this is hook accept";
-  // if (!g_hook_enable) {
-  //   DebugLog << "hook disable, call sys func";
-  //   return g_sys_accept_fun(sockfd, addr, addrlen);
-  // }
+  if (tinyrpc::Coroutine::IsMainCoroutine()) {
+    DebugLog << "hook disable, call sys accept func";
+    return g_sys_accept_fun(sockfd, addr, addrlen);
+  }
 	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
 	assert(reactor != nullptr);
 
@@ -133,10 +133,10 @@ int accept_hook(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 
 ssize_t write_hook(int fd, const void *buf, size_t count) {
 	DebugLog << "this is hook write";
-  // if (!g_hook_enable) {
-  //   DebugLog << "hook disable, call sys func";
-  //   return g_sys_write_fun(fd, buf, count);
-  // }
+  if (tinyrpc::Coroutine::IsMainCoroutine()) {
+    DebugLog << "hook disable, call sys write func";
+    return g_sys_write_fun(fd, buf, count);
+  }
 	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
 	assert(reactor != nullptr);
 
@@ -172,10 +172,10 @@ ssize_t write_hook(int fd, const void *buf, size_t count) {
 
 int connect_hook(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 	DebugLog << "this is hook connect";
-  // if (!g_hook_enable) {
-  //   DebugLog << "hook disable, call sys func";
-  //   return g_sys_connect_fun(sockfd, addr, addrlen);
-  // }
+  if (tinyrpc::Coroutine::IsMainCoroutine()) {
+    DebugLog << "hook disable, call sys connect func";
+    return g_sys_connect_fun(sockfd, addr, addrlen);
+  }
 	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
 	assert(reactor != nullptr);
 
@@ -241,10 +241,15 @@ int connect_hook(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 	DebugLog << "connect error and errno=" << errno <<  ", error=" << strerror(errno);
 	return -1;
 
-
 }
 
 unsigned int sleep_hook(unsigned int seconds) {
+
+  if (tinyrpc::Coroutine::IsMainCoroutine()) {
+    DebugLog << "hook disable, call sys sleep func";
+    return sleep(seconds);
+  }
+
 	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
 	assert(reactor != nullptr);
 

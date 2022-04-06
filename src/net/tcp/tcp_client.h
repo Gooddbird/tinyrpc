@@ -19,11 +19,11 @@ class TcpClient {
 
   ~TcpClient();
 
-  bool connectAndSend();
+  // bool connectAndSend();
 
-  void onGetReply();
+  // void onGetReply();
 
-  void start();
+  int start();
 
   void stop();
 
@@ -39,9 +39,9 @@ class TcpClient {
   }
 
  private:
-  void MainConnectCorFunc();
+  // void MainConnectCorFunc();
 
-  void WaitReplyCorFunc();
+  // void WaitReplyCorFunc();
 
 
  private:
@@ -54,8 +54,8 @@ class TcpClient {
   NetAddress::ptr m_local_addr {nullptr};
   NetAddress::ptr m_peer_addr {nullptr};
   Reactor* m_reactor {nullptr};
-  Coroutine::ptr m_connect_cor {nullptr};
-  Coroutine::ptr m_wait_reply_cor {nullptr};
+  // Coroutine::ptr m_connect_cor {nullptr};
+  // Coroutine::ptr m_wait_reply_cor {nullptr};
   TcpConnection::ptr m_connection {nullptr};
 
   bool m_connect_succ {false};
