@@ -34,7 +34,7 @@ TcpConnection* TcpClient::getConnection() {
   return m_connection.get();
 }
 
-int TcpClient::start() {
+int TcpClient::sendAndRecv() {
   if (m_connection->getState() != Connected) {
     int n = m_try_counts;
     while (n > 0) {

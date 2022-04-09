@@ -5,6 +5,7 @@
 A simple **protobuf** file like this:
 
 ```c++
+// testcases/tinypb.proto
 syntax = "proto3";
 option cc_generic_services = true;
 
@@ -100,15 +101,18 @@ class QueryServiceImpl : public QueryService {
 };
 ```
 
-#### 4. Set up RpcServer
+#### 4. Set Up RpcServer1
 It's very convenient to set uo RpcServer with **tinyrpc** framework
 
 ```c++
+
+// testcases/test_rpc_server1.cc
 int main(int argc, char* argv[]) {
   // set ip and port
   tinyrpc::IPAddress::ptr addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
   
   tinyrpc::TcpServer server(addr);
+  // you should register service to RpcDispatcher first
   tinyrpc::TinyPbRpcDispacther* dispatcher = server.getDispatcher();
   QueryService* service = new QueryServiceImpl();
   
@@ -118,20 +122,23 @@ int main(int argc, char* argv[]) {
   // it make RpcServer can find the service and method which client call
   dispatcher->registerService(service);
 
+  // now start server
   server.start();
   return 0;
 }
 ```
 
-#### 5. Make an RpcClient
-It's also very convenient to set uo RpcClient with **tinyrpc** framework
-
+#### 5.Set Up RpcServer2 
+Like RpcServer1, but we don't register Service, because we just user RpcServer2 to call method of RpcServer1.
 ```c++
-int main(int argc, char* argv[]) {
+// testcases/test_rpc_server2.cc
+void fun() {
+  // peer addr is RpcServer1's addr
+  tinyrpc::IPAddress::ptr peer_addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
 
-  tinyrpc::IPAddress::ptr addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
-  
-  tinyrpc::TinyPbRpcChannel channel(addr);
+  // init RpcChannel
+  tinyrpc::TinyPbRpcChannel channel(peer_addr);
+  // init RpcController
   tinyrpc::TinyPbRpcController rpc_controller;
   DebugLog << "input an integer to set count that send tinypb data";
   int n;
@@ -159,8 +166,8 @@ int main(int argc, char* argv[]) {
   });
 
   QueryService_Stub stub(&channel);
+  // directly call rpc method
   stub.query_name(&rpc_controller, &req_name, &res_name, &cb);
-  
   stub.query_age(&rpc_controller, &req_age, &res_age, &cb);
 
   DebugLog << "get res_name.age = " << res_name.name();
@@ -169,16 +176,22 @@ int main(int argc, char* argv[]) {
   }
 
   DebugLog << "================";
+
+}
+
+int main(int argc, char* argv[]) {
+
+  tinyrpc::IPAddress::ptr self_addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 20000);
+  tinyrpc::TcpServer server(self_addr, 1);
+  tinyrpc::Coroutine::ptr cor = tinyrpc::GetCoroutinePool()->getCoroutineInstanse();
+  cor->setCallBack(&fun);
+  server.addCoroutine(cor);
+
+  server.start();
+
   return 0;
 }
 ```
 
 #### 6. Test Rpc
-Directly run server and client, notice if you recive correct result;
-
-Go to see "tinyrpc/testcases/test_rpc_server.cc" and "tinyrpc/testcases/test_rpc_client" for more information。
-
-
-
-
-
+Directly run RpcServer1 and RpcServer2, notice if you recive correct result;

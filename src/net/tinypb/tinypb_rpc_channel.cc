@@ -34,7 +34,8 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
   InfoLog<< "============================================================";
   InfoLog<< "Set client send request data:\n" << request->DebugString();
   InfoLog<< "============================================================";
-  m_client->start();
+
+  m_client->sendAndRecv();
 
   TinyPbStruct res_data;
   if (!m_client->getConnection()->getResPackageData(res_data)) {
