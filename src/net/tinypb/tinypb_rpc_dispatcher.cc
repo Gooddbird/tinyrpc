@@ -77,7 +77,7 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
 
     TinyPbCodeC codec;
     codec.encode(buff, dynamic_cast<AbstractData*>(&reply_pk));
-    conn->asyncWrite();
+    // conn->MainWriteCoFunc();
     
     // buff->writeToBuffer();
     // DebugLog << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>";

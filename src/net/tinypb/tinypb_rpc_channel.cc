@@ -36,8 +36,12 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
   InfoLog<< "============================================================";
   m_client->start();
 
-  const TinyPbStruct* res_data = m_client->getConnection()->getResPackageData();
-  if (!response->ParseFromString(res_data->pb_data)) {
+  TinyPbStruct res_data;
+  if (!m_client->getConnection()->getResPackageData(res_data)) {
+    ErrorLog << "get reply package empty";
+    return;
+  }
+  if (!response->ParseFromString(res_data.pb_data)) {
     ErrorLog << "parse return package error";
   }
   InfoLog<< "============================================================";

@@ -209,6 +209,14 @@ void Reactor::loop() {
 	while(!m_stop_flag) {
 		const int MAX_EVENTS = 10;
 		epoll_event re_events[MAX_EVENTS + 1];
+		// DebugLog << "task";
+		// excute tasks
+		for (size_t i = 0; i < m_pending_tasks.size(); ++i) {
+			// DebugLog << "begin to excute task[" << i << "]";
+			m_pending_tasks[i]();
+			// DebugLog << "end excute tasks[" << i << "]";
+		}
+		m_pending_tasks.clear();
 		DebugLog << "to epoll_wait";
 		int rt = epoll_wait(m_epfd, re_events, MAX_EVENTS, t_max_epoll_timeout);
 
@@ -268,12 +276,12 @@ void Reactor::loop() {
 			
 			// DebugLog << "task";
 			// excute tasks
-			for (size_t i = 0; i < m_pending_tasks.size(); ++i) {
-				// DebugLog << "begin to excute task[" << i << "]";
-				m_pending_tasks[i]();
-			  // DebugLog << "end excute tasks[" << i << "]";
-			}
-      m_pending_tasks.clear();
+			// for (size_t i = 0; i < m_pending_tasks.size(); ++i) {
+			// 	// DebugLog << "begin to excute task[" << i << "]";
+			// 	m_pending_tasks[i]();
+			//   // DebugLog << "end excute tasks[" << i << "]";
+			// }
+      // m_pending_tasks.clear();
 
 			std::map<int, epoll_event> tmp_add;
 			std::vector<int> tmp_del;

@@ -38,34 +38,6 @@ TcpConnection* TcpClient::getConnection() {
   return m_connection.get();
 }
 
-// bool TcpClient::connectAndSend() {
-//   if (m_connection->getState() == Connected) {
-//     m_connection->setUpClient();
-//     m_reactor->addTask(std::bind(&TcpConnection::asyncWrite, m_connection.get()));
-//     // m_reactor->loop();
-//   } else {
-//     // when this coroutine back identify: 
-//     // case1: connect succ and put task to send data
-//     // case2: connect error
-//     Coroutine::Resume(m_connect_cor.get());      
-//   }
-
-//   if (m_connection->getState() != Connected) {
-//     ErrorLog << "connect error, peer addr:[" << m_peer_addr->toString() << "]";
-//     return false;
-//   }
-//   m_connection->asyncWrite();
-//   // while (!m_connection->getResPackageData()) {
-//   //   m_connection->asyncRead();
-//   // }
-
-//   return true;
-// }
-
-// void TcpClient::onGetReply() {
-//   Coroutine::Resume(m_wait_reply_cor.get());
-// }
-
 int TcpClient::start() {
   if (m_connection->getState() != Connected) {
     int n = m_try_counts;
@@ -84,12 +56,14 @@ int TcpClient::start() {
     return ERROR_FAILED_CONNECT;
   }
   m_connection->setUpClient();
+  m_connection->output();
 
-  m_connection->MainWriteCoFunc();
-  m_connection->MainReadCoFunc();
-  if (!m_connection->getResPackageData()) {
-    return ERROR_FAILED_GET_REPLY;
-  }
+  m_connection->input();
+  m_connection->execute();
+
+  // if (!m_connection->getResPackageData()) {
+  //   return ERROR_FAILED_GET_REPLY;
+  // }
   return 0;
 }
 

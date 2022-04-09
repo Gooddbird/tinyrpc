@@ -46,15 +46,12 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
   void initBuffer(int size);
 
   enum ConnectionType {
-    ServerConnection = 1,     // own by server
-    ClientConnection = 2,     // own by client
+    ServerConnection = 1,     // owned by tcp_server
+    ClientConnection = 2,     // owned by tcp_client
   };
 
  public:
-
-  void asyncRead();
-
-	void asyncWrite();
+ 
 
   void shutdownConnection();
 
@@ -66,24 +63,22 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
   TinyPbCodeC* getCodec() const;
 
-  const TinyPbStruct* getResPackageData();
+  bool getResPackageData(TinyPbStruct& pb_struct);
 
   void registerToTimeWheel();
 
-  // void resumeReadCoroutine();
-
-  // void resumeWriteCoroutine();
-
  public:
-  void MainReadCoFunc();
+  void MainServerLoopCorFunc();
 
-  void MainWriteCoFunc();
+  void input();
+
+  void execute(); 
+
+	void output();
+
 
  private:
   void clearClient();
-  
-  void execute();
-
 
  private:
   TcpServer* m_tcp_svr {nullptr};
@@ -100,17 +95,15 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
 	TcpBuffer::ptr m_read_buffer;
 	TcpBuffer::ptr m_write_buffer;
-  Coroutine::ptr m_read_cor;
-  Coroutine::ptr m_write_cor;
+
+  Coroutine::ptr m_loop_cor;
 
   TinyPbCodeC::ptr m_codec;
 
   FdEvent::ptr m_fd_event;
-  bool m_stop_read {false};
-  bool m_stop_write {false};
-  std::queue<TinyPbStruct*> m_client_res_data_queue;
+  bool m_stop {false};
+  std::queue<TinyPbStruct> m_client_res_data_queue;
 
-  // AbstractSlot<TcpConnection>* m_conn_slot {nullptr};
   std::weak_ptr<AbstractSlot<TcpConnection>> m_weak_slot;
 
 };
