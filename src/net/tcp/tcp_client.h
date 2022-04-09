@@ -19,10 +19,6 @@ class TcpClient {
 
   ~TcpClient();
 
-  // bool connectAndSend();
-
-  // void onGetReply();
-
   int start();
 
   void stop();
@@ -38,11 +34,6 @@ class TcpClient {
     m_try_counts = v;
   }
 
- private:
-  // void MainConnectCorFunc();
-
-  // void WaitReplyCorFunc();
-
 
  private:
 
@@ -51,11 +42,10 @@ class TcpClient {
   int m_try_counts {3};         // max try reconnect times
   int m_max_timeout {75};       // max connect timeout, s
   bool m_is_stop {false};
+
   NetAddress::ptr m_local_addr {nullptr};
   NetAddress::ptr m_peer_addr {nullptr};
   Reactor* m_reactor {nullptr};
-  // Coroutine::ptr m_connect_cor {nullptr};
-  // Coroutine::ptr m_wait_reply_cor {nullptr};
   TcpConnection::ptr m_connection {nullptr};
 
   bool m_connect_succ {false};

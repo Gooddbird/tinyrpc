@@ -5,13 +5,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-namespace tinyrpc {
-	// void enableHook();
-
-	// void disableHook();
-}
-
-
 typedef ssize_t (*read_fun_ptr_t)(int fd, void *buf, size_t count);
 
 typedef ssize_t (*write_fun_ptr_t)(int fd, const void *buf, size_t count);

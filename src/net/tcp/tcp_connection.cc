@@ -22,7 +22,6 @@ TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_
   m_tcp_svr = tcp_svr;
 
   m_codec = std::make_shared<TinyPbCodeC>();
-  // tinyrpc::enableHook();
   m_fd_event = FdEventContainer::GetFdContainer()->getFdEvent(fd);
   m_fd_event->setReactor(m_reactor);
   initBuffer(buff_size); 
@@ -45,7 +44,6 @@ TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reac
 
   m_codec = std::make_shared<TinyPbCodeC>();
 
-  // tinyrpc::enableHook();
   m_fd_event = FdEventContainer::GetFdContainer()->getFdEvent(fd);
   m_fd_event->setReactor(m_reactor);
   initBuffer(buff_size); 

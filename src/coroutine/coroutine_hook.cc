@@ -278,14 +278,6 @@ unsigned int sleep_hook(unsigned int seconds) {
 
 namespace tinyrpc {
 
-// void enableHook() {
-//   g_hook_enable = true;
-// }
-
-// void disableHook() {
-//   g_hook_enable = false;
-// }
-
 void setMaxTimeOut (int v) {
 	g_max_timeout = (v * 1000);
 }

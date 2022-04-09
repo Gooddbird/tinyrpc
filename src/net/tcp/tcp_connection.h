@@ -25,7 +25,7 @@ class IOThread;
 enum TcpConnectionState {
 	NotConnected = 1,		// can do io
 	Connected = 2,		// can do io
-	HalfClosing = 3,			// server call shutdown, write half close
+	HalfClosing = 3,			// server call shutdown, write half close. can read,but can't write
 	Closed = 4,				// can't do io
 };
 
@@ -102,6 +102,7 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
   FdEvent::ptr m_fd_event;
   bool m_stop {false};
+
   std::queue<TinyPbStruct> m_client_res_data_queue;
 
   std::weak_ptr<AbstractSlot<TcpConnection>> m_weak_slot;
