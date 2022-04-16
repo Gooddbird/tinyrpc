@@ -6,6 +6,7 @@ set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -rdynamic -O3 -g -std=c++11 -Wall -Wno-depre
 
 set(LIB_SRC
   src/comm/log.cc
+  src/comm/msg_req.cc
   src/thread/thread_pool.cc
   src/coroutine/coctx_swap.S
   src/coroutine/coroutine.cc

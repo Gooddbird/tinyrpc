@@ -42,7 +42,7 @@ class TinyPbRpcController : public google::protobuf::RpcController {
 
   void SetMsgReq(const std::string& msg_req);
 
-  void SetError(const int err_code, std::string& err_info);
+  void SetError(const int err_code, const std::string& err_info);
   
 
  private:

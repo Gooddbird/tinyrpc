@@ -11,7 +11,7 @@ namespace tinyrpc {
 //
 // client error
 // 
-const int ERROR_FAILED_CONNECT = SYS_ERROR_PREFIX(0001);    // failed to connection peer host
+const int ERROR_FAILED_CONNECT = SYS_ERROR_PREFIX(0001);      // failed to connection peer host
 const int ERROR_FAILED_GET_REPLY = SYS_ERROR_PREFIX(0002);    // failed to get server reply
 
  

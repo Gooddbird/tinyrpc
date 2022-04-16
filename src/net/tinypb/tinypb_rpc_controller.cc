@@ -44,7 +44,7 @@ void TinyPbRpcController::SetMsgReq(const std::string& msg_req) {
   m_msg_req = msg_req;
 }
 
-void TinyPbRpcController::SetError(const int err_code, std::string& err_info) {
+void TinyPbRpcController::SetError(const int err_code, const std::string& err_info) {
   SetFailed(err_info);
   SetErrorCode(err_code);
 }

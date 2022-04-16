@@ -171,7 +171,8 @@ void TcpConnection::execute() {
       DebugLog << "contine parse next package";
     } else if (m_connection_type == ClientConnection) {
       // TODO:
-      m_client_res_data_queue.push(pb_struct);
+      // m_client_res_data_queue.push(pb_struct);
+      m_reply_datas.insert(std::make_pair(pb_struct.msg_req, pb_struct));
     }
 
   }
@@ -252,13 +253,15 @@ TcpBuffer* TcpConnection::getOutBuffer() {
   return m_write_buffer.get();
 }
 
-bool TcpConnection::getResPackageData(TinyPbStruct& pb_struct) {
-  if (!m_client_res_data_queue.empty()) {
+bool TcpConnection::getResPackageData(const std::string& msg_req, TinyPbStruct& pb_struct) {
+  auto it = m_reply_datas.find(msg_req);
+  if (it != m_reply_datas.end()) {
     DebugLog << "return a resdata";
-    pb_struct = m_client_res_data_queue.front();
-    m_client_res_data_queue.pop();
+    pb_struct = std::move(it->second);
+    m_reply_datas.erase(it);
     return true;
   }
+  DebugLog << "reply data of msg_rep[]" << msg_req << "not exist";
   return false;
 
 }

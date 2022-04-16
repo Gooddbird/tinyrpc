@@ -10,9 +10,8 @@ enum CodeCType {
 
 class AbstractData {
  public:
-  AbstractData() {}
+  AbstractData() = default;
   virtual ~AbstractData() {};
-  virtual CodeCType type() const = 0;
 
   bool decode_succ {false};
   bool encode_succ {false};
