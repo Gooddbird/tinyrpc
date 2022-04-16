@@ -5,13 +5,18 @@
 #include <vector>
 #include <string>
 #include "../abstract_data.h"
+#include "../../comm/log.h"
 
 namespace tinyrpc {
 
-struct TinyPbStruct : public AbstractData {
-
-  TinyPbStruct() {};
-  ~TinyPbStruct() {};
+class TinyPbStruct : public AbstractData {
+ public:
+  TinyPbStruct() = default;
+  ~TinyPbStruct() = default;
+  TinyPbStruct(const TinyPbStruct& ) = default;
+  TinyPbStruct& operator=(const TinyPbStruct& ) = default;
+  TinyPbStruct(TinyPbStruct&&) = default;
+  TinyPbStruct& operator=(TinyPbStruct&&) = default;
 
   /*
   **  min of package is: 1 + 4 + 4 + 4 + 4 + 4 + 4 + 1 = 26 bytes
@@ -31,9 +36,9 @@ struct TinyPbStruct : public AbstractData {
   int32_t check_num {-1};             // check_num of all package. to check legality of data
   // char end;                        // identify end of a TinyPb protocal data
 
-  CodeCType type() const {
-    return CodeCType::CODEC_TINYPB;
-  }
+  // CodeCType type() const {
+  //   return CodeCType::CODEC_TINYPB;
+  // }
 };
 
 }

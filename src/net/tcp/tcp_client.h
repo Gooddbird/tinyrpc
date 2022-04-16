@@ -11,6 +11,10 @@
 
 namespace tinyrpc {
 
+
+//
+// You should use TcpClient in a coroutine(not main coroutine)
+//
 class TcpClient {
  public:
   typedef std::shared_ptr<TcpClient> ptr;
@@ -36,6 +40,10 @@ class TcpClient {
     m_try_counts = v;
   }
 
+  const std::string& getErrInfo() {
+    return m_err_info;
+  }
+
 
  private:
 
@@ -44,6 +52,7 @@ class TcpClient {
   int m_try_counts {3};         // max try reconnect times
   int m_max_timeout {5};       // max connect timeout, s
   bool m_is_stop {false};
+  std::string m_err_info;      // error info of client
 
   NetAddress::ptr m_local_addr {nullptr};
   NetAddress::ptr m_peer_addr {nullptr};

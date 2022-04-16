@@ -8,12 +8,14 @@
 #include "../../comm/log.h"
 #include "../abstract_data.h"
 #include "tinypb_data.h"
+#include "../../comm/msg_req.h"
 
 
 namespace tinyrpc {
 
-const char PB_START= 0x02;
-const char PB_END = 0x03;
+static const char PB_START= 0x02;     // start char
+static const char PB_END = 0x03;      // end char
+static const int MSG_REQ_LEN = 20;    // default length of msg_req
 
 TinyPbCodeC::TinyPbCodeC() {
 
@@ -54,6 +56,10 @@ const char* TinyPbCodeC::encodePbData(TinyPbStruct* data, int& len) {
     data->encode_succ = false;
     return nullptr;
   }
+  if (data->msg_req.empty()) {
+    data->msg_req = genMsgNumber(MSG_REQ_LEN);
+    data->msg_req_len = data->msg_req.length();
+  }
 
   int32_t pk_len = 2 * sizeof(char) + 6 * sizeof(int32_t)
                     + data->pb_data.length() + data->service_full_name.length()
@@ -69,7 +75,7 @@ const char* TinyPbCodeC::encodePbData(TinyPbStruct* data, int& len) {
   memcpy(tmp, &pk_len_net, sizeof(int32_t));
   tmp += sizeof(int32_t);
 
-  int32_t msg_req_len = data->msg_req_len;
+  int32_t msg_req_len = data->msg_req.length();
   DebugLog << "msg_req_len= " << msg_req_len;
   int32_t msg_req_len_net = htonl(msg_req_len);
   memcpy(tmp, &msg_req_len_net, sizeof(int32_t));
@@ -188,6 +194,7 @@ void TinyPbCodeC::decode(TcpBuffer* buf, AbstractData* data) {
   // TinyPbStruct pb_struct;
   TinyPbStruct* pb_struct = dynamic_cast<TinyPbStruct*>(data);
   pb_struct->pk_len = pk_len;
+  pb_struct->decode_succ = false;
 
   int msg_req_len_index = start_index + sizeof(char) + sizeof(int32_t);
   if (msg_req_len_index >= end_index) {
@@ -197,6 +204,10 @@ void TinyPbCodeC::decode(TcpBuffer* buf, AbstractData* data) {
   }
 
   pb_struct->msg_req_len = getInt32FromNetByte(&tmp[msg_req_len_index]);
+  if (pb_struct->msg_req_len == 0) {
+    ErrorLog << "prase error, msg_req emptr";
+    return;
+  }
 
   int msg_req_index = msg_req_len_index + sizeof(int32_t);
 

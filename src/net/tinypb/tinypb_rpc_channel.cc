@@ -5,6 +5,7 @@
 #include "../net_address.h"
 #include "../tcp/tcp_client.h"
 #include "tinypb_rpc_channel.h"
+#include "tinypb_rpc_controller.h"
 #include "tinypb_codec.h"
 #include "tinypb_data.h"
 #include "../../comm/log.h"
@@ -23,6 +24,8 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
     google::protobuf::Closure* done) {
 
   TinyPbStruct pb_struct;
+  TinyPbRpcController* rpc_controller = dynamic_cast<TinyPbRpcController*>(controller); 
+  
   pb_struct.service_full_name = method->full_name();
   DebugLog << "call service_name = " << pb_struct.service_full_name;
   if (!request->SerializeToString(&(pb_struct.pb_data))) {
@@ -35,11 +38,17 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
   InfoLog<< "Set client send request data:\n" << request->DebugString();
   InfoLog<< "============================================================";
 
-  m_client->sendAndRecv();
+  int rt = m_client->sendAndRecv();
+  if (rt != 0) {
+    rpc_controller->SetError(rt, m_client->getErrInfo());
+    ErrorLog << "call rpc server error, service_full_name=" << pb_struct.service_full_name << ", error_code=" 
+        << rt << ", error_info = " << m_client->getErrInfo();
+    return;
+  }
 
   TinyPbStruct res_data;
-  if (!m_client->getConnection()->getResPackageData(res_data)) {
-    ErrorLog << "get reply package empty";
+  if (!m_client->getConnection()->getResPackageData(pb_struct.msg_req, res_data)) {
+    ErrorLog << "get reply package empty of msg_rep[" << pb_struct.msg_req << "]";
     return;
   }
   if (!response->ParseFromString(res_data.pb_data)) {

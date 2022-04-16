@@ -18,6 +18,7 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
 
   if (tmp == nullptr) {
     ErrorLog << "dynamic_cast error";
+    return;
   }
 
   assert(tmp != nullptr);
@@ -67,6 +68,9 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
     }
     TinyPbStruct reply_pk;
     reply_pk.service_full_name = tmp->service_full_name;
+    reply_pk.msg_req = tmp->msg_req;
+    reply_pk.msg_req_len = reply_pk.msg_req.length();
+
     if (!(response->SerializeToString(&(reply_pk.pb_data)))) {
       ErrorLog << "reply error! encode reply package error";
       return;

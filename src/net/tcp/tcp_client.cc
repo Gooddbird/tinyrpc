@@ -48,6 +48,9 @@ int TcpClient::sendAndRecv() {
     }
   }
   if (m_connection->getState() != Connected) {
+    std::stringstream ss;
+    ss << "connect peer addr[" << m_peer_addr->toString() << "] error.";
+    m_err_info = ss.str();
     return ERROR_FAILED_CONNECT;
   }
   m_connection->setUpClient();
@@ -59,6 +62,7 @@ int TcpClient::sendAndRecv() {
   // if (!m_connection->getResPackageData()) {
   //   return ERROR_FAILED_GET_REPLY;
   // }
+  m_err_info = "";
   return 0;
 }
 
