@@ -9,15 +9,18 @@
 
 namespace tinyrpc {
 
+static int g_random_fd = -1;
+
 std::string genMsgNumber(const int len) {
   if (len == 0) {
     DebugLog << "genMsgNumber len == 0, return";
     return "";
   }
-  std::random_device rd;
-  int fd = open("/dev/urandom", O_RDONLY);
+  if (g_random_fd == -1) {
+    g_random_fd = open("/dev/urandom", O_RDONLY);
+  } 
   std::string res(len, 0);
-  if ((read(fd, &res[0], len)) != len) {
+  if ((read(g_random_fd, &res[0], len)) != len) {
     ErrorLog << "read /dev/urandom data less " << len << "bytes";
     return "";
   }

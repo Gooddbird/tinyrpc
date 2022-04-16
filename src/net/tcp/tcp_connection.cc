@@ -171,7 +171,6 @@ void TcpConnection::execute() {
       DebugLog << "contine parse next package";
     } else if (m_connection_type == ClientConnection) {
       // TODO:
-      // m_client_res_data_queue.push(pb_struct);
       m_reply_datas.insert(std::make_pair(pb_struct.msg_req, pb_struct));
     }
 
