@@ -36,7 +36,7 @@ int TinyPbRpcController::ErrorCode() const {
   return m_error_code; 
 }
 
-std::string TinyPbRpcController::MsgSeq() const {
+const std::string& TinyPbRpcController::MsgSeq() const {
   return m_msg_req;
 }
 
@@ -47,6 +47,28 @@ void TinyPbRpcController::SetMsgReq(const std::string& msg_req) {
 void TinyPbRpcController::SetError(const int err_code, const std::string& err_info) {
   SetFailed(err_info);
   SetErrorCode(err_code);
+}
+
+void TinyPbRpcController::SetPeerAddr(NetAddress::ptr addr) {
+  m_peer_addr = addr;
+}
+
+void TinyPbRpcController::SetLocalAddr(NetAddress::ptr addr) {
+  m_local_addr = addr;
+}
+NetAddress::ptr TinyPbRpcController::PeerAddr() {
+  return m_peer_addr;
+}
+  
+NetAddress::ptr TinyPbRpcController::LocalAddr() {
+  return m_local_addr;
+}
+
+void TinyPbRpcController::SetTimeout(const int timeout) {
+  m_timeout = timeout;
+}
+int TinyPbRpcController::Timeout() const {
+  return m_timeout;
 }
 
 

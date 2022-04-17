@@ -3,6 +3,7 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/descriptor.h>
 #include "../net_address.h"
+#include "../../comm/error_code.h"
 #include "../tcp/tcp_client.h"
 #include "tinypb_rpc_channel.h"
 #include "tinypb_rpc_controller.h"
@@ -24,7 +25,9 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
     google::protobuf::Closure* done) {
 
   TinyPbStruct pb_struct;
-  TinyPbRpcController* rpc_controller = dynamic_cast<TinyPbRpcController*>(controller); 
+  TinyPbRpcController* rpc_controller = dynamic_cast<TinyPbRpcController*>(controller);
+  rpc_controller->SetLocalAddr(m_client->getLocalAddr());
+  rpc_controller->SetPeerAddr(m_client->getPeerAddr());
   
   pb_struct.service_full_name = method->full_name();
   DebugLog << "call service_name = " << pb_struct.service_full_name;
@@ -34,29 +37,51 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
   }
   TinyPbCodeC* m_codec = m_client->getConnection()->getCodec();
   m_codec->encode(m_client->getConnection()->getOutBuffer(), &pb_struct);
-  InfoLog<< "============================================================";
-  InfoLog<< "Set client send request data:\n" << request->DebugString();
-  InfoLog<< "============================================================";
+  if (!pb_struct.encode_succ) {
+    rpc_controller->SetError(ERROR_FAILED_ENCODE, "encode tinypb data error");
+    return;
+  }
 
+  rpc_controller->SetMsgReq(pb_struct.msg_req);
+
+  InfoLog << "============================================================";
+  InfoLog << pb_struct.msg_req << "|" << rpc_controller->LocalAddr()->toString() << "|" << rpc_controller->PeerAddr()->toString() 
+      << "|. Set client send request data:\n" << request->DebugString();
+  InfoLog << "============================================================";
+  m_client->setTimeout(rpc_controller->Timeout());
   int rt = m_client->sendAndRecv();
   if (rt != 0) {
     rpc_controller->SetError(rt, m_client->getErrInfo());
-    ErrorLog << "call rpc server error, service_full_name=" << pb_struct.service_full_name << ", error_code=" 
+    ErrorLog << pb_struct.msg_req << "|call rpc occur client error, service_full_name=" << pb_struct.service_full_name << ", error_code=" 
         << rt << ", error_info = " << m_client->getErrInfo();
     return;
   }
 
   TinyPbStruct res_data;
   if (!m_client->getConnection()->getResPackageData(pb_struct.msg_req, res_data)) {
-    ErrorLog << "get reply package empty of msg_rep[" << pb_struct.msg_req << "]";
+    ErrorLog << pb_struct.msg_req << "|get reply package empty";
+    rpc_controller->SetError(ERROR_FAILED_GET_REPLY, "failed to get reply data");
     return;
   }
+
   if (!response->ParseFromString(res_data.pb_data)) {
-    ErrorLog << "parse return package error";
+    rpc_controller->SetError(ERROR_FAILED_DESERIALIZE, "failed to deserialize data from server");
+    ErrorLog << pb_struct.msg_req << "|failed to deserialize data";
+    return;
   }
+  if (res_data.err_code != 0) {
+    ErrorLog << pb_struct.msg_req << "|server reply error_code=" << res_data.err_code << ", err_info=" << res_data.err_info;
+    rpc_controller->SetError(res_data.err_code, res_data.err_info);
+    return;
+  }
+
   InfoLog<< "============================================================";
-  InfoLog<< "Get server reply response data:\n" << response->DebugString();
+  InfoLog<< pb_struct.msg_req << "|" << rpc_controller->LocalAddr()->toString() << "|" << rpc_controller->PeerAddr()->toString()
+      << "|call rpc server [" << pb_struct.service_full_name << "] succ" 
+      << ". Get server reply response data:\n" << response->DebugString();
   InfoLog<< "============================================================";
+
+  // excute callback function
   done->Run();
 }
 

@@ -44,6 +44,14 @@ class TcpClient {
     return m_err_info;
   }
 
+  NetAddress::ptr getPeerAddr() const {
+    return m_peer_addr;
+  }
+
+  NetAddress::ptr getLocalAddr() const {
+    return m_local_addr;
+  }
+
 
  private:
 

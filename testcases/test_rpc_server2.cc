@@ -13,39 +13,48 @@
 void fun() {
   tinyrpc::IPAddress::ptr peer_addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
   tinyrpc::TinyPbRpcChannel channel(peer_addr);
-  tinyrpc::TinyPbRpcController rpc_controller;
   DebugLog << "input an integer to set count that send tinypb data";
   int n;
   std::cin >> n;
 
   while (n--) {
 
-  queryNameReq req_name;
-  req_name.set_req_no(20220315);
-  req_name.set_id(1234);
-  req_name.set_type(1);
+    queryNameReq req_name;
+    req_name.set_req_no(20220315);
+    req_name.set_id(1234);
+    req_name.set_type(1);
 
-  queryNameRes res_name;
+    queryNameRes res_name;
 
-  queryAgeReq req_age;
-  req_age.set_req_no(00001111);
-  req_age.set_id(6781);
+    queryAgeReq req_age;
+    req_age.set_req_no(00001111);
+    req_age.set_id(6781);
 
-  queryAgeRes res_age;
+    queryAgeRes res_age;
 
-  tinyrpc::TinyPbRpcClosure cb([]() {
-    DebugLog << "==========================";
-    DebugLog << "succ call rpc";
-    DebugLog << "==========================";
-  });
+    tinyrpc::TinyPbRpcClosure cb([]() {
+      DebugLog << "==========================";
+      DebugLog << "succ call rpc";
+      DebugLog << "==========================";
+    });
 
-  QueryService_Stub stub(&channel);
-  stub.query_name(&rpc_controller, &req_name, &res_name, &cb);
-  
-  stub.query_age(&rpc_controller, &req_age, &res_age, &cb);
+    QueryService_Stub stub(&channel);
+    tinyrpc::TinyPbRpcController rpc_controller;
+    stub.query_name(&rpc_controller, &req_name, &res_name, &cb);
 
-  DebugLog << "get res_name.age = " << res_name.name();
-  DebugLog << "get res_age.age = " << res_age.age();
+    if (rpc_controller.ErrorCode() != 0) {
+      ErrorLog << "call rpc method query_name failed, errcode=" << rpc_controller.ErrorCode() << ",error=" << rpc_controller.ErrorText();
+    } else {
+      DebugLog << "get res_name.age = " << res_name.name();
+    }
+    
+    tinyrpc::TinyPbRpcController rpc_controller2;
+    stub.query_age(&rpc_controller2, &req_age, &res_age, &cb);
+    if (rpc_controller2.ErrorCode() != 0) {
+      ErrorLog << "call rpc method query_age failed, errcode=" << rpc_controller2.ErrorCode() << ",error=" << rpc_controller2.ErrorText();
+    } else {
+      DebugLog << "get res_age.age = " << res_age.age();
+    }
 
   }
 

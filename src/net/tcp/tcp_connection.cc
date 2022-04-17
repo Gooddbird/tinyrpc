@@ -171,7 +171,7 @@ void TcpConnection::execute() {
       DebugLog << "contine parse next package";
     } else if (m_connection_type == ClientConnection) {
       // TODO:
-      m_reply_datas.insert(std::make_pair(pb_struct.msg_req, pb_struct));
+      m_reply_datas.insert(std::make_pair(pb_struct.msg_req, std::move(pb_struct)));
     }
 
   }
@@ -260,7 +260,7 @@ bool TcpConnection::getResPackageData(const std::string& msg_req, TinyPbStruct& 
     m_reply_datas.erase(it);
     return true;
   }
-  DebugLog << "reply data of msg_rep[]" << msg_req << "not exist";
+  DebugLog << msg_req << "|reply data not exist";
   return false;
 
 }
