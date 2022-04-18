@@ -37,36 +37,66 @@ TcpConnection* TcpClient::getConnection() {
 }
 
 int TcpClient::sendAndRecv() {
-  auto timer_cb = []() {
-
+  bool is_timeout = false;
+  tinyrpc::Coroutine* cur_cor = tinyrpc::Coroutine::GetCurrentCoroutine();
+  auto timer_cb = [this, &is_timeout, cur_cor]() {
+    InfoLog << "TcpClient timer out event occur";
+    is_timeout = true;
+    this->m_connection->setOverTimeFlag(true); 
+    tinyrpc::Coroutine::Resume(cur_cor);
   };
   TimerEvent::ptr event = std::make_shared<TimerEvent>(m_max_timeout, false, timer_cb);
-  if (m_connection->getState() != Connected) {
-    int n = m_try_counts;
-    while (n > 0) {
+  m_reactor->getTimer()->addTimerEvent(event);
+
+  while (!is_timeout) {
+    if (m_connection->getState() != Connected) {
       int rt = connect_hook(m_fd, reinterpret_cast<sockaddr*>(m_peer_addr->getSockAddr()), m_peer_addr->getSockLen());
       if (rt == 0) {
         DebugLog << "connect [" << m_peer_addr->toString() << "] succ!";
         m_connection->setUpClient();
         break;
       }
-      n--;
+      if (is_timeout) {
+        InfoLog << "connect timeout, break";
+        goto timeout_deal;
+      }
     }
-  }
+  }    
+
   if (m_connection->getState() != Connected) {
     std::stringstream ss;
     ss << "connect peer addr[" << m_peer_addr->toString() << "] error. sys error=" << strerror(errno);
     m_err_info = ss.str();
     return ERROR_FAILED_CONNECT;
   }
+
   m_connection->setUpClient();
   m_connection->output();
+  if (m_connection->getOverTimer()) {
+    InfoLog << "send data over time";
+    goto timeout_deal;
+  }
 
   m_connection->input();
-  m_connection->execute();
 
+  if (m_connection->getOverTimer()) {
+    InfoLog << "read data over time";
+    goto timeout_deal;
+  }
+
+  m_reactor->getTimer()->delTimerEvent(event);
+  m_connection->execute();
   m_err_info = "";
   return 0;
+
+timeout_deal:
+  std::stringstream ss;
+  ss << "call rpc falied, over " << m_max_timeout << " ms";
+  m_err_info = ss.str();
+
+  m_connection->setOverTimeFlag(false);
+  return ERROR_RPC_CALL_TIMEOUT;
+
 }
 
 void TcpClient::stop() {

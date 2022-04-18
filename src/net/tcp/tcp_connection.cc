@@ -95,6 +95,10 @@ void TcpConnection::MainServerLoopCorFunc() {
 }
 
 void TcpConnection::input() {
+  if (m_is_over_time) {
+    InfoLog << "over timer, skip input progress";
+    return;
+  }
   if (m_state == Closed || m_state == NotConnected) {
     return;
   }
@@ -117,6 +121,10 @@ void TcpConnection::input() {
 
     DebugLog << "read data back";
     count += rt;
+    if (m_is_over_time) {
+      InfoLog << "over timer, now break read function";
+      break;
+    }
     if (rt <= 0) {
       DebugLog << "rt <= 0";
       ErrorLog << "read empty while occur read event, because of peer close, sys error=" << strerror(errno) << ", now to clear tcp connection";
@@ -138,7 +146,7 @@ void TcpConnection::input() {
       } 
     }
   }
-  if (close_flag) {
+  if (close_flag || m_is_over_time) {
     return;
   }
   if (!read_all) {
@@ -179,6 +187,10 @@ void TcpConnection::execute() {
 }
 
 void TcpConnection::output() {
+  if (m_is_over_time) {
+    InfoLog << "over timer, skip output progress";
+    return;
+  }
   while(true) {
     if (m_state != Connected) {
       break;
@@ -205,6 +217,11 @@ void TcpConnection::output() {
       // InfoLog << "send all data, now unregister write event on reactor and yield Coroutine";
       InfoLog << "send all data, now unregister write event and break";
       m_fd_event->delListenEvents(IOEvent::WRITE);
+      break;
+    }
+
+    if (m_is_over_time) {
+      InfoLog << "over timer, now break write function";
       break;
     }
 
@@ -273,6 +290,15 @@ TinyPbCodeC* TcpConnection::getCodec() const {
 TcpConnectionState TcpConnection::getState() const {
   return m_state;
 }
+
+void TcpConnection::setOverTimeFlag(bool value) {
+  m_is_over_time = value;
+}
+
+bool TcpConnection::getOverTimer() {
+  return m_is_over_time;
+}
+
 
 
 }

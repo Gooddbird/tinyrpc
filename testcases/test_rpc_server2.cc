@@ -40,6 +40,7 @@ void fun() {
 
     QueryService_Stub stub(&channel);
     tinyrpc::TinyPbRpcController rpc_controller;
+    rpc_controller.SetTimeout(10000);
     stub.query_name(&rpc_controller, &req_name, &res_name, &cb);
 
     if (rpc_controller.ErrorCode() != 0) {
@@ -48,13 +49,13 @@ void fun() {
       DebugLog << "get res_name.age = " << res_name.name();
     }
     
-    tinyrpc::TinyPbRpcController rpc_controller2;
-    stub.query_age(&rpc_controller2, &req_age, &res_age, &cb);
-    if (rpc_controller2.ErrorCode() != 0) {
-      ErrorLog << "call rpc method query_age failed, errcode=" << rpc_controller2.ErrorCode() << ",error=" << rpc_controller2.ErrorText();
-    } else {
-      DebugLog << "get res_age.age = " << res_age.age();
-    }
+    // tinyrpc::TinyPbRpcController rpc_controller2;
+    // stub.query_age(&rpc_controller2, &req_age, &res_age, &cb);
+    // if (rpc_controller2.ErrorCode() != 0) {
+    //   ErrorLog << "call rpc method query_age failed, errcode=" << rpc_controller2.ErrorCode() << ",error=" << rpc_controller2.ErrorText();
+    // } else {
+    //   DebugLog << "get res_age.age = " << res_age.age();
+    // }
 
   }
 

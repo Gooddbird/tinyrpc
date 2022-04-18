@@ -4,6 +4,7 @@
 #include "../src/net/tinypb/tinypb_rpc_dispatcher.h"
 #include "../src/comm/log.h"
 #include "tinypb.pb.h"
+#include "../src/coroutine/coroutine_hook.h"
 
 
 class QueryServiceImpl : public QueryService {
@@ -18,6 +19,10 @@ class QueryServiceImpl : public QueryService {
     
     DebugLog << "========================";
     DebugLog << "this is query_name func";
+    DebugLog << "first begin to sleep 6s";
+    sleep_hook(6);
+    DebugLog << "sleep 6s end";
+
     response->set_ret_code(0);
     response->set_res_info("OK");
     response->set_req_no(request->req_no());

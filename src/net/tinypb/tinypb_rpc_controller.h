@@ -69,7 +69,7 @@ class TinyPbRpcController : public google::protobuf::RpcController {
   NetAddress::ptr m_peer_addr;
   NetAddress::ptr m_local_addr;
 
-  int m_timeout {5000};
+  int m_timeout {5000};           // max call rpc timeout
 
 
 };
