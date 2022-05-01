@@ -10,14 +10,12 @@
 #include "../src/coroutine/coroutine_pool.h"
 #include "tinypb.pb.h"
 
+int n = 0;
 
 void fun() {
   tinyrpc::IPAddress::ptr peer_addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
   tinyrpc::TinyPbRpcChannel channel(peer_addr);
   DebugLog << "input an integer to set count that send tinypb data";
-  int n;
-  std::cin >> n;
-
   while (n--) {
 
     DebugLog << "==========================test no:" << n;
@@ -57,14 +55,23 @@ void fun() {
 
 }
 
+
+tinyrpc::Logger* gRpcLogger = nullptr;
+
 int main(int argc, char* argv[]) {
-  if (argc != 2) {
-    std::cout << "use example:  ./out [port]" << std::endl;
-    std::cout << "./out 30001" << std::endl;
+
+  if (argc != 3) {
+    std::cout << "use example:  ./out [port] [num]" << std::endl;
+    std::cout << "./out 30001 1" << std::endl;
     return 0;
   }
 
+  gRpcLogger = new tinyrpc::Logger();
+  gRpcLogger->init();
+
   int port = std::atoi(argv[1]);
+  n = std::atoi(argv[2]);
+
   tinyrpc::IPAddress::ptr self_addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", port);
   tinyrpc::TcpServer server(self_addr, 1);
   tinyrpc::Coroutine::ptr cor = tinyrpc::GetCoroutinePool()->getCoroutineInstanse();

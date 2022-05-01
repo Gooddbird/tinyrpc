@@ -10,6 +10,8 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <memory>
+#include <vector>
+#include <queue>
 #include "../net/mutex.h"
 
 
@@ -75,8 +77,6 @@ class LogEvent {
 
 	std::stringstream m_ss;
 
- 	Mutex m_mutex;
-
 };
 
 
@@ -94,16 +94,49 @@ class LogTmp {
 
 };
 
+class AsyncLogger {
+ public:
+  typedef std::shared_ptr<AsyncLogger> ptr;
 
-class LogPrinter {
+	AsyncLogger();
+	~AsyncLogger();
+
+	void push(std::vector<std::string>& buffer);
+
+	static void* excute(void*);
 
  public:
-	
-	void log();
+	std::queue<std::vector<std::string>> m_tasks;
 
  private:
+	const char* m_file;
+ 	Mutex m_mutex;
+  pthread_cond_t m_condition;
+  pthread_t m_thread;
 
 };
+
+class Logger {
+ public:
+	Logger();
+	~Logger();
+
+	void init();
+	void log();
+	void push(const std::string& log_msg);
+	void loopFunc();
+
+ public:
+	std::vector<std::string> m_buffer;
+
+ private:
+ 	Mutex m_mutex;
+	AsyncLogger::ptr m_async_logger;
+
+};
+
+
+
 
 }
 

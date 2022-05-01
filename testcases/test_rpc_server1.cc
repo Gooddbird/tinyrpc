@@ -50,7 +50,12 @@ class QueryServiceImpl : public QueryService {
 
 };
 
+tinyrpc::Logger* gRpcLogger = nullptr; 
+
 int main(int argc, char* argv[]) {
+
+  gRpcLogger = new tinyrpc::Logger();
+  gRpcLogger->init();
 
   tinyrpc::IPAddress::ptr addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
   

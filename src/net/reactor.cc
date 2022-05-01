@@ -223,7 +223,7 @@ void Reactor::loop() {
 		// DebugLog << "epoll_waiti back";
 
 		if (rt < 0) {
-			ErrorLog << "epoll_wait error, skip";
+			ErrorLog << "epoll_wait error, skip, errno=" << strerror(errno);
 		} else {
 			// DebugLog << "epoll_wait back, rt = " << rt;
 			for (int i = 0; i < rt; ++i) {

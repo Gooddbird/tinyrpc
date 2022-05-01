@@ -45,8 +45,8 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
   rpc_controller->SetMsgReq(pb_struct.msg_req);
 
   InfoLog << "============================================================";
-  InfoLog << pb_struct.msg_req << "|" << rpc_controller->LocalAddr()->toString() << "|" << rpc_controller->PeerAddr()->toString() 
-      << "|. Set client send request data:\n" << request->DebugString();
+  InfoLog << pb_struct.msg_req << "|" << rpc_controller->PeerAddr()->toString() 
+      << "|. Set client send request data:" << request->ShortDebugString();
   InfoLog << "============================================================";
   m_client->setTimeout(rpc_controller->Timeout());
   int rt = m_client->sendAndRecv();
@@ -76,9 +76,9 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
   }
 
   InfoLog<< "============================================================";
-  InfoLog<< pb_struct.msg_req << "|" << rpc_controller->LocalAddr()->toString() << "|" << rpc_controller->PeerAddr()->toString()
+  InfoLog<< pb_struct.msg_req << "|" << rpc_controller->PeerAddr()->toString()
       << "|call rpc server [" << pb_struct.service_full_name << "] succ" 
-      << ". Get server reply response data:\n" << response->DebugString();
+      << ". Get server reply response data:" << response->ShortDebugString();
   InfoLog<< "============================================================";
 
   // excute callback function

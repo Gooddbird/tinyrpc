@@ -7,6 +7,7 @@ namespace tinyrpc {
 
 void* ThreadPool::MainFunction(void* ptr) {
   ThreadPool* pool = reinterpret_cast<ThreadPool*>(ptr);
+  pthread_cond_init(&pool->m_condition, NULL);
 
   while (!pool->m_is_stop) {
     Mutex::Lock lock(pool->m_mutex);

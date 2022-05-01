@@ -6,9 +6,14 @@
 #include <iostream>
 #include <stdio.h>
 
+
 #include "log.h"
 #include "../coroutine/coroutine.h"
+#include "../net/reactor.h"
+#include "../net/timer.h"
 
+
+extern tinyrpc::Logger* gRpcLogger;
 
 namespace tinyrpc {
 
@@ -36,8 +41,6 @@ LogEvent::LogEvent(LogLevel level, const char* file_name, int line, const char* 
     m_file_name(file_name),
     m_line(line),
     m_func_name(func_name) {
-
-
 }
 
 LogEvent::~LogEvent() {
@@ -113,9 +116,8 @@ void LogEvent::log() {
 	m_ss << "\n";
   if (m_level >= g_log_level) {
 
-    // Mutex::Lock lock(m_mutex);
-    // std::cout << m_ss.str();
-    printf(m_ss.str().c_str());
+    // printf("========%s", m_ss.str().c_str());
+    gRpcLogger->push(m_ss.str());
   }
 }
 
@@ -130,6 +132,75 @@ std::stringstream& LogTmp::getStringStream() {
 
 LogTmp::~LogTmp() {
   m_event->log(); 
+}
+
+Logger::Logger() {
+  // cannot do anything which will call LOG ,otherwise is will coredump
+
+}
+
+void Logger::init() {
+  TimerEvent::ptr event = std::make_shared<TimerEvent>(1000, true, std::bind(&Logger::loopFunc, this));
+  Reactor::GetReactor()->getTimer()->addTimerEvent(event);
+  m_async_logger = std::make_shared<AsyncLogger>();
+}
+	
+void Logger::loopFunc() {
+  std::vector<std::string> tmp;
+  Mutex::Lock lock(m_mutex);
+  tmp.swap(m_buffer);
+  lock.unlock();
+
+  m_async_logger->push(tmp);
+}
+
+void Logger::push(const std::string& msg) {
+
+  Mutex::Lock lock(m_mutex);
+  m_buffer.push_back(msg);
+  lock.unlock();
+}
+
+AsyncLogger::AsyncLogger() {
+  pthread_create(&m_thread, nullptr, &AsyncLogger::excute, this);
+}
+
+AsyncLogger::~AsyncLogger() {
+
+}
+
+void* AsyncLogger::excute(void* arg) {
+  AsyncLogger* ptr = reinterpret_cast<AsyncLogger*>(arg);
+  pthread_cond_init(&ptr->m_condition, NULL);
+
+  while (1) {
+    Mutex::Lock lock(ptr->m_mutex);
+
+    while (ptr->m_tasks.empty()) {
+      pthread_cond_wait(&(ptr->m_condition), ptr->m_mutex.getMutex());
+    }
+    std::vector<std::string> tmp;
+    tmp.swap(ptr->m_tasks.front());
+    ptr->m_tasks.pop();
+    lock.unlock();
+
+    for(auto i : tmp) {
+      printf(i.c_str());
+    }
+
+  }
+
+  return nullptr;
+
+}
+
+
+void AsyncLogger::push(std::vector<std::string>& buffer) {
+  Mutex::Lock lock(m_mutex);
+  m_tasks.push(buffer);
+  lock.unlock();
+  pthread_cond_broadcast(&m_condition);
+
 }
 
 }
