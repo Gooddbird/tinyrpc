@@ -95,6 +95,7 @@ TcpServer::TcpServer(NetAddress::ptr addr, int pool_size /*=10*/) : m_addr(addr)
   m_io_pool = std::make_shared<IOThreadPool>(pool_size);
 	m_dispatcher = std::make_shared<TinyPbRpcDispacther>();
 	m_main_reactor = tinyrpc::Reactor::GetReactor();
+	InfoLog << "TcpServer setup on [" << m_addr->toString() << "]";
 }
 
 void TcpServer::start() {
@@ -106,16 +107,6 @@ void TcpServer::start() {
 	m_accept_cor->setCallBack(std::bind(&TcpServer::MainAcceptCorFunc, this));
 
 	tinyrpc::Coroutine::Resume(m_accept_cor.get());
-
-  // m_timer.reset(m_main_reactor->getTimer());
-
-  // m_timer_event = std::make_shared<TimerEvent>(10000, true, 
-  //   std::bind(&TcpServer::MainLoopTimerFunc, this));
-  
-  // m_timer->addTimerEvent(m_timer_event);
-
-	// m_time_wheel = std::make_shared<TcpTimeWheel>(m_main_reactor, 6, 10);
-
 	m_main_reactor->loop();
 
 }
@@ -131,7 +122,6 @@ NetAddress::ptr TcpServer::getPeerAddr() {
 
 void TcpServer::MainAcceptCorFunc() {
   DebugLog << "enable Hook here";
-	// tinyrpc::enableHook();
 
 	m_acceptor->init();	
 	while(!m_is_stop_accept) {

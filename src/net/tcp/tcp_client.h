@@ -44,13 +44,21 @@ class TcpClient {
     return m_err_info;
   }
 
+  NetAddress::ptr getPeerAddr() const {
+    return m_peer_addr;
+  }
+
+  NetAddress::ptr getLocalAddr() const {
+    return m_local_addr;
+  }
+
 
  private:
 
   int m_family;
   int m_fd {-1};
   int m_try_counts {3};         // max try reconnect times
-  int m_max_timeout {5};       // max connect timeout, s
+  int m_max_timeout {10000};       // max connect timeout, ms
   bool m_is_stop {false};
   std::string m_err_info;      // error info of client
 

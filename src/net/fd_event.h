@@ -69,7 +69,6 @@ class FdEvent : public std::enable_shared_from_this<FdEvent> {
   std::function<void()> m_write_callback;
   
   int m_listen_events {0};
-	int m_current_events {0};
 
   Reactor* m_reactor {nullptr};
 

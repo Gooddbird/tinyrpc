@@ -28,7 +28,9 @@ int connect_hook(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 
 unsigned int sleep_hook(unsigned int seconds);
 
+}
 
+namespace tinyrpc {
 // set max timeout, s
 void setMaxTimeOut (int v);
 

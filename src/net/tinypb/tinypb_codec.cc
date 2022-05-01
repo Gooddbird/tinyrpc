@@ -57,7 +57,7 @@ const char* TinyPbCodeC::encodePbData(TinyPbStruct* data, int& len) {
     return nullptr;
   }
   if (data->msg_req.empty()) {
-    data->msg_req = genMsgNumber(MSG_REQ_LEN);
+    data->msg_req = MsgReqUtil::genMsgNumber();
     data->msg_req_len = data->msg_req.length();
   }
 

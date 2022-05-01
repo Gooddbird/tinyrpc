@@ -76,6 +76,10 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
 	void output();
 
+  void setOverTimeFlag(bool value);
+
+  bool getOverTimer();
+
 
  private:
   void clearClient();
@@ -101,13 +105,15 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
   TinyPbCodeC::ptr m_codec;
 
   FdEvent::ptr m_fd_event;
+
   bool m_stop {false};
 
-  std::queue<TinyPbStruct> m_client_res_data_queue;
+  bool m_is_over_time {false};
 
   std::map<std::string, TinyPbStruct> m_reply_datas;
 
   std::weak_ptr<AbstractSlot<TcpConnection>> m_weak_slot;
+
 
 };
 
