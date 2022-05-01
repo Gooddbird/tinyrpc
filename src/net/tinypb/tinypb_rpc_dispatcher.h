@@ -33,8 +33,6 @@ class TinyPbRpcDispacther : public AbstractDispatcher {
   // key: service_name
   std::map<std::string, google::protobuf::Service*> m_service_map;
 
- private:
-
 };
 
 

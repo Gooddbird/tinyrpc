@@ -49,6 +49,7 @@ int TcpClient::sendAndRecv() {
   m_reactor->getTimer()->addTimerEvent(event);
 
   while (!is_timeout) {
+    DebugLog << "begin to connect";
     if (m_connection->getState() != Connected) {
       int rt = connect_hook(m_fd, reinterpret_cast<sockaddr*>(m_peer_addr->getSockAddr()), m_peer_addr->getSockLen());
       if (rt == 0) {
@@ -60,6 +61,8 @@ int TcpClient::sendAndRecv() {
         InfoLog << "connect timeout, break";
         goto timeout_deal;
       }
+    } else {
+      break;
     }
   }    
 

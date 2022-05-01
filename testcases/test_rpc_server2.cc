@@ -1,4 +1,5 @@
 #include <google/protobuf/service.h>
+#include <iostream>
 #include "../src/net/tcp/tcp_server.h"
 #include "../src/net/net_address.h"
 #include "../src/net/tinypb/tinypb_rpc_dispatcher.h"
@@ -19,6 +20,7 @@ void fun() {
 
   while (n--) {
 
+    DebugLog << "==========================test no:" << n;
     queryNameReq req_name;
     req_name.set_req_no(20220315);
     req_name.set_id(1234);
@@ -48,14 +50,6 @@ void fun() {
     } else {
       DebugLog << "get res_name.age = " << res_name.name();
     }
-    
-    // tinyrpc::TinyPbRpcController rpc_controller2;
-    // stub.query_age(&rpc_controller2, &req_age, &res_age, &cb);
-    // if (rpc_controller2.ErrorCode() != 0) {
-    //   ErrorLog << "call rpc method query_age failed, errcode=" << rpc_controller2.ErrorCode() << ",error=" << rpc_controller2.ErrorText();
-    // } else {
-    //   DebugLog << "get res_age.age = " << res_age.age();
-    // }
 
   }
 
@@ -64,8 +58,14 @@ void fun() {
 }
 
 int main(int argc, char* argv[]) {
+  if (argc != 2) {
+    std::cout << "use example:  ./out [port]" << std::endl;
+    std::cout << "./out 30001" << std::endl;
+    return 0;
+  }
 
-  tinyrpc::IPAddress::ptr self_addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 29999);
+  int port = std::atoi(argv[1]);
+  tinyrpc::IPAddress::ptr self_addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", port);
   tinyrpc::TcpServer server(self_addr, 1);
   tinyrpc::Coroutine::ptr cor = tinyrpc::GetCoroutinePool()->getCoroutineInstanse();
   cor->setCallBack(&fun);

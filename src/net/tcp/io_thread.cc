@@ -80,11 +80,11 @@ bool IOThread::addClient(TcpServer* tcp_svr, int fd) {
 }
 
 void IOThread::MainLoopTimerFunc() {
-  DebugLog << "this IOThread loop timer excute";
+  // DebugLog << "this IOThread loop timer excute";
   
   // delete Closed TcpConnection per loop
   // for free memory
-	DebugLog << "m_clients.size=" << m_clients.size();
+	// DebugLog << "m_clients.size=" << m_clients.size();
   for (auto &i : m_clients) {
     // TcpConnection::ptr s_conn = i.second;
 		// DebugLog << "state = " << s_conn->getState();

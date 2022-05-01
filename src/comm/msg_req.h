@@ -5,7 +5,12 @@
 
 namespace tinyrpc {
 
-std::string genMsgNumber(const int len);
+class MsgReqUtil {
+ public:
+  static std::string genMsgNumber();
+
+};
+
 
 }
 

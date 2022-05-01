@@ -3,6 +3,7 @@
 #include <google/protobuf/descriptor.h>
 
 #include "../abstract_dispatcher.h"
+#include "../../comm/error_code.h"
 #include "tinypb_data.h"
 #include "tinypb_rpc_dispatcher.h"
 #include "tinypb_rpc_controller.h"
@@ -24,31 +25,64 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
   assert(tmp != nullptr);
   std::string service_name;
   std::string method_name;
+
+  TinyPbStruct reply_pk;
+  reply_pk.service_full_name = tmp->service_full_name;
+  reply_pk.msg_req = tmp->msg_req;
+
   if (!parseServiceFullName(tmp->service_full_name, service_name, method_name)) {
-    ErrorLog << "parse service name error, return";
+    ErrorLog << "parse service name " << tmp->service_full_name << "error";
+
+    reply_pk.err_code = ERROR_PARSE_SERVICE_NAME;
+    std::stringstream ss;
+    ss << "cannot parse service_name:[" << tmp->service_full_name << "]"; 
+    reply_pk.err_info = ss.str();
+    conn->getCodec()->encode(conn->getOutBuffer(), dynamic_cast<AbstractData*>(&reply_pk));
     return;
   }
+
   auto it = m_service_map.find(service_name);
-  if (it == m_service_map.end()) {
-    ErrorLog << "not found service_name = " << service_name;
+  if (it == m_service_map.end() || !((*it).second)) {
+    reply_pk.err_code = ERROR_SERVICE_NOT_FOUND;
+    std::stringstream ss;
+    ss << "not found service_name:[" << service_name << "]"; 
+    ErrorLog << ss.str();
+    reply_pk.err_info = ss.str();
+
+    conn->getCodec()->encode(conn->getOutBuffer(), dynamic_cast<AbstractData*>(&reply_pk));
     return;
+
   }
+
   google::protobuf::Service* service = (*it).second;
-  assert(service != nullptr);
 
   const google::protobuf::MethodDescriptor* method = service->GetDescriptor()->FindMethodByName(method_name);
+  if (!method) {
+    reply_pk.err_code = ERROR_METHOD_NOT_FOUND;
+    std::stringstream ss;
+    ss << "not found method_name:[" << method_name << "]"; 
+    ErrorLog << ss.str();
+    reply_pk.err_info = ss.str();
+    conn->getCodec()->encode(conn->getOutBuffer(), dynamic_cast<AbstractData*>(&reply_pk));
+    return;
+  }
 
   google::protobuf::Message* request = service->GetRequestPrototype(method).New();
   DebugLog << "request.name = " << request->GetDescriptor()->full_name();
-  // DebugLog << "req pb_data_size = " << tmp->pb_data.length();
 
   if(!request->ParseFromString(tmp->pb_data)) {
-    ErrorLog << "parse request error";
+    reply_pk.err_code = ERROR_FAILED_SERIALIZE;
+    std::stringstream ss;
+    ss << "faild to parse request data, request.name:[" << request->GetDescriptor()->full_name() << "]";
+    reply_pk.err_info = ss.str();
+    ErrorLog << ss.str();
+    delete request;
+    conn->getCodec()->encode(conn->getOutBuffer(), dynamic_cast<AbstractData*>(&reply_pk));
     return;
   }
 
   InfoLog<< "============================================================";
-  InfoLog<< "Get client send request data:\n" << request->DebugString();
+  InfoLog<< "Get client request data:\n" << request->DebugString();
   InfoLog<< "============================================================";
 
   google::protobuf::Message* response = service->GetResponsePrototype(method).New();
@@ -57,43 +91,33 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
 
   TinyPbRpcController* rpc_controller = new TinyPbRpcController();
 
-  std::function<void()> reply_package_func = [tmp, &conn, response]()
+  std::function<void()> reply_package_func = [&reply_pk, response, request]()
   {
     // DebugLog << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<";
-    InfoLog << "Call [" << tmp->service_full_name << "] succ, now send reply package";
-    TcpBuffer* buff = conn->getOutBuffer();
-    if (!buff) {
-      ErrorLog << "reply error! tcp write buffer nullptr";
-      return;
-    }
-    TinyPbStruct reply_pk;
-    reply_pk.service_full_name = tmp->service_full_name;
-    reply_pk.msg_req = tmp->msg_req;
-    reply_pk.msg_req_len = reply_pk.msg_req.length();
+    InfoLog << "Call [" << reply_pk.service_full_name << "] succ, now send reply package";
 
     if (!(response->SerializeToString(&(reply_pk.pb_data)))) {
+      reply_pk.pb_data = "";
       ErrorLog << "reply error! encode reply package error";
-      return;
+      reply_pk.err_code = ERROR_FAILED_SERIALIZE;
+      reply_pk.err_info = "failed to serilize relpy data";
+    } else {
+      InfoLog<< "============================================================";
+      InfoLog<< "Set server response data:\n" << response->DebugString();
+      InfoLog<< "============================================================";
     }
-    InfoLog<< "============================================================";
-    InfoLog<< "Set server reply response data:\n" << response->DebugString();
-    InfoLog<< "============================================================";
 
-    TinyPbCodeC codec;
-    codec.encode(buff, dynamic_cast<AbstractData*>(&reply_pk));
-    // conn->MainWriteCoFunc();
-    
-    // buff->writeToBuffer();
-    // DebugLog << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>";
+    delete request;
+    delete response;
+
   };
 
   TinyPbRpcClosure closure(reply_package_func);
-
   service->CallMethod(method, rpc_controller, request, response, &closure);
 
-  // delete method;
-  delete request;
-  delete response;
+  conn->getCodec()->encode(conn->getOutBuffer(), dynamic_cast<AbstractData*>(&reply_pk));
+
+
 }
 
 

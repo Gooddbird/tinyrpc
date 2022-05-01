@@ -21,6 +21,11 @@ const int ERROR_FAILED_DECODE = SYS_ERROR_PREFIX(0006);      // decode failed
 
 const int ERROR_RPC_CALL_TIMEOUT = SYS_ERROR_PREFIX(0007);    // call rpc timeout
 
+const int ERROR_SERVICE_NOT_FOUND = SYS_ERROR_PREFIX(0008);    // not found service name
+
+const int ERROR_METHOD_NOT_FOUND = SYS_ERROR_PREFIX(0009);    // not found method 
+
+const int ERROR_PARSE_SERVICE_NAME = SYS_ERROR_PREFIX(0010);    // not found service name
  
 } // namespace tinyrpc 
 

@@ -217,7 +217,7 @@ void Reactor::loop() {
 			// DebugLog << "end excute tasks[" << i << "]";
 		}
 		m_pending_tasks.clear();
-		DebugLog << "to epoll_wait";
+		// DebugLog << "to epoll_wait";
 		int rt = epoll_wait(m_epfd, re_events, MAX_EVENTS, t_max_epoll_timeout);
 
 		// DebugLog << "epoll_waiti back";
@@ -254,16 +254,16 @@ void Reactor::loop() {
             }
 
             if ((!(one_event.events & EPOLLIN)) && (!(one_event.events & EPOLLOUT))){
-              DebugLog << "socket [" << fd << "] occur other unknow event:[" << one_event.events << "], need unregister this socket";
+              ErrorLog << "socket [" << fd << "] occur other unknow event:[" << one_event.events << "], need unregister this socket";
               delEventInLoopThread(fd);
             } else {
               if (one_event.events & EPOLLIN) {
-                DebugLog << "socket [" << fd << "] occur read event";
+                // DebugLog << "socket [" << fd << "] occur read event";
                 Mutex::Lock lock(m_mutex);
                 m_pending_tasks.push_back(read_cb);						
               }
               if (one_event.events & EPOLLOUT) {
-                DebugLog << "socket [" << fd << "] occur write event";
+                // DebugLog << "socket [" << fd << "] occur write event";
                 Mutex::Lock lock(m_mutex);
                 m_pending_tasks.push_back(write_cb);						
               }
@@ -352,11 +352,10 @@ void Reactor::addCoroutine(tinyrpc::Coroutine::ptr cor, bool is_wakeup /*=true*/
 }
 
 Timer* Reactor::getTimer() {
-	if (m_is_init_timer) {
-		DebugLog << "already init timer!";
-	} else {
+	if (!m_is_init_timer) {
 		m_timer = new Timer(this);
 		m_timer_fd = m_timer->getFd();
+		m_is_init_timer = true;
 	}
 	return m_timer;
 }
