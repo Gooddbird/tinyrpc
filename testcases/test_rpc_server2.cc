@@ -9,6 +9,7 @@
 #include "../src/comm/log.h"
 #include "../src/coroutine/coroutine_pool.h"
 #include "tinypb.pb.h"
+#include "../src/comm/config.h"
 
 int n = 0;
 
@@ -57,6 +58,7 @@ void fun() {
 
 
 tinyrpc::Logger* gRpcLogger = nullptr;
+tinyrpc::Config* gRpcConfig = nullptr;
 
 int main(int argc, char* argv[]) {
 
@@ -67,13 +69,15 @@ int main(int argc, char* argv[]) {
   }
 
   gRpcLogger = new tinyrpc::Logger();
-  gRpcLogger->init("./", "test_rpc_server2", 1024*1024);
+  gRpcLogger->init("test_rpc_server2");
+  gRpcConfig = new tinyrpc::Config("../testcases/tinyrpc.xml");
+  gRpcConfig->readConf();
 
   int port = std::atoi(argv[1]);
   n = std::atoi(argv[2]);
 
   tinyrpc::IPAddress::ptr self_addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", port);
-  tinyrpc::TcpServer server(self_addr, 1);
+  tinyrpc::TcpServer server(self_addr);
   tinyrpc::Coroutine::ptr cor = tinyrpc::GetCoroutinePool()->getCoroutineInstanse();
   cor->setCallBack(&fun);
   server.addCoroutine(cor);

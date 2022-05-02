@@ -30,11 +30,4 @@ unsigned int sleep_hook(unsigned int seconds);
 
 }
 
-namespace tinyrpc {
-// set max timeout, s
-void setMaxTimeOut (int v);
-
-}
-
-
 #endif

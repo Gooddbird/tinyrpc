@@ -6,6 +6,7 @@
 #include "../src/comm/config.h"
 #include "tinypb.pb.h"
 #include "../src/coroutine/coroutine_hook.h"
+#include "../src/comm/config.h"
 
 
 class QueryServiceImpl : public QueryService {
@@ -52,19 +53,19 @@ class QueryServiceImpl : public QueryService {
 };
 
 tinyrpc::Logger* gRpcLogger = nullptr; 
-tinyrpc::Config* gConfig = nullptr;
+tinyrpc::Config* gRpcConfig = nullptr;
 
 
 int main(int argc, char* argv[]) {
 
   gRpcLogger = new tinyrpc::Logger();
-  gRpcLogger->init("./", "test_rpc_server1", 5*1024*1024);
-  gConfig = new tinyrpc::Config("../testcases/tinyrpc.xml");
-  gConfig->readConf();
+  gRpcLogger->init("test_rpc_server1");
+  gRpcConfig = new tinyrpc::Config("../testcases/tinyrpc.xml");
+  gRpcConfig->readConf();
 
   tinyrpc::IPAddress::ptr addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
   
-  tinyrpc::TcpServer server(addr, 1);
+  tinyrpc::TcpServer server(addr);
   tinyrpc::TinyPbRpcDispacther* dispatcher = server.getDispatcher();
   QueryService* service = new QueryServiceImpl();
   

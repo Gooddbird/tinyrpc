@@ -33,7 +33,6 @@ class TcpClient {
 
   void setTimeout(const int v) {
     m_max_timeout = v;
-    setMaxTimeOut(v); 
   }
 
   void setTryCounts(const int v) {

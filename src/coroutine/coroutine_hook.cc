@@ -9,6 +9,7 @@
 #include "../net/reactor.h"
 #include "../net/timer.h"
 #include "../comm/log.h"
+#include "../comm/config.h"
 
 #define HOOK_SYS_FUNC(name) name##_fun_ptr_t g_sys_##name##_fun = (name##_fun_ptr_t)dlsym(RTLD_NEXT, #name);
 
@@ -20,7 +21,9 @@ HOOK_SYS_FUNC(connect);
 
 // static int g_hook_enable = false;
 
-static int g_max_timeout = 75000;
+// static int g_max_timeout = 75000;
+
+extern tinyrpc::Config* gRpcConfig;
 
 extern "C" {
 
@@ -213,7 +216,7 @@ int connect_hook(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 		tinyrpc::Coroutine::Resume(cur_cor);
   };
 
-  tinyrpc::TimerEvent::ptr event = std::make_shared<tinyrpc::TimerEvent>(g_max_timeout, false, timeout_cb);
+  tinyrpc::TimerEvent::ptr event = std::make_shared<tinyrpc::TimerEvent>(gRpcConfig->m_max_connect_timeout, false, timeout_cb);
   
   tinyrpc::Timer* timer = reactor->getTimer();  
   timer->addTimerEvent(event);
@@ -234,7 +237,7 @@ int connect_hook(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 	}
 
 	if (is_timeout) {
-    ErrorLog << "connect error,  timeout[ " << g_max_timeout << "ms]";
+    ErrorLog << "connect error,  timeout[ " << gRpcConfig->m_max_connect_timeout << "ms]";
 		errno = ETIMEDOUT;
 	} 
 
@@ -274,19 +277,3 @@ unsigned int sleep_hook(unsigned int seconds) {
 
 
 }
-
-
-namespace tinyrpc {
-
-void setMaxTimeOut (int v) {
-	g_max_timeout = (v * 1000);
-}
-
-}
-
-
-
-
-
-
-

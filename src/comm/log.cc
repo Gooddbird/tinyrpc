@@ -19,7 +19,7 @@
 
 
 extern tinyrpc::Logger* gRpcLogger;
-extern tinyrpc::Config* gConfig;
+extern tinyrpc::Config* gRpcConfig;
 
 namespace tinyrpc {
 
@@ -160,11 +160,11 @@ Logger::~Logger() {
 
 }
 
-void Logger::init(const char* path, const char* file_name, int max_size, LogType type /*= RPC_LOG*/) {
+void Logger::init(const char* file_name, LogType type /*= RPC_LOG*/) {
   if (!m_is_init) {
     TimerEvent::ptr event = std::make_shared<TimerEvent>(1000, true, std::bind(&Logger::loopFunc, this));
     Reactor::GetReactor()->getTimer()->addTimerEvent(event);
-    m_async_logger = std::make_shared<AsyncLogger>(path, file_name, max_size, type);
+    m_async_logger = std::make_shared<AsyncLogger>(file_name, type);
     m_is_init = true;
   }
 }
@@ -185,8 +185,8 @@ void Logger::push(const std::string& msg) {
   lock.unlock();
 }
 
-AsyncLogger::AsyncLogger(const char* path, const char* file_name, int max_size, LogType log_type) 
-  : m_path(path), m_file_name(file_name), m_max_size(max_size), m_log_type(log_type) {
+AsyncLogger::AsyncLogger(const char* file_name, LogType log_type) 
+  : m_file_name(file_name), m_log_type(log_type) {
 
   pthread_create(&m_thread, nullptr, &AsyncLogger::excute, this);
 }
@@ -232,7 +232,7 @@ void* AsyncLogger::excute(void* arg) {
     }    
 
     std::stringstream ss;
-    ss << ptr->m_path << ptr->m_file_name << "_" << ptr->m_date << "_" << LogTypeToString(ptr->m_log_type) << "_" << ptr->m_no << ".log";
+    ss << gRpcConfig->m_log_path << ptr->m_file_name << "_" << ptr->m_date << "_" << LogTypeToString(ptr->m_log_type) << "_" << ptr->m_no << ".log";
     std::string full_file_name = ss.str();
 
     if (ptr->m_need_reopen) {
@@ -244,13 +244,13 @@ void* AsyncLogger::excute(void* arg) {
       ptr->m_need_reopen = false;
     }
 
-    if (ftell(ptr->m_file_handle) > ptr->m_max_size) {
+    if (ftell(ptr->m_file_handle) > gRpcConfig->m_log_max_size) {
       fclose(ptr->m_file_handle);
 
       // over max size
       ptr->m_no++;
       std::stringstream ss2;
-      ss2 << ptr->m_path << ptr->m_file_name << "_" << ptr->m_date << "_" << LogTypeToString(ptr->m_log_type) << "_" << ptr->m_no << ".log";
+      ss2 << gRpcConfig->m_log_path << ptr->m_file_name << "_" << ptr->m_date << "_" << LogTypeToString(ptr->m_log_type) << "_" << ptr->m_no << ".log";
       full_file_name = ss2.str();
 
       printf("open file %s", full_file_name.c_str());
@@ -263,7 +263,7 @@ void* AsyncLogger::excute(void* arg) {
     }
 
     for(auto i : tmp) {
-      int rt = fwrite(i.c_str(), 1, i.length(), ptr->m_file_handle);
+      fwrite(i.c_str(), 1, i.length(), ptr->m_file_handle);
       // printf("succ write rt %d bytes ,[%s] to file[%s]", rt, i.c_str(), full_file_name.c_str());
     }
     fflush(ptr->m_file_handle);

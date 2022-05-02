@@ -5,17 +5,22 @@
 #include <unistd.h>
 #include <random>
 #include "log.h"
+#include "config.h"
 #include "msg_req.h"
+
+extern tinyrpc::Config* gRpcConfig;
 
 namespace tinyrpc {
 
 static thread_local std::string t_msg_req_nu;
 static thread_local std::string t_max_msg_req_nu;
-static thread_local int t_msg_req_len = 20;
+// static thread_local int t_msg_req_len = 20;
 
 static int g_random_fd = -1;
 
 std::string MsgReqUtil::genMsgNumber() {
+
+  int t_msg_req_len = gRpcConfig->m_msg_req_len;
 
   if (t_msg_req_nu.empty() || t_msg_req_nu == t_max_msg_req_nu) {
     if (g_random_fd == -1) {

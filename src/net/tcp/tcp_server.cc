@@ -9,6 +9,9 @@
 #include "../../coroutine/coroutine.h"
 #include "../../coroutine/coroutine_hook.h"
 #include "../../coroutine/coroutine_pool.h"
+#include "../../comm/config.h"
+
+extern tinyrpc::Config* gRpcConfig;
 
 namespace tinyrpc {
 
@@ -91,8 +94,8 @@ int TcpAcceptor::toAccept() {
 }
 
 
-TcpServer::TcpServer(NetAddress::ptr addr, int pool_size /*=10*/) : m_addr(addr) {
-  m_io_pool = std::make_shared<IOThreadPool>(pool_size);
+TcpServer::TcpServer(NetAddress::ptr addr) : m_addr(addr) {
+  m_io_pool = std::make_shared<IOThreadPool>(gRpcConfig->m_iothread_num);
 	m_dispatcher = std::make_shared<TinyPbRpcDispacther>();
 	m_main_reactor = tinyrpc::Reactor::GetReactor();
 	InfoLog << "TcpServer setup on [" << m_addr->toString() << "]";

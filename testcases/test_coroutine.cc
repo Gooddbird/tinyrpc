@@ -2,9 +2,12 @@
 #include "../src/coroutine/coroutine.h"
 #include "../src/coroutine/coroutine_pool.h"
 #include <functional>
+#include "../src/comm/config.h"
 
 
 tinyrpc::Logger* gRpcLogger = nullptr; 
+tinyrpc::Config* gRpcConfig = nullptr;
+
 void fun() {
   DebugLog << "this is a sub co 11";
 
@@ -32,7 +35,9 @@ void fun4() {
 int main(int argc, char* argv[]) {
 
   gRpcLogger = new tinyrpc::Logger();
-  gRpcLogger->init("./", "test_coroutine", 5*1024*1024);
+  gRpcLogger->init("test_coroutine");
+    gRpcConfig = new tinyrpc::Config("../testcases/tinyrpc.xml");
+  gRpcConfig->readConf();
 
   tinyrpc::Coroutine::GetCurrentCoroutine();
 

@@ -1,9 +1,11 @@
 #include "../src/comm/log.h"
 #include <unistd.h>
 #include "../src/net/net_address.h"
+#include "../src/comm/config.h"
 
 
 tinyrpc::Logger* gRpcLogger = nullptr; 
+tinyrpc::Config* gRpcConfig = nullptr;
 void* fun(void* arg) {
 
   DebugLog << "this is test log 1";
@@ -14,7 +16,9 @@ void* fun(void* arg) {
 int main(int argc, char** argv) {
 
   gRpcLogger = new tinyrpc::Logger();
-  gRpcLogger->init("./", "test_log", 5*1024*1024);
+  gRpcLogger->init("test_log");
+    gRpcConfig = new tinyrpc::Config("../testcases/tinyrpc.xml");
+  gRpcConfig->readConf();
   
   DebugLog << "this is test log 1";
   sleep(2);

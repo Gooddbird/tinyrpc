@@ -103,7 +103,7 @@ class AsyncLogger {
  public:
   typedef std::shared_ptr<AsyncLogger> ptr;
 
-	AsyncLogger(const char* path, const char* file_name, int max_size, LogType logtype);
+	AsyncLogger(const char* file_name, LogType logtype);
 	~AsyncLogger();
 
 	void push(std::vector<std::string>& buffer);
@@ -114,9 +114,8 @@ class AsyncLogger {
 	std::queue<std::vector<std::string>> m_tasks;
 
  private:
-	const char* m_path;
 	const char* m_file_name;
-	int m_max_size {0};
+	// int m_max_size {0};
 	LogType m_log_type;
 	int m_no {0};
 	int m_fd {-1};
@@ -135,7 +134,7 @@ class Logger {
 	Logger();
 	~Logger();
 
-	void init(const char* path, const char* file_name, int max_size, LogType type = RPC_LOG);
+	void init(const char* file_name, LogType type = RPC_LOG);
 	void log();
 	void push(const std::string& log_msg);
 	void loopFunc();

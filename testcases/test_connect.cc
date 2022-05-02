@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include "../src/comm/log.h"
+#include "../src/comm/config.h"
 #include "../src/coroutine/coroutine_hook.h"
 #include "../src/net/reactor.h"
 #include "../src/coroutine/coroutine.h"
@@ -17,6 +18,7 @@
 #include "google/protobuf/message.h"
 
 tinyrpc::Logger* gRpcLogger = nullptr; 
+tinyrpc::Config* gRpcConfig = nullptr;
 
 
 int connfd = -1;
@@ -101,7 +103,9 @@ void connect_co() {
 int main(int argc, char* argv[]) {
   
   gRpcLogger = new tinyrpc::Logger();
-  gRpcLogger->init("./", "test_connect", 5*1024*1024);
+  gRpcLogger->init("test_connect");
+  gRpcConfig = new tinyrpc::Config("../testcases/tinyrpc.xml");
+  gRpcConfig->readConf();
 
   DebugLog << "main begin";
   // tinyrpc::enableHook();

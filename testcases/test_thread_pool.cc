@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include "../src/net/net_address.h"
 #include "../src/thread/thread_pool.h"
+#include "../src/comm/config.h"
 
 
 void* fun(void* arg) {
@@ -12,11 +13,14 @@ void* fun(void* arg) {
 }
 
 tinyrpc::Logger* gRpcLogger = nullptr;
+tinyrpc::Config* gRpcConfig = nullptr;
 
 int main(int argc, char** argv) {
 
   gRpcLogger = new tinyrpc::Logger();
-  gRpcLogger->init("./", "test_thread_pool", 5*1024*1024);
+  gRpcLogger->init("test_thread_pool");
+  gRpcConfig = new tinyrpc::Config("../testcases/tinyrpc.xml");
+  gRpcConfig->readConf();
 
   tinyrpc::ThreadPool pool(4);
   pool.start();

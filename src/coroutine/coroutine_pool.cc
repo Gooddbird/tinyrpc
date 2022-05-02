@@ -1,17 +1,19 @@
 #include <vector>
+#include "../comm/config.h"
 #include "coroutine_pool.h"
 #include "coroutine.h"
+
+extern tinyrpc::Config* gRpcConfig;
 
 namespace tinyrpc {
 
 static thread_local CoroutinePool* t_coroutine_container_ptr = nullptr; 
-static thread_local int t_coroutine_stack_size = 1024 * 108; 
-static thread_local int t_coroutine_pool_size = 100; 
-
+// static thread_local int t_coroutine_stack_size = 1024 * 108; 
+// static thread_local int t_coroutine_pool_size = 100; 
 
 CoroutinePool* GetCoroutinePool() {
   if (!t_coroutine_container_ptr) {
-    t_coroutine_container_ptr = new CoroutinePool(t_coroutine_pool_size, t_coroutine_stack_size);
+    t_coroutine_container_ptr = new CoroutinePool(gRpcConfig->m_cor_pool_size, gRpcConfig->m_cor_stack_size);
   }
   return t_coroutine_container_ptr;
 }

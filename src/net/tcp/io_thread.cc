@@ -6,11 +6,14 @@
 #include "tcp_server.h"
 #include "tcp_connection_time_wheel.h"
 #include "../../coroutine/coroutine.h"
+#include "../../comm/config.h"
 
+extern tinyrpc::Config* gRpcConfig;
 
 namespace tinyrpc {
 
 static thread_local Reactor* t_reactor_ptr = nullptr;
+
 
 IOThread::IOThread() {
   pthread_create(&m_thread, nullptr, &IOThread::main, this);
@@ -45,7 +48,7 @@ void* IOThread::main(void* arg) {
     std::bind(&IOThread::MainLoopTimerFunc, thread));
   
   thread->getReactor()->getTimer()->addTimerEvent(thread->m_timer_event);
-  thread->m_time_wheel = std::make_shared<TcpTimeWheel>(thread->m_reactor, 2, 10);
+  thread->m_time_wheel = std::make_shared<TcpTimeWheel>(thread->m_reactor, gRpcConfig->m_timewheel_bucket_num, gRpcConfig->m_timewheel_inteval);
 
   Coroutine::GetCurrentCoroutine();
 
