@@ -11,9 +11,12 @@ void* fun(void* arg) {
   return nullptr;
 }
 
-
+tinyrpc::Logger* gRpcLogger = nullptr;
 
 int main(int argc, char** argv) {
+
+  gRpcLogger = new tinyrpc::Logger();
+  gRpcLogger->init("./", "test_thread_pool", 5*1024*1024);
 
   tinyrpc::ThreadPool pool(4);
   pool.start();

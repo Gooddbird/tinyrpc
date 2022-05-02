@@ -24,6 +24,11 @@ enum LogLevel {
 	ERROR = 4
 };
 
+enum LogType {
+	RPC_LOG = 1,
+	APP_LOG = 2,
+};
+
 extern LogLevel g_log_level;
 
 #define DebugLog \
@@ -98,7 +103,7 @@ class AsyncLogger {
  public:
   typedef std::shared_ptr<AsyncLogger> ptr;
 
-	AsyncLogger();
+	AsyncLogger(const char* path, const char* file_name, int max_size, LogType logtype);
 	~AsyncLogger();
 
 	void push(std::vector<std::string>& buffer);
@@ -109,7 +114,16 @@ class AsyncLogger {
 	std::queue<std::vector<std::string>> m_tasks;
 
  private:
-	const char* m_file;
+	const char* m_path;
+	const char* m_file_name;
+	int m_max_size {0};
+	LogType m_log_type;
+	int m_no {0};
+	int m_fd {-1};
+	bool m_need_reopen {false};
+	FILE* m_file_handle {nullptr};
+	std::string m_date;
+
  	Mutex m_mutex;
   pthread_cond_t m_condition;
   pthread_t m_thread;
@@ -121,7 +135,7 @@ class Logger {
 	Logger();
 	~Logger();
 
-	void init();
+	void init(const char* path, const char* file_name, int max_size, LogType type = RPC_LOG);
 	void log();
 	void push(const std::string& log_msg);
 	void loopFunc();
@@ -131,6 +145,7 @@ class Logger {
 
  private:
  	Mutex m_mutex;
+	bool m_is_init {false};
 	AsyncLogger::ptr m_async_logger;
 
 };

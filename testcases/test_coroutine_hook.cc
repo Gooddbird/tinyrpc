@@ -8,6 +8,7 @@
 #include "../src/coroutine/coroutine_hook.h"
 #include "../src/net/reactor.h"
 
+tinyrpc::Logger* gRpcLogger = nullptr; 
 
 void fun1() {
   DebugLog << "this is cor1";
@@ -44,6 +45,8 @@ void fun1() {
 
 int main(int argc, char* argv[]) {
 
+  gRpcLogger = new tinyrpc::Logger();
+  gRpcLogger->init("./", "test_coroutine_hook", 5*1024*1024);
   // tinyrpc::enableHook();
   tinyrpc::Coroutine::GetCurrentCoroutine();
   DebugLog << "this is main co";

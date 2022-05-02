@@ -9,8 +9,13 @@
 #include "../src/comm/log.h"
 #include "tinypb.pb.h"
 
+tinyrpc::Logger* gRpcLogger = nullptr;
 
 int main(int argc, char* argv[]) {
+
+
+  gRpcLogger = new tinyrpc::Logger();
+  gRpcLogger->init("./", "test_reactor", 5*1024*1024);
   tinyrpc::IPAddress::ptr self_addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
   tinyrpc::TcpServer server(self_addr, 1);
 

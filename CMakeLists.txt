@@ -38,43 +38,43 @@ set(LIBS
   protobuf
 )
 
-# add_executable(test_log testcases/test_log.cc)
-# add_dependencies(test_log tinyrpc)
-# target_link_libraries(test_log ${LIBS})
+add_executable(test_log testcases/test_log.cc)
+add_dependencies(test_log tinyrpc)
+target_link_libraries(test_log ${LIBS})
 
-# add_executable(test_thread_pool testcases/test_thread_pool.cc)
-# add_dependencies(test_thread_pool tinyrpc)
-# target_link_libraries(test_thread_pool ${LIBS})
+add_executable(test_thread_pool testcases/test_thread_pool.cc)
+add_dependencies(test_thread_pool tinyrpc)
+target_link_libraries(test_thread_pool ${LIBS})
 
-#add_executable(test_reactor testcases/test_reactor.cc)
-#add_dependencies(test_reactor tinyrpc)
-#target_link_libraries(test_reactor ${LIBS})
-
-
-# add_executable(test_iothread testcases/test_iothread.cc)
-# add_dependencies(test_iothread tinyrpc)
-# target_link_libraries(test_iothread ${LIBS})
-
-# add_executable(test_tcpserver testcases/test_tcpserver.cc)
-# add_dependencies(test_tcpserver tinyrpc)
-# target_link_libraries(test_tcpserver ${LIBS})
-
-# add_executable(test_connect testcases/test_connect.cc testcases/tinypb.pb.cc)
-# add_dependencies(test_connect tinyrpc)
-# target_link_libraries(test_connect ${LIBS})
-
-# add_executable(test_coroutine testcases/test_coroutine.cc)
-# add_dependencies(test_coroutine tinyrpc)
-# target_link_libraries(test_coroutine ${LIBS})
+add_executable(test_reactor testcases/test_reactor.cc)
+add_dependencies(test_reactor tinyrpc)
+target_link_libraries(test_reactor ${LIBS})
 
 
-# add_executable(test_coroutine_hook testcases/test_coroutine_hook.cc)
-# add_dependencies(test_coroutine_hook tinyrpc)
-# target_link_libraries(test_coroutine_hook ${LIBS})
+add_executable(test_iothread testcases/test_iothread.cc)
+add_dependencies(test_iothread tinyrpc)
+target_link_libraries(test_iothread ${LIBS})
 
-# add_executable(test_tcpserver_cor testcases/test_tcpserver_cor.cc)
-# add_dependencies(test_tcpserver_cor tinyrpc)
-# target_link_libraries(test_tcpserver_cor ${LIBS})
+add_executable(test_tcpserver testcases/test_tcpserver.cc)
+add_dependencies(test_tcpserver tinyrpc)
+target_link_libraries(test_tcpserver ${LIBS})
+
+add_executable(test_connect testcases/test_connect.cc testcases/tinypb.pb.cc)
+add_dependencies(test_connect tinyrpc)
+target_link_libraries(test_connect ${LIBS})
+
+add_executable(test_coroutine testcases/test_coroutine.cc)
+add_dependencies(test_coroutine tinyrpc)
+target_link_libraries(test_coroutine ${LIBS})
+
+
+add_executable(test_coroutine_hook testcases/test_coroutine_hook.cc)
+add_dependencies(test_coroutine_hook tinyrpc)
+target_link_libraries(test_coroutine_hook ${LIBS})
+
+add_executable(test_tcpserver_cor testcases/test_tcpserver_cor.cc)
+add_dependencies(test_tcpserver_cor tinyrpc)
+target_link_libraries(test_tcpserver_cor ${LIBS})
 
 add_executable(test_rpc_server1 testcases/test_rpc_server1.cc testcases/tinypb.pb.cc)
 add_dependencies(test_rpc_server1 tinyrpc)

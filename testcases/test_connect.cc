@@ -16,6 +16,8 @@
 #include "tinypb.pb.h"
 #include "google/protobuf/message.h"
 
+tinyrpc::Logger* gRpcLogger = nullptr; 
+
 
 int connfd = -1;
 
@@ -98,6 +100,9 @@ void connect_co() {
 
 int main(int argc, char* argv[]) {
   
+  gRpcLogger = new tinyrpc::Logger();
+  gRpcLogger->init("./", "test_connect", 5*1024*1024);
+
   DebugLog << "main begin";
   // tinyrpc::enableHook();
   tinyrpc::Coroutine::GetCurrentCoroutine();

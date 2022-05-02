@@ -5,6 +5,10 @@
 #include <unistd.h>
 #include <iostream>
 #include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <stdio.h>
 
 
 #include "log.h"
@@ -68,6 +72,17 @@ void levelToString(LogLevel level, std::string& re) {
     default:
       re = "";
       return;
+  }
+}
+
+std::string LogTypeToString(LogType logtype) {
+  switch (logtype) {
+    case APP_LOG:
+      return "app";
+    case RPC_LOG:
+      return "rpc";
+    default:
+      return "";
   }
 }
 
@@ -139,10 +154,17 @@ Logger::Logger() {
 
 }
 
-void Logger::init() {
-  TimerEvent::ptr event = std::make_shared<TimerEvent>(1000, true, std::bind(&Logger::loopFunc, this));
-  Reactor::GetReactor()->getTimer()->addTimerEvent(event);
-  m_async_logger = std::make_shared<AsyncLogger>();
+Logger::~Logger() {
+
+}
+
+void Logger::init(const char* path, const char* file_name, int max_size, LogType type /*= RPC_LOG*/) {
+  if (!m_is_init) {
+    TimerEvent::ptr event = std::make_shared<TimerEvent>(1000, true, std::bind(&Logger::loopFunc, this));
+    Reactor::GetReactor()->getTimer()->addTimerEvent(event);
+    m_async_logger = std::make_shared<AsyncLogger>(path, file_name, max_size, type);
+    m_is_init = true;
+  }
 }
 	
 void Logger::loopFunc() {
@@ -161,7 +183,9 @@ void Logger::push(const std::string& msg) {
   lock.unlock();
 }
 
-AsyncLogger::AsyncLogger() {
+AsyncLogger::AsyncLogger(const char* path, const char* file_name, int max_size, LogType log_type) 
+  : m_path(path), m_file_name(file_name), m_max_size(max_size), m_log_type(log_type) {
+
   pthread_create(&m_thread, nullptr, &AsyncLogger::excute, this);
 }
 
@@ -184,10 +208,67 @@ void* AsyncLogger::excute(void* arg) {
     ptr->m_tasks.pop();
     lock.unlock();
 
-    for(auto i : tmp) {
-      printf(i.c_str());
+    timeval now;
+    gettimeofday(&now, nullptr);
+
+    struct tm now_time;
+    localtime_r(&(now.tv_sec), &now_time);
+
+    const char *format = "%Y%m%d";
+    char date[32];
+    strftime(date, sizeof(date), format, &now_time);
+    if (ptr->m_date != std::string(date)) {
+      // cross day
+      // reset m_no m_date
+      ptr->m_no = 0;
+      ptr->m_date = std::string(date);
+      ptr->m_need_reopen = true;
     }
 
+    if (!ptr->m_file_handle) {
+      ptr->m_need_reopen = true;
+    }    
+
+    std::stringstream ss;
+    ss << ptr->m_path << ptr->m_file_name << "_" << ptr->m_date << "_" << LogTypeToString(ptr->m_log_type) << "_" << ptr->m_no << ".log";
+    std::string full_file_name = ss.str();
+
+    if (ptr->m_need_reopen) {
+      if (ptr->m_file_handle) {
+        fclose(ptr->m_file_handle);
+      }
+
+      ptr->m_file_handle = fopen(full_file_name.c_str(), "a");
+      ptr->m_need_reopen = false;
+    }
+
+    if (ftell(ptr->m_file_handle) > ptr->m_max_size) {
+      fclose(ptr->m_file_handle);
+
+      // over max size
+      ptr->m_no++;
+      std::stringstream ss2;
+      ss2 << ptr->m_path << ptr->m_file_name << "_" << ptr->m_date << "_" << LogTypeToString(ptr->m_log_type) << "_" << ptr->m_no << ".log";
+      full_file_name = ss2.str();
+
+      printf("open file %s", full_file_name.c_str());
+      ptr->m_file_handle = fopen(full_file_name.c_str(), "a");
+      ptr->m_need_reopen = false;
+    }
+
+    if (!ptr->m_file_handle) {
+      printf("open log file %s error!", full_file_name.c_str());
+    }
+
+    for(auto i : tmp) {
+      int rt = fwrite(i.c_str(), 1, i.length(), ptr->m_file_handle);
+      // printf("succ write rt %d bytes ,[%s] to file[%s]", rt, i.c_str(), full_file_name.c_str());
+    }
+    fflush(ptr->m_file_handle);
+
+  }
+  if (!ptr->m_file_handle) {
+    fclose(ptr->m_file_handle);
   }
 
   return nullptr;
@@ -199,7 +280,7 @@ void AsyncLogger::push(std::vector<std::string>& buffer) {
   Mutex::Lock lock(m_mutex);
   m_tasks.push(buffer);
   lock.unlock();
-  pthread_cond_broadcast(&m_condition);
+  pthread_cond_signal(&m_condition);
 
 }
 

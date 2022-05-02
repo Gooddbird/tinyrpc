@@ -15,6 +15,10 @@
 
 tinyrpc::Reactor reactor;
 tinyrpc::Coroutine::ptr cor;
+
+tinyrpc::Logger* gRpcLogger = nullptr; 
+
+
 int listenfd = -1;
 
 void* fun(void* arg) {
@@ -86,6 +90,10 @@ void accept_f() {
 }
 
 int main(int argc, char* argv[]) {
+
+  gRpcLogger = new tinyrpc::Logger();
+  gRpcLogger->init("./", "test_reactor", 5*1024*1024);
+
 	listenfd = -1;	
 	if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) <= 0) {
 		ErrorLog << "socket error, exit!, errno=" << errno << ", err=" << strerror(errno);

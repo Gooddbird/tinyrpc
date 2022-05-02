@@ -55,7 +55,7 @@ tinyrpc::Logger* gRpcLogger = nullptr;
 int main(int argc, char* argv[]) {
 
   gRpcLogger = new tinyrpc::Logger();
-  gRpcLogger->init();
+  gRpcLogger->init("./", "test_rpc_server1", 5*1024*1024);
 
   tinyrpc::IPAddress::ptr addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
   

@@ -3,6 +3,7 @@
 #include "../src/net/net_address.h"
 
 
+tinyrpc::Logger* gRpcLogger = nullptr; 
 void* fun(void* arg) {
 
   DebugLog << "this is test log 1";
@@ -11,6 +12,9 @@ void* fun(void* arg) {
 }
 
 int main(int argc, char** argv) {
+
+  gRpcLogger = new tinyrpc::Logger();
+  gRpcLogger->init("./", "test_log", 5*1024*1024);
   
   DebugLog << "this is test log 1";
   sleep(2);

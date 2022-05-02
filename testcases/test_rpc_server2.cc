@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
   }
 
   gRpcLogger = new tinyrpc::Logger();
-  gRpcLogger->init();
+  gRpcLogger->init("./", "test_rpc_server2", 1024*1024);
 
   int port = std::atoi(argv[1]);
   n = std::atoi(argv[2]);
