@@ -3,6 +3,7 @@
 #include "../src/net/net_address.h"
 #include "../src/net/tinypb/tinypb_rpc_dispatcher.h"
 #include "../src/comm/log.h"
+#include "../src/comm/config.h"
 #include "tinypb.pb.h"
 #include "../src/coroutine/coroutine_hook.h"
 
@@ -51,11 +52,15 @@ class QueryServiceImpl : public QueryService {
 };
 
 tinyrpc::Logger* gRpcLogger = nullptr; 
+tinyrpc::Config* gConfig = nullptr;
+
 
 int main(int argc, char* argv[]) {
 
   gRpcLogger = new tinyrpc::Logger();
   gRpcLogger->init("./", "test_rpc_server1", 5*1024*1024);
+  gConfig = new tinyrpc::Config("../testcases/tinyrpc.xml");
+  gConfig->readConf();
 
   tinyrpc::IPAddress::ptr addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
   

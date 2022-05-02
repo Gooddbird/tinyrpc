@@ -12,12 +12,14 @@
 
 
 #include "log.h"
+#include "config.h"
 #include "../coroutine/coroutine.h"
 #include "../net/reactor.h"
 #include "../net/timer.h"
 
 
 extern tinyrpc::Logger* gRpcLogger;
+extern tinyrpc::Config* gConfig;
 
 namespace tinyrpc {
 

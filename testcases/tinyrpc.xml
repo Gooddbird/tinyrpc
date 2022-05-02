@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+  <!--log config-->>
+  <log>
+    <!--identify path of log file-->>
+    <log_path>./</log_path>
+
+    <!--identify max size of single log file, MB-->>
+    <log_max_file_size>5</log_max_file_size>
+  </log>
+
+  <coroutine>
+    <!--coroutine stack size (KB)-->>
+    <coroutine_stack_size>128</coroutine_stack_size>
+
+    <!--default coroutine pool size-->
+    <coroutine_pool_size>1000</coroutine_pool_size>
+
+  </coroutine>
+
+  <msg_req_len>20</msg_req_len>
+
+  <!--max time when call connect, s-->
+  <max_connect_timeout>75</max_connect_timeout>
+
+  <!--count of io threads, at least 1-->>
+  <iothread_num>10</iothread_num>
+
+  <time_wheel>
+    <bucket_num>6</bucket_num>
+
+    <!--inteval that destroy bad TcpConnection, s-->>
+    <inteval>10</inteval>
+  </time_wheel>
+
+</root>
