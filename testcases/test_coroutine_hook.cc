@@ -3,11 +3,11 @@
 #include <assert.h>
 #include <arpa/inet.h>
 #include <string.h>
-#include "../src/comm/log.h"
-#include "../src/coroutine/coroutine.h"
-#include "../src/coroutine/coroutine_hook.h"
-#include "../src/net/reactor.h"
-#include "../src/comm/config.h"
+#include "log.h"
+#include "coroutine.h"
+#include "coroutine_hook.h"
+#include "reactor.h"
+#include "config.h"
 
 tinyrpc::Logger* gRpcLogger = nullptr; 
 tinyrpc::Config* gRpcConfig = nullptr;

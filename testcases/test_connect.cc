@@ -6,14 +6,14 @@
 #include <fcntl.h>
 #include <iostream>
 #include <sstream>
-#include "../src/comm/log.h"
-#include "../src/comm/config.h"
-#include "../src/coroutine/coroutine_hook.h"
-#include "../src/net/reactor.h"
-#include "../src/coroutine/coroutine.h"
-#include "../src/coroutine/coroutine_pool.h"
-#include "../src/net/tinypb/tinypb_codec.h"
-#include "../src/net/tinypb/tinypb_data.h"
+#include "log.h"
+#include "config.h"
+#include "coroutine_hook.h"
+#include "reactor.h"
+#include "coroutine.h"
+#include "coroutine_pool.h"
+#include "tinypb_codec.h"
+#include "tinypb_data.h"
 #include "tinypb.pb.h"
 #include "google/protobuf/message.h"
 

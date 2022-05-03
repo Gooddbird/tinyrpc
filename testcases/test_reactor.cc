@@ -8,12 +8,11 @@
 #include <fcntl.h>
 
 
-#include "../src/net/reactor.h"
-#include "../src/net/timer.h"
-#include "../src/comm/log.h"
-#include "../src/coroutine/coroutine.h"
-
-#include "../src/comm/config.h"
+#include "reactor.h"
+#include "timer.h"
+#include "log.h"
+#include "coroutine.h"
+#include "config.h"
 
 tinyrpc::Reactor reactor;
 tinyrpc::Coroutine::ptr cor;

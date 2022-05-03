@@ -1,11 +1,12 @@
-#include "../src/comm/log.h"
+#include "log.h"
 #include <unistd.h>
-#include "../src/net/net_address.h"
-#include "../src/comm/config.h"
+#include "net_address.h"
+#include "config.h"
 
 
 tinyrpc::Logger* gRpcLogger = nullptr; 
 tinyrpc::Config* gRpcConfig = nullptr;
+
 void* fun(void* arg) {
 
   DebugLog << "this is test log 1";
@@ -14,11 +15,11 @@ void* fun(void* arg) {
 }
 
 int main(int argc, char** argv) {
+  gRpcConfig = new tinyrpc::Config("../testcases/tinyrpc.xml");
+  gRpcConfig->readConf();
 
   gRpcLogger = new tinyrpc::Logger();
   gRpcLogger->init("test_log");
-    gRpcConfig = new tinyrpc::Config("../testcases/tinyrpc.xml");
-  gRpcConfig->readConf();
   
   DebugLog << "this is test log 1";
   sleep(2);
@@ -37,8 +38,7 @@ int main(int argc, char** argv) {
   std::string path = "./tmp";
   tinyrpc::NetAddress::ptr unix_addr(new tinyrpc::UnixDomainAddress(path));
   DebugLog << "unix address: " << unix_addr->toString();
-
-
+  tinyrpc::Exit(0);
 
   return 0;
 }

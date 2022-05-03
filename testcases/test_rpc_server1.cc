@@ -1,12 +1,12 @@
 #include <google/protobuf/service.h>
-#include "../src/net/tcp/tcp_server.h"
-#include "../src/net/net_address.h"
-#include "../src/net/tinypb/tinypb_rpc_dispatcher.h"
-#include "../src/comm/log.h"
-#include "../src/comm/config.h"
+#include "tcp_server.h"
+#include "net_address.h"
+#include "tinypb_rpc_dispatcher.h"
+#include "log.h"
+#include "config.h"
 #include "tinypb.pb.h"
-#include "../src/coroutine/coroutine_hook.h"
-#include "../src/comm/config.h"
+#include "coroutine_hook.h"
+#include "config.h"
 
 
 class QueryServiceImpl : public QueryService {

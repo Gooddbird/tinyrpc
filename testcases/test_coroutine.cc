@@ -1,8 +1,8 @@
-#include "../src/comm/log.h"
-#include "../src/coroutine/coroutine.h"
-#include "../src/coroutine/coroutine_pool.h"
+#include "log.h"
+#include "coroutine.h"
+#include "coroutine_pool.h"
 #include <functional>
-#include "../src/comm/config.h"
+#include "config.h"
 
 
 tinyrpc::Logger* gRpcLogger = nullptr; 

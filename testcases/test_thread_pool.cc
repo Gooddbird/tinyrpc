@@ -1,8 +1,8 @@
-#include "../src/comm/log.h"
+#include "log.h"
 #include <unistd.h>
-#include "../src/net/net_address.h"
-#include "../src/thread/thread_pool.h"
-#include "../src/comm/config.h"
+#include "net_address.h"
+#include "thread_pool.h"
+#include "config.h"
 
 
 void* fun(void* arg) {

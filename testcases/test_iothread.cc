@@ -1,7 +1,7 @@
 
 #include <unistd.h>
-#include "../src/net/tcp/io_thread.h"
-#include "../src/comm/config.h"
+#include "io_thread.h"
+#include "config.h"
 
 
 

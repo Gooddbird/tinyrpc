@@ -112,6 +112,8 @@ class AsyncLogger {
 
 	static void* excute(void*);
 
+	void stop();
+
  public:
 	std::queue<std::vector<std::string>> m_tasks;
 
@@ -127,6 +129,9 @@ class AsyncLogger {
 
  	Mutex m_mutex;
   pthread_cond_t m_condition;
+	bool m_stop {false};
+
+ public:
   pthread_t m_thread;
 
 };
@@ -143,6 +148,10 @@ class Logger {
 
 	void flush();
 
+	AsyncLogger::ptr getAsyncLogger() {
+		return m_async_logger;
+	}
+
  public:
 	std::vector<std::string> m_buffer;
 
@@ -157,8 +166,6 @@ class Logger {
 // do something before exit progress, like flush log
 // it will be called when progress get something error
 int Exit(int code);
-
-
 
 }
 

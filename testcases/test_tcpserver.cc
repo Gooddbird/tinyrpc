@@ -1,7 +1,7 @@
-#include "../src/net/tcp/tcp_server.h"
-#include "../src/net/net_address.h"
-#include "../src/comm/log.h"
-#include "../src/comm/config.h"
+#include "tcp_server.h"
+#include "net_address.h"
+#include "log.h"
+#include "config.h"
 
 tinyrpc::Logger* gRpcLogger = nullptr;
 tinyrpc::Config* gRpcConfig = nullptr;

@@ -186,6 +186,7 @@ void Logger::push(const std::string& msg) {
 }
 
 void Logger::flush() {
+  m_async_logger->stop();
   loopFunc();
   m_async_logger->flush();
 }
@@ -213,6 +214,7 @@ void* AsyncLogger::excute(void* arg) {
     std::vector<std::string> tmp;
     tmp.swap(ptr->m_tasks.front());
     ptr->m_tasks.pop();
+    bool is_stop = ptr->m_stop;
     lock.unlock();
 
     timeval now;
@@ -272,6 +274,9 @@ void* AsyncLogger::excute(void* arg) {
       // printf("succ write rt %d bytes ,[%s] to file[%s]", rt, i.c_str(), full_file_name.c_str());
     }
     fflush(ptr->m_file_handle);
+    if (is_stop) {
+      break;
+    }
 
   }
   if (!ptr->m_file_handle) {
@@ -299,10 +304,18 @@ void AsyncLogger::flush() {
 }
 
 
+void AsyncLogger::stop() {
+  if (!m_stop) {
+    m_stop = true;
+  }
+}
+
+
 int Exit(int code) {
   printf("progress exit!\n");
   // flush current all log to disk
   gRpcLogger->flush();
+  pthread_join(gRpcLogger->getAsyncLogger()->m_thread, NULL);
   // call sys exit function
   exit(code);
 }
