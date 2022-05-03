@@ -209,12 +209,15 @@ void TinyPbCodeC::decode(TcpBuffer* buf, AbstractData* data) {
     return;
   }
 
+  DebugLog << "msg_req_len= " << pb_struct->msg_req_len;
   int msg_req_index = msg_req_len_index + sizeof(int32_t);
+  DebugLog << "msg_req_len_index= " << msg_req_index;
 
-  char msg_req[pb_struct->msg_req_len];
+  char msg_req[50];
 
   memcpy(&msg_req[0], &tmp[msg_req_index], pb_struct->msg_req_len);
-  pb_struct->msg_req = msg_req;
+  pb_struct->msg_req = std::string(msg_req);
+  DebugLog << "msg_req= " << pb_struct->msg_req;
   
   int service_name_len_index = msg_req_index + pb_struct->msg_req_len;
   if (service_name_len_index >= end_index) {
@@ -238,10 +241,11 @@ void TinyPbCodeC::decode(TcpBuffer* buf, AbstractData* data) {
     return;
   }
   DebugLog << "service_name_len = " << pb_struct->service_name_len;
-  char service_name[pb_struct->service_name_len];
+
+  char service_name[512];
 
   memcpy(&service_name[0], &tmp[service_name_index], pb_struct->service_name_len);
-  pb_struct->service_full_name = service_name;
+  pb_struct->service_full_name = std::string(service_name);
   DebugLog << "service_name = " << pb_struct->service_full_name;
 
   int err_code_index = service_name_index + pb_struct->service_name_len;
@@ -258,10 +262,10 @@ void TinyPbCodeC::decode(TcpBuffer* buf, AbstractData* data) {
   DebugLog << "err_info_len = " << pb_struct->err_info_len;
   int err_info_index = err_info_len_index + sizeof(int32_t);
 
-  char err_info[pb_struct->err_info_len];
+  char err_info[512];
 
   memcpy(&err_info[0], &tmp[err_info_index], pb_struct->err_info_len);
-  pb_struct->err_info = err_info; 
+  pb_struct->err_info = std::string(err_info); 
 
   int pb_data_len = pb_struct->pk_len 
                       - pb_struct->service_name_len - pb_struct->msg_req_len - pb_struct->err_info_len
