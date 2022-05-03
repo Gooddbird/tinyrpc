@@ -12,15 +12,16 @@ void* fun(void* arg) {
   return nullptr;
 }
 
-tinyrpc::Logger* gRpcLogger = nullptr;
-tinyrpc::Config* gRpcConfig = nullptr;
+tinyrpc::Logger::ptr gRpcLogger;
+tinyrpc::Config::ptr gRpcConfig;
 
 int main(int argc, char** argv) {
 
-  gRpcLogger = new tinyrpc::Logger();
-  gRpcLogger->init("test_thread_pool");
-  gRpcConfig = new tinyrpc::Config("../testcases/tinyrpc.xml");
+  gRpcConfig = std::make_shared<tinyrpc::Config>("../testcases/tinyrpc.xml");
   gRpcConfig->readConf();
+
+  gRpcLogger = std::make_shared<tinyrpc::Logger>();
+  gRpcLogger->init("test_thread_pool");
 
   tinyrpc::ThreadPool pool(4);
   pool.start();

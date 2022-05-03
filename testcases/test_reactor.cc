@@ -17,8 +17,8 @@
 tinyrpc::Reactor reactor;
 tinyrpc::Coroutine::ptr cor;
 
-tinyrpc::Logger* gRpcLogger = nullptr; 
-tinyrpc::Config* gRpcConfig = nullptr;
+tinyrpc::Logger::ptr gRpcLogger; 
+tinyrpc::Config::ptr gRpcConfig;
 
 
 int listenfd = -1;
@@ -87,16 +87,18 @@ void accept_f() {
 
   tinyrpc::Coroutine::GetCurrentCoroutine();
   cor = std::make_shared<tinyrpc::Coroutine>(128 * 1024, readco);
-  tinyrpc::Coroutine::Resume(cor.get()); 
+  tinyrpc::Coroutine::Resume(cor.get());
 
 }
 
 int main(int argc, char* argv[]) {
 
-  gRpcLogger = new tinyrpc::Logger();
-  gRpcLogger->init("test_reactor");
-    gRpcConfig = new tinyrpc::Config("../testcases/tinyrpc.xml");
+
+  gRpcConfig = std::make_shared<tinyrpc::Config>("../testcases/tinyrpc.xml");
   gRpcConfig->readConf();
+
+  gRpcLogger = std::make_shared<tinyrpc::Logger>();
+  gRpcLogger->init("test_reactor");
 
 	listenfd = -1;	
 	if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) <= 0) {

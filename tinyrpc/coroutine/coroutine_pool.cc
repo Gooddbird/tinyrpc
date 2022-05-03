@@ -3,7 +3,7 @@
 #include "coroutine_pool.h"
 #include "coroutine.h"
 
-extern tinyrpc::Config* gRpcConfig;
+extern tinyrpc::Config::ptr gRpcConfig;
 
 namespace tinyrpc {
 

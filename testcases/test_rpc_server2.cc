@@ -57,8 +57,8 @@ void fun() {
 }
 
 
-tinyrpc::Logger* gRpcLogger = nullptr;
-tinyrpc::Config* gRpcConfig = nullptr;
+tinyrpc::Logger::ptr gRpcLogger; 
+tinyrpc::Config::ptr gRpcConfig;
 
 int main(int argc, char* argv[]) {
 
@@ -68,10 +68,13 @@ int main(int argc, char* argv[]) {
     return 0;
   }
 
-  gRpcLogger = new tinyrpc::Logger();
-  gRpcLogger->init("test_rpc_server2");
-  gRpcConfig = new tinyrpc::Config("../testcases/tinyrpc.xml");
+
+  gRpcConfig = std::make_shared<tinyrpc::Config>("../testcases/tinyrpc.xml");
   gRpcConfig->readConf();
+
+  gRpcLogger = std::make_shared<tinyrpc::Logger>();
+  gRpcLogger->init("test_rpc_server2");
+
 
   int port = std::atoi(argv[1]);
   n = std::atoi(argv[2]);

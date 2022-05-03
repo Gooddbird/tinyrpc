@@ -23,7 +23,7 @@ HOOK_SYS_FUNC(connect);
 
 // static int g_max_timeout = 75000;
 
-extern tinyrpc::Config* gRpcConfig;
+extern tinyrpc::Config::ptr gRpcConfig;
 
 extern "C" {
 

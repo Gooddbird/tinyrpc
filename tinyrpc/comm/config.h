@@ -3,6 +3,7 @@
 
 #include <tinyxml/tinyxml.h>
 #include <string>
+#include <memory>
 
 
 namespace tinyrpc {
@@ -10,6 +11,7 @@ namespace tinyrpc {
 class Config {
 
  public:
+  typedef std::shared_ptr<Config> ptr;
   Config(const char* file_path);
 
   ~Config();

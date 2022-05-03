@@ -18,8 +18,8 @@
 #include "../net/timer.h"
 
 
-extern tinyrpc::Logger* gRpcLogger;
-extern tinyrpc::Config* gRpcConfig;
+extern tinyrpc::Logger::ptr gRpcLogger;
+extern tinyrpc::Config::ptr gRpcConfig;
 
 namespace tinyrpc {
 
@@ -157,7 +157,8 @@ Logger::Logger() {
 }
 
 Logger::~Logger() {
-
+  flush();
+  pthread_join(m_async_logger->m_thread, NULL);
 }
 
 void Logger::init(const char* file_name, LogType type /*= RPC_LOG*/) {
@@ -311,11 +312,8 @@ void AsyncLogger::stop() {
 }
 
 
-int Exit(int code) {
-  printf("progress exit!\n");
-  // flush current all log to disk
-  gRpcLogger->flush();
-  pthread_join(gRpcLogger->getAsyncLogger()->m_thread, NULL);
+void Exit(int code) {
+
   // call sys exit function
   exit(code);
 }

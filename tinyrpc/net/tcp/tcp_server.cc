@@ -11,7 +11,7 @@
 #include "../../coroutine/coroutine_pool.h"
 #include "../../comm/config.h"
 
-extern tinyrpc::Config* gRpcConfig;
+extern tinyrpc::Config::ptr gRpcConfig;
 
 namespace tinyrpc {
 

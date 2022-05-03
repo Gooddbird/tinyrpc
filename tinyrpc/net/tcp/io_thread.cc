@@ -8,7 +8,7 @@
 #include "../../coroutine/coroutine.h"
 #include "../../comm/config.h"
 
-extern tinyrpc::Config* gRpcConfig;
+extern tinyrpc::Config::ptr gRpcConfig;
 
 namespace tinyrpc {
 

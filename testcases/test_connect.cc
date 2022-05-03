@@ -17,9 +17,9 @@
 #include "tinypb.pb.h"
 #include "google/protobuf/message.h"
 
-tinyrpc::Logger* gRpcLogger = nullptr; 
-tinyrpc::Config* gRpcConfig = nullptr;
 
+tinyrpc::Logger::ptr gRpcLogger; 
+tinyrpc::Config::ptr gRpcConfig;
 
 int connfd = -1;
 
@@ -102,10 +102,11 @@ void connect_co() {
 
 int main(int argc, char* argv[]) {
   
-  gRpcLogger = new tinyrpc::Logger();
-  gRpcLogger->init("test_connect");
-  gRpcConfig = new tinyrpc::Config("../testcases/tinyrpc.xml");
+  gRpcConfig = std::make_shared<tinyrpc::Config>("../testcases/tinyrpc.xml");
   gRpcConfig->readConf();
+
+  gRpcLogger = std::make_shared<tinyrpc::Logger>();
+  gRpcLogger->init("test_connect");
 
   DebugLog << "main begin";
   // tinyrpc::enableHook();

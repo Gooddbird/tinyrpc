@@ -77,7 +77,7 @@ class LogEvent {
 	int m_cor_id {0};
 
 	const char* m_file_name;
-	int m_line;
+	int m_line {0};
 	const char* m_func_name;
 
 	std::stringstream m_ss;
@@ -138,6 +138,8 @@ class AsyncLogger {
 
 class Logger {
  public:
+  typedef std::shared_ptr<Logger> ptr;
+
 	Logger();
 	~Logger();
 
@@ -165,7 +167,7 @@ class Logger {
 
 // do something before exit progress, like flush log
 // it will be called when progress get something error
-int Exit(int code);
+void Exit(int code);
 
 }
 

@@ -4,8 +4,8 @@
 #include "config.h"
 
 
-tinyrpc::Logger* gRpcLogger = nullptr; 
-tinyrpc::Config* gRpcConfig = nullptr;
+tinyrpc::Logger::ptr gRpcLogger; 
+tinyrpc::Config::ptr gRpcConfig;
 
 void* fun(void* arg) {
 
@@ -15,14 +15,14 @@ void* fun(void* arg) {
 }
 
 int main(int argc, char** argv) {
-  gRpcConfig = new tinyrpc::Config("../testcases/tinyrpc.xml");
+  gRpcConfig = std::make_shared<tinyrpc::Config>("../testcases/tinyrpc.xml");
   gRpcConfig->readConf();
 
-  gRpcLogger = new tinyrpc::Logger();
+  gRpcLogger = std::make_shared<tinyrpc::Logger>();
   gRpcLogger->init("test_log");
   
   DebugLog << "this is test log 1";
-  sleep(2);
+  // sleep(2);
   InfoLog << "this is test log 2";
   WarnLog << "this is test log 3";
   ErrorLog << "this is test log 4";
@@ -38,7 +38,6 @@ int main(int argc, char** argv) {
   std::string path = "./tmp";
   tinyrpc::NetAddress::ptr unix_addr(new tinyrpc::UnixDomainAddress(path));
   DebugLog << "unix address: " << unix_addr->toString();
-  tinyrpc::Exit(0);
 
   return 0;
 }

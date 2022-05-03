@@ -41,5 +41,9 @@ void Config::readConf() {
     max_connect_timeout, m_iothread_num, m_timewheel_bucket_num, m_timewheel_inteval);
 }
 
+Config::~Config() {
+
+}
+
 
 }

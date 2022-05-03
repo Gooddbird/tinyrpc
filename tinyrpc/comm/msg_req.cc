@@ -8,7 +8,7 @@
 #include "config.h"
 #include "msg_req.h"
 
-extern tinyrpc::Config* gRpcConfig;
+extern tinyrpc::Config::ptr gRpcConfig;
 
 namespace tinyrpc {
 

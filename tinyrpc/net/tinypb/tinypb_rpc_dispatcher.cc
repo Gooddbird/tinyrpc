@@ -38,7 +38,7 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
 
     reply_pk.err_code = ERROR_PARSE_SERVICE_NAME;
     std::stringstream ss;
-    ss << "cannot parse service_name:[" << tmp->service_full_name << "]"; 
+    ss << "cannot parse service_name:[" << tmp->service_full_name << "]";
     reply_pk.err_info = ss.str();
     conn->getCodec()->encode(conn->getOutBuffer(), dynamic_cast<AbstractData*>(&reply_pk));
     return;

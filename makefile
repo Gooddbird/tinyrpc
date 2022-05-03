@@ -22,7 +22,7 @@ PATH_TESTCASES = testcases
 
 CXX := g++
 
-CXXFLAGS += -g -O3 -std=c++11 -Wall -Wno-deprecated -Wno-unused-but-set-variable
+CXXFLAGS += -g -O0 -std=c++11 -Wall -Wno-deprecated -Wno-unused-but-set-variable
 
 CXXFLAGS += -I$(PATH_TINYRPC)	-I$(PATH_COMM) -I$(PATH_COROUTINE) -I$(PATH_NET) -I$(PATH_HTTP) -I$(PATH_TCP) -I$(PATH_TINYPB)
 
@@ -102,8 +102,11 @@ $(PATH_TINYPB)/%.o : $(PATH_TINYPB)/%.cc
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 
-
+# print something test
+# like this: make PRINT-PATH_BIN, and then will print variable PATH_BIN
 PRINT-% : ; @echo $* = $($*)
 
+
+# to clean 
 clean :
 	rm -f $(COMM_OBJ) $(COROUTINE_OBJ) $(NET_OBJ) $(HTTP_OBJ) $(TCP_OBJ) $(TINYPB_OBJ) $(TESTCASES) $(PATH_COROUTINE)/coctx_swap.o $(TEST_CASE_OUT) $(PATH_LIB)/libtinyrpc.a
