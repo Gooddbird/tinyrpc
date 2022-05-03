@@ -26,24 +26,31 @@ static thread_local int t_max_epoll_timeout = 10000;     // ms
 Reactor::Reactor() {
   
   // one thread can't create more than one reactor object!!
-  assert(t_reactor_ptr == nullptr);
+  // assert(t_reactor_ptr == nullptr);
+	if (t_reactor_ptr != nullptr) {
+		ErrorLog << "this thread has already create a reactor";
+		Exit(0);
+	}
+
   m_tid = gettid();
 
   DebugLog << "thread[" << m_tid << "] succ create a reactor object";
   t_reactor_ptr = this;
 
   if((m_epfd = epoll_create(1)) <= 0 ) {
-		ErrorLog << "epoll_create error";
+		ErrorLog << "start server error. epoll_create error, sys error=" << strerror(errno);
+		Exit(0);
 	} else {
 		DebugLog << "m_epfd = " << m_epfd;
 	}
-  assert(m_epfd > 0);
+  // assert(m_epfd > 0);
 
 	if((m_wake_fd = eventfd(0, EFD_NONBLOCK)) <= 0 ) {
-		ErrorLog << "eventfd error";
+		ErrorLog << "start server error. event_fd error, sys error=" << strerror(errno);
+		Exit(0);
 	}
 	DebugLog << "wakefd = " << m_wake_fd;
-  assert(m_wake_fd > 0);	
+  // assert(m_wake_fd > 0);	
 	addWakeupFd();
 
 }

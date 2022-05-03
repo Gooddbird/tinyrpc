@@ -58,8 +58,8 @@ ssize_t read_hook(int fd, void *buf, size_t count) {
     return g_sys_read_fun(fd, buf, count);
   }
 
-	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
-	assert(reactor != nullptr);
+	tinyrpc::Reactor::GetReactor();
+	// assert(reactor != nullptr);
 
   tinyrpc::FdEvent::ptr fd_event = tinyrpc::FdEventContainer::GetFdContainer()->getFdEvent(fd);
   if(fd_event->getReactor() == nullptr) {
@@ -101,8 +101,8 @@ int accept_hook(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
     DebugLog << "hook disable, call sys accept func";
     return g_sys_accept_fun(sockfd, addr, addrlen);
   }
-	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
-	assert(reactor != nullptr);
+	tinyrpc::Reactor::GetReactor();
+	// assert(reactor != nullptr);
 
   tinyrpc::FdEvent::ptr fd_event = tinyrpc::FdEventContainer::GetFdContainer()->getFdEvent(sockfd);
   if(fd_event->getReactor() == nullptr) {
@@ -140,8 +140,8 @@ ssize_t write_hook(int fd, const void *buf, size_t count) {
     DebugLog << "hook disable, call sys write func";
     return g_sys_write_fun(fd, buf, count);
   }
-	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
-	assert(reactor != nullptr);
+	tinyrpc::Reactor::GetReactor();
+	// assert(reactor != nullptr);
 
   tinyrpc::FdEvent::ptr fd_event = tinyrpc::FdEventContainer::GetFdContainer()->getFdEvent(fd);
   if(fd_event->getReactor() == nullptr) {
@@ -180,7 +180,7 @@ int connect_hook(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
     return g_sys_connect_fun(sockfd, addr, addrlen);
   }
 	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
-	assert(reactor != nullptr);
+	// assert(reactor != nullptr);
 
   tinyrpc::FdEvent::ptr fd_event = tinyrpc::FdEventContainer::GetFdContainer()->getFdEvent(sockfd);
   if(fd_event->getReactor() == nullptr) {
@@ -254,10 +254,10 @@ unsigned int sleep_hook(unsigned int seconds) {
   }
 
 	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
-	assert(reactor != nullptr);
+	// assert(reactor != nullptr);
 
 	tinyrpc::Coroutine* cur_cor = tinyrpc::Coroutine::GetCurrentCoroutine();
-	assert(cur_cor != nullptr);
+	// assert(cur_cor != nullptr);
 
 	auto timeout_cb = [cur_cor](){
 		DebugLog << "onTime, now resume cor";

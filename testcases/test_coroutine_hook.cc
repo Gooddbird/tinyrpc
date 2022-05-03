@@ -15,7 +15,7 @@ tinyrpc::Config* gRpcConfig = nullptr;
 void fun1() {
   DebugLog << "this is cor1";
   int listenfd = socket(AF_INET, SOCK_STREAM, 0);
-  assert(listenfd != -1);
+
   sockaddr_in addr;
   memset(&addr, 0, sizeof(addr));
   addr.sin_family = AF_INET;
@@ -60,7 +60,6 @@ int main(int argc, char* argv[]) {
   tinyrpc::Coroutine::Resume(cor1.get());
 
   tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
-  assert(reactor != nullptr);
 
   DebugLog << "begin to loop";
   

@@ -39,7 +39,8 @@ TcpTimeWheel::ptr IOThread::getTimeWheel() {
 }
 
 void* IOThread::main(void* arg) {
-  assert(t_reactor_ptr == nullptr);
+  // assert(t_reactor_ptr == nullptr);
+
   t_reactor_ptr = new Reactor(); 
   IOThread* thread = static_cast<IOThread*>(arg);
   thread->m_reactor = t_reactor_ptr;

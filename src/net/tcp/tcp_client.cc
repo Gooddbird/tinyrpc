@@ -19,7 +19,6 @@ TcpClient::TcpClient(NetAddress::ptr addr) : m_peer_addr(addr) {
 
   m_reactor = Reactor::GetReactor();
   m_connection = std::make_shared<TcpConnection>(this, m_reactor, m_fd, 128, m_peer_addr);
-  assert(m_reactor != nullptr);
 
 }
 

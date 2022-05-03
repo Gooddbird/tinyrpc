@@ -23,7 +23,6 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
     return;
   }
 
-  assert(tmp != nullptr);
   std::string service_name;
   std::string method_name;
 

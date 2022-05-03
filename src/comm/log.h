@@ -108,6 +108,8 @@ class AsyncLogger {
 
 	void push(std::vector<std::string>& buffer);
 
+	void flush();
+
 	static void* excute(void*);
 
  public:
@@ -139,6 +141,8 @@ class Logger {
 	void push(const std::string& log_msg);
 	void loopFunc();
 
+	void flush();
+
  public:
 	std::vector<std::string> m_buffer;
 
@@ -149,6 +153,10 @@ class Logger {
 
 };
 
+
+// do something before exit progress, like flush log
+// it will be called when progress get something error
+int Exit(int code);
 
 
 

@@ -18,7 +18,6 @@ TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_
   : m_io_thread(io_thread), m_fd(fd), m_state(Connected), m_connection_type(ServerConnection), m_peer_addr(peer_addr) {	
   m_reactor = m_io_thread->getReactor();
 
-  assert(tcp_svr!= nullptr); 
   m_tcp_svr = tcp_svr;
 
   m_codec = std::make_shared<TinyPbCodeC>();
@@ -36,10 +35,8 @@ TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_
 
 TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reactor, int fd, int buff_size, NetAddress::ptr peer_addr)
   : m_fd(fd), m_state(NotConnected), m_connection_type(ClientConnection), m_peer_addr(peer_addr) {
-  assert(reactor != nullptr); 
   m_reactor = reactor;
 
-  assert(tcp_cli!= nullptr); 
   m_tcp_cli = tcp_cli;
 
   m_codec = std::make_shared<TinyPbCodeC>();

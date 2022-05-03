@@ -124,7 +124,6 @@ void Timer::onTimer() {
 		}
 	}
 
-	assert(m_reactor != nullptr);
 	m_reactor->addTask(tasks);
 	m_pending_events.erase(m_pending_events.begin(), it);
 	for (auto i = tmps.begin(); i != tmps.end(); ++i) {

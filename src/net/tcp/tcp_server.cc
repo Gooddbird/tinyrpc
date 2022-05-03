@@ -22,8 +22,11 @@ TcpAcceptor::TcpAcceptor(NetAddress::ptr net_addr) : m_local_addr(net_addr) {
 
 void TcpAcceptor::init() {
 	m_fd = socket(m_local_addr->getFamily(), SOCK_STREAM, 0);
-
-	assert(m_fd != -1);
+	if (m_fd < 0) {
+		ErrorLog << "start server error. socket error, sys error=" << strerror(errno);
+		Exit(0);
+	}
+	// assert(m_fd != -1);
 	DebugLog << "create listenfd succ, listenfd=" << m_fd;
 
 	// int flag = fcntl(m_fd, F_GETFL, 0);
@@ -41,16 +44,18 @@ void TcpAcceptor::init() {
 	socklen_t len = m_local_addr->getSockLen();
 	int rt = bind(m_fd, m_local_addr->getSockAddr(), len);
 	if (rt != 0) {
-		ErrorLog << "bind error, errno=" << errno << ", error=" << strerror(errno);
+		ErrorLog << "start server error. bind error, errno=" << errno << ", error=" << strerror(errno);
+		Exit(0);
 	}
-  assert(rt == 0);
+  // assert(rt == 0);
 
 	DebugLog << "set REUSEADDR succ";
 	rt = listen(m_fd, 10);
 	if (rt != 0) {
-		ErrorLog << "listen error, fd= " << m_fd << ", errno=" << errno << ", error=" << strerror(errno);
+		ErrorLog << "start server error. listen error, fd= " << m_fd << ", errno=" << errno << ", error=" << strerror(errno);
+		Exit(0);
 	}
-  assert(rt == 0);
+  // assert(rt == 0);
 
 }
 

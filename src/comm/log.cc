@@ -185,6 +185,11 @@ void Logger::push(const std::string& msg) {
   lock.unlock();
 }
 
+void Logger::flush() {
+  loopFunc();
+  m_async_logger->flush();
+}
+
 AsyncLogger::AsyncLogger(const char* file_name, LogType log_type) 
   : m_file_name(file_name), m_log_type(log_type) {
 
@@ -247,7 +252,7 @@ void* AsyncLogger::excute(void* arg) {
     if (ftell(ptr->m_file_handle) > gRpcConfig->m_log_max_size) {
       fclose(ptr->m_file_handle);
 
-      // over max size
+      // single log file over max size
       ptr->m_no++;
       std::stringstream ss2;
       ss2 << gRpcConfig->m_log_path << ptr->m_file_name << "_" << ptr->m_date << "_" << LogTypeToString(ptr->m_log_type) << "_" << ptr->m_no << ".log";
@@ -278,12 +283,28 @@ void* AsyncLogger::excute(void* arg) {
 }
 
 
+
 void AsyncLogger::push(std::vector<std::string>& buffer) {
   Mutex::Lock lock(m_mutex);
   m_tasks.push(buffer);
   lock.unlock();
   pthread_cond_signal(&m_condition);
 
+}
+
+void AsyncLogger::flush() {
+  if (m_file_handle) {
+    fflush(m_file_handle);
+  }
+}
+
+
+int Exit(int code) {
+  printf("progress exit!\n");
+  // flush current all log to disk
+  gRpcLogger->flush();
+  // call sys exit function
+  exit(code);
 }
 
 }

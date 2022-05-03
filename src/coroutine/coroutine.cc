@@ -48,10 +48,14 @@ Coroutine::Coroutine(int size) : m_stack_size(size) {
   if (t_main_coroutine == nullptr) {
     t_main_coroutine = new Coroutine();
   }
-  assert(t_main_coroutine != nullptr);
+  // assert(t_main_coroutine != nullptr);
 
   m_stack_sp =  reinterpret_cast<char*>(malloc(m_stack_size));
-  assert(m_stack_sp != nullptr);
+  if (!m_stack_sp) {
+    ErrorLog << "start server error. malloc stack return nullptr";
+    Exit(0);
+  }
+  // assert(m_stack_sp != nullptr);
 
   m_cor_id = t_cur_coroutine_id++;
   t_coroutine_count++;
@@ -64,10 +68,14 @@ Coroutine::Coroutine(int size, std::function<void()> cb)
   if (t_main_coroutine == nullptr) {
     t_main_coroutine = new Coroutine();
   }
-  assert(t_main_coroutine != nullptr);
+  // assert(t_main_coroutine != nullptr);
 
   m_stack_sp =  reinterpret_cast<char*>(malloc(m_stack_size));
-  assert(m_stack_sp != nullptr);
+  if (!m_stack_sp) {
+    ErrorLog << "start server error. malloc stack return nullptr";
+    Exit(0);
+  }
+  // assert(m_stack_sp != nullptr);
 
   setCallBack(cb);
   m_cor_id = t_cur_coroutine_id++;
@@ -88,7 +96,7 @@ bool Coroutine::setCallBack(std::function<void()> cb) {
 
   m_call_back = cb;
 
-  assert(m_stack_sp != nullptr);
+  // assert(m_stack_sp != nullptr);
 
   char* top = m_stack_sp + m_stack_size;
   // first set 0 to stack
