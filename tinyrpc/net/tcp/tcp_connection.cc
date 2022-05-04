@@ -28,9 +28,9 @@ TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_
   m_loop_cor = GetCoroutinePool()->getCoroutineInstanse();
   m_loop_cor->setCallBack(std::bind(&TcpConnection::MainServerLoopCorFunc, this));
 
+  DebugLog << "succ create tcp connection";
   m_reactor->addCoroutine(m_loop_cor);
   
-  DebugLog << "succ create tcp connection";
 }
 
 TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reactor, int fd, int buff_size, NetAddress::ptr peer_addr)
@@ -113,7 +113,9 @@ void TcpConnection::input() {
 
     DebugLog << "m_read_buffer size=" << m_read_buffer->getBufferVector().size() << "rd=" << m_read_buffer->readIndex() << "wd=" << m_read_buffer->writeIndex();
     int rt = read_hook(m_fd, &(m_read_buffer->m_buffer[write_index]), read_count);
-    m_read_buffer->recycleWrite(rt);
+    if (rt > 0) {
+      m_read_buffer->recycleWrite(rt);
+    }
     DebugLog << "m_read_buffer size=" << m_read_buffer->getBufferVector().size() << "rd=" << m_read_buffer->readIndex() << "wd=" << m_read_buffer->writeIndex();
 
     DebugLog << "read data back";

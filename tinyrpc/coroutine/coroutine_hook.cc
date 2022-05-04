@@ -248,28 +248,34 @@ int connect_hook(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 
 unsigned int sleep_hook(unsigned int seconds) {
 
+	DebugLog << "this is hook sleep";
   if (tinyrpc::Coroutine::IsMainCoroutine()) {
     DebugLog << "hook disable, call sys sleep func";
     return sleep(seconds);
   }
 
-	tinyrpc::Reactor* reactor = tinyrpc::Reactor::GetReactor();
-	// assert(reactor != nullptr);
-
 	tinyrpc::Coroutine* cur_cor = tinyrpc::Coroutine::GetCurrentCoroutine();
-	// assert(cur_cor != nullptr);
 
-	auto timeout_cb = [cur_cor](){
-		DebugLog << "onTime, now resume cor";
+	bool is_timeout = false;
+	auto timeout_cb = [cur_cor, &is_timeout](){
+		DebugLog << "onTime, now resume sleep cor";
+		is_timeout = true;
 		// 设置超时标志，然后唤醒协程
 		tinyrpc::Coroutine::Resume(cur_cor);
   };
 
   tinyrpc::TimerEvent::ptr event = std::make_shared<tinyrpc::TimerEvent>(1000 * seconds, false, timeout_cb);
   
-  reactor->getTimer()->addTimerEvent(event);
+  tinyrpc::Reactor::GetReactor()->getTimer()->addTimerEvent(event);
 
-  tinyrpc::Coroutine::Yield();
+	DebugLog << "now to yield sleep";
+	// beacuse read or wirte maybe resume this coroutine, so when this cor be resumed, must check is timeout, otherwise should yield again
+	while (!is_timeout) {
+		tinyrpc::Coroutine::Yield();
+	}
+
+	// 定时器也需要删除
+	tinyrpc::Reactor::GetReactor()->getTimer()->delTimerEvent(event);
 
 	return 0;
 

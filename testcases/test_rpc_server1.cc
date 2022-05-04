@@ -23,9 +23,9 @@ class QueryServiceImpl : public QueryService {
     
     DebugLog << "========================";
     DebugLog << "this is query_name func";
-    // DebugLog << "first begin to sleep 6s";
-    // sleep_hook(6);
-    // DebugLog << "sleep 6s end";
+    DebugLog << "first begin to sleep 6s";
+    sleep_hook(6);
+    DebugLog << "sleep 6s end";
 
     response->set_ret_code(0);
     response->set_res_info("OK");

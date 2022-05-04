@@ -83,7 +83,7 @@ class Reactor {
   std::vector<int> m_pending_del_fds;
   std::vector<std::function<void()>> m_pending_tasks;
 
-  Timer* m_timer;
+  Timer* m_timer {nullptr};
 
 };
 

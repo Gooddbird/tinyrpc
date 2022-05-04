@@ -41,7 +41,7 @@ void fun() {
 
     QueryService_Stub stub(&channel);
     tinyrpc::TinyPbRpcController rpc_controller;
-    rpc_controller.SetTimeout(10000);
+    rpc_controller.SetTimeout(1000);
     stub.query_name(&rpc_controller, &req_name, &res_name, &cb);
 
     if (rpc_controller.ErrorCode() != 0) {

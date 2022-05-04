@@ -1,14 +1,26 @@
-# TinyRpc
-Use c++ to make a tiny rpc framework.
+# TinyRPC
+TinyRPC 是一款使用 C++11 开发的小型 RPC 框架。TinyRPC 是本人在学习过程的作品，这些代码没有达到工业强度，也可能存在一些未知 BUG。读者请自行辨别。
 
-## 1. How to Build
+麻雀虽小五脏俱全，从命名上就能看出来，TinyRPC 框架主要用义是为了让读者能快速地、轻量化地搭建出具有一定性能的 RPC 服务。我不敢说有多高的性能，但至少能应付目前大多数场景了。
+
+TinyRPC 没有跨平台，只支持 LINUX 系统，并且必须是 64 位的系统，因为协程切换只实现了 64 位系统的，而没有兼容 32 位系统。
+
+TinyRPC 的自定义的 RPC 协议报文暂时只支持基于 PROTOBUF 的序列化。
+
+TinyRPC 框架的主要模块包括：日志封装、协程封装、Reactor封装、Tcp 封装、自定义协议封装、以及RPC封装等。
+
+## 1. 如何使用
 
 1. git clone
 2. cd tinyrpc
 3. mkdir bin & mkdir lib;
 4. make
-5. cd ../bin
-6. ./test_xxxx
+
+make 完成后，会在 lib 目录下生成静态库文件 libtinyrpc.a。在真正开发 RPC 服务时，只需要静态链接这个库，就能使用其中的函数了。(当然也能动态链接, 读者可自行修改 makefile 满足自己的需求)。
+更多详细信息请参考这个仓库：
+
+此外，还会在 bin 目录下生成一些单元测试文件。运行 bin/test_xxxx 文件，可以简单测试下 TinyRPC 的一些单元模块功能是否正常。
+
 
 ## 2. Design of RPC
 #### First design a simple rpc protocal:
@@ -77,11 +89,9 @@ ss << 0x02 << pk_len(to net byte order) << msg_req_len(net byte order) << msg_re
 
 
 
-## Reference
+## 参考资料
 libco: https://github.com/Tencent/libco
-
 sylar: https://github.com/sylar-yin/sylar
-
 muduo: https://github.com/chenshuo/muduo
 
 
