@@ -103,7 +103,7 @@ void Timer::resetArriveTime() {
 
 void Timer::onTimer() {
 
-  DebugLog << "onTimer, first read data";
+  // DebugLog << "onTimer, first read data";
   char buf[8];
   while(1) {
     if((g_sys_read_fun(m_fd, buf, 8) == -1) && errno == EAGAIN) {

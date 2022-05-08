@@ -224,10 +224,10 @@ void Reactor::loop() {
 			// DebugLog << "end excute tasks[" << i << "]";
 		}
 		m_pending_tasks.clear();
-		DebugLog << "to epoll_wait";
+		// DebugLog << "to epoll_wait";
 		int rt = epoll_wait(m_epfd, re_events, MAX_EVENTS, t_max_epoll_timeout);
 
-		DebugLog << "epoll_wait back";
+		// DebugLog << "epoll_wait back";
 
 		if (rt < 0) {
 			ErrorLog << "epoll_wait error, skip, errno=" << strerror(errno);
@@ -238,7 +238,7 @@ void Reactor::loop() {
 
 				if (one_event.data.fd == m_wake_fd && (one_event.events & READ)) {
 					// wakeup
-					DebugLog << "epoll wakeup, fd=[" << m_wake_fd << "]";
+					// DebugLog << "epoll wakeup, fd=[" << m_wake_fd << "]";
 					char buf[8];
 					while(1) {
 						if((g_sys_read_fun(m_wake_fd, buf, 8) == -1) && errno == EAGAIN) {
@@ -265,12 +265,12 @@ void Reactor::loop() {
               delEventInLoopThread(fd);
             } else {
               if (one_event.events & EPOLLIN) {
-                DebugLog << "socket [" << fd << "] occur read event";
+                // DebugLog << "socket [" << fd << "] occur read event";
                 Mutex::Lock lock(m_mutex);
                 m_pending_tasks.push_back(read_cb);						
               }
               if (one_event.events & EPOLLOUT) {
-                DebugLog << "socket [" << fd << "] occur write event";
+                // DebugLog << "socket [" << fd << "] occur write event";
                 Mutex::Lock lock(m_mutex);
                 m_pending_tasks.push_back(write_cb);						
               }

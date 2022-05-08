@@ -133,7 +133,7 @@ void LogEvent::log() {
 	m_ss << "\n";
   if (m_level >= g_log_level) {
 
-    // printf("========%s", m_ss.str().c_str());
+    printf("%s", m_ss.str().c_str());
     gRpcLogger->push(m_ss.str());
   }
 }

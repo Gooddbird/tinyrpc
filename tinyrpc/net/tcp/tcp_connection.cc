@@ -88,7 +88,7 @@ void TcpConnection::MainServerLoopCorFunc() {
 
     output();
   }
-
+  InfoLog << "this connection has already end loop";
 }
 
 void TcpConnection::input() {
@@ -215,7 +215,7 @@ void TcpConnection::output() {
     if (m_write_buffer->readAble() <= 0) {
       // InfoLog << "send all data, now unregister write event on reactor and yield Coroutine";
       InfoLog << "send all data, now unregister write event and break";
-      m_fd_event->delListenEvents(IOEvent::WRITE);
+      // m_fd_event->delListenEvents(IOEvent::WRITE);
       break;
     }
 

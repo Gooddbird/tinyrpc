@@ -77,17 +77,17 @@ ssize_t read_hook(int fd, void *buf, size_t count) {
 	// because reactor should always care read event when a connection sockfd was created
 	// so if first call sys read, and read return success, this fucntion will not register read event and return
 	// for this connection sockfd, reactor will never care read event
-	toEpoll(fd_event, tinyrpc::IOEvent::READ);
-
   ssize_t n = g_sys_read_fun(fd, buf, count);
   if (n > 0) {
     return n;
   } 
 
+	toEpoll(fd_event, tinyrpc::IOEvent::READ);
+
 	DebugLog << "read func to yield";
 	tinyrpc::Coroutine::Yield();
 
-	// fd_event->delListenEvents(tinyrpc::IOEvent::READ);
+	fd_event->delListenEvents(tinyrpc::IOEvent::READ);
 	// fd_event->updateToReactor();
 
 	DebugLog << "read func yield back, now to call sys read";
@@ -126,7 +126,7 @@ int accept_hook(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	DebugLog << "accept func to yield";
 	tinyrpc::Coroutine::Yield();
 
-	// fd_event->delListenEvents(tinyrpc::IOEvent::READ);
+	fd_event->delListenEvents(tinyrpc::IOEvent::READ);
 	// fd_event->updateToReactor();
 
 	DebugLog << "accept func yield back, now to call sys accept";
@@ -155,17 +155,17 @@ ssize_t write_hook(int fd, const void *buf, size_t count) {
 
 	fd_event->setNonBlock();
 
-	toEpoll(fd_event, tinyrpc::IOEvent::WRITE);
-	
   ssize_t n = g_sys_write_fun(fd, buf, count);
   if (n > 0) {
     return n;
   }
 
+	toEpoll(fd_event, tinyrpc::IOEvent::WRITE);
+
 	DebugLog << "write func to yield";
 	tinyrpc::Coroutine::Yield();
 
-	// fd_event->delListenEvents(tinyrpc::IOEvent::WRITE);
+	fd_event->delListenEvents(tinyrpc::IOEvent::WRITE);
 	// fd_event->updateToReactor();
 
 	DebugLog << "write func yield back, now to call sys write";
@@ -259,6 +259,7 @@ unsigned int sleep_hook(unsigned int seconds) {
 	bool is_timeout = false;
 	auto timeout_cb = [cur_cor, &is_timeout](){
 		DebugLog << "onTime, now resume sleep cor";
+		printf("onTime, now resume sleep cor\n");
 		is_timeout = true;
 		// 设置超时标志，然后唤醒协程
 		tinyrpc::Coroutine::Resume(cur_cor);
@@ -270,12 +271,11 @@ unsigned int sleep_hook(unsigned int seconds) {
 
 	DebugLog << "now to yield sleep";
 	// beacuse read or wirte maybe resume this coroutine, so when this cor be resumed, must check is timeout, otherwise should yield again
-	while (!is_timeout) {
-		tinyrpc::Coroutine::Yield();
-	}
+	tinyrpc::Coroutine::Yield();
+	printf("onTime, resume sleep yield back\n");
 
 	// 定时器也需要删除
-	tinyrpc::Reactor::GetReactor()->getTimer()->delTimerEvent(event);
+	// tinyrpc::Reactor::GetReactor()->getTimer()->delTimerEvent(event);
 
 	return 0;
 
