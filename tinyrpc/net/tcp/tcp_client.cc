@@ -35,7 +35,7 @@ TcpConnection* TcpClient::getConnection() {
   return m_connection.get();
 }
 
-int TcpClient::sendAndRecv() {
+int TcpClient::sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct& res) {
   bool is_timeout = false;
   tinyrpc::Coroutine* cur_cor = tinyrpc::Coroutine::GetCurrentCoroutine();
   auto timer_cb = [this, &is_timeout, cur_cor]() {
@@ -74,20 +74,25 @@ int TcpClient::sendAndRecv() {
 
   m_connection->setUpClient();
   m_connection->output();
-  if (m_connection->getOverTimer()) {
+  if (m_connection->getOverTimerFlag()) {
     InfoLog << "send data over time";
     goto timeout_deal;
   }
 
-  m_connection->input();
+  while (!m_connection->getResPackageData(msg_no, res)) {
 
-  if (m_connection->getOverTimer()) {
-    InfoLog << "read data over time";
-    goto timeout_deal;
+    m_connection->input();
+
+    if (m_connection->getOverTimerFlag()) {
+      InfoLog << "read data over time";
+      goto timeout_deal;
+    }
+
+    m_connection->execute();
+
   }
 
   m_reactor->getTimer()->delTimerEvent(event);
-  m_connection->execute();
   m_err_info = "";
   return 0;
 

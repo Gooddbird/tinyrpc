@@ -49,18 +49,13 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
       << "|. Set client send request data:" << request->ShortDebugString();
   InfoLog << "============================================================";
   m_client->setTimeout(rpc_controller->Timeout());
-  int rt = m_client->sendAndRecv();
+
+  TinyPbStruct res_data;
+  int rt = m_client->sendAndRecvTinyPb(pb_struct.msg_req, res_data);
   if (rt != 0) {
     rpc_controller->SetError(rt, m_client->getErrInfo());
     ErrorLog << pb_struct.msg_req << "|call rpc occur client error, service_full_name=" << pb_struct.service_full_name << ", error_code=" 
         << rt << ", error_info = " << m_client->getErrInfo();
-    return;
-  }
-
-  TinyPbStruct res_data;
-  if (!m_client->getConnection()->getResPackageData(pb_struct.msg_req, res_data)) {
-    ErrorLog << pb_struct.msg_req << "|get reply package empty";
-    rpc_controller->SetError(ERROR_FAILED_GET_REPLY, "failed to get reply data");
     return;
   }
 

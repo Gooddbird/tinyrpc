@@ -52,22 +52,6 @@ void connect_co() {
     DebugLog << "input in integer to set counts that send protobuf data";
     std::cin >> a;
 
-    // char buf[20];
-    // buf[0] = 0x02;
-    // int32_t pk_len = 20;
-    // pk_len = htonl(pk_len);
-
-    // memcpy(&buf[1], &pk_len, 4);
-    // int sergvice_name_len = 6;
-    // sergvice_name_len = htonl(sergvice_name_len);
-
-    // memcpy(&buf[5], &sergvice_name_len, 4);
-    // char service_name[6] = "ikerl";
-    // memcpy(&buf[9], &service_name[0], 6);
-    // int checksum = 1;
-    // memcpy(&buf[15], &checksum, 4);
-    // buf[19] = 0x03;
-
     queryAgeReq req;
     req.set_id(9876); 
     tinyrpc::TinyPbStruct pb_struct;

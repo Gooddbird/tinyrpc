@@ -294,7 +294,7 @@ void TcpConnection::setOverTimeFlag(bool value) {
   m_is_over_time = value;
 }
 
-bool TcpConnection::getOverTimer() {
+bool TcpConnection::getOverTimerFlag() {
   return m_is_over_time;
 }
 

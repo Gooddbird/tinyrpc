@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <signal.h>
 
 
 #include "log.h"
@@ -22,6 +23,15 @@ extern tinyrpc::Logger::ptr gRpcLogger;
 extern tinyrpc::Config::ptr gRpcConfig;
 
 namespace tinyrpc {
+
+void SignalHandler(int signal_no) {
+  ErrorLog << "progress received invalid signal, will exit";
+  if (!gRpcLogger) {
+    gRpcLogger->flush();
+  }
+  signal(signal_no, SIG_DFL);
+  raise(signal_no);
+}
 
 class Coroutine;
 
@@ -166,6 +176,11 @@ void Logger::init(const char* file_name, LogType type /*= RPC_LOG*/) {
     TimerEvent::ptr event = std::make_shared<TimerEvent>(1000, true, std::bind(&Logger::loopFunc, this));
     Reactor::GetReactor()->getTimer()->addTimerEvent(event);
     m_async_logger = std::make_shared<AsyncLogger>(file_name, type);
+    signal(SIGSEGV, SignalHandler);
+    signal(SIGABRT, SignalHandler);
+    signal(SIGTERM, SignalHandler);
+    signal(SIGKILL, SignalHandler);
+    signal(SIGSTKFLT, SignalHandler);
     m_is_init = true;
   }
 }
@@ -317,5 +332,10 @@ void Exit(int code) {
   // call sys exit function
   exit(code);
 }
+
+
+
+
+
 
 }
