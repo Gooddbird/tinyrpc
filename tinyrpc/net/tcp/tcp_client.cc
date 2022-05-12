@@ -60,6 +60,14 @@ int TcpClient::sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct& res) {
         InfoLog << "connect timeout, break";
         goto timeout_deal;
       }
+      if (errno == ECONNREFUSED) {
+        std::stringstream ss;
+        ss << "connect error, peer[ " << m_peer_addr->toString() <<  " ] closed.";
+        m_err_info = ss.str();
+        close(m_fd);
+        m_fd = socket(AF_INET, SOCK_STREAM, 0);
+        return ERROR_PEER_CLOSED;
+      }
     } else {
       break;
     }
@@ -97,6 +105,9 @@ int TcpClient::sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct& res) {
   return 0;
 
 timeout_deal:
+  // connect error should close fd and reopen new one
+  close(m_fd);
+  m_fd = socket(AF_INET, SOCK_STREAM, 0);
   std::stringstream ss;
   ss << "call rpc falied, over " << m_max_timeout << " ms";
   m_err_info = ss.str();

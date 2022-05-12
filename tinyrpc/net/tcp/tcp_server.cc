@@ -159,4 +159,8 @@ void TcpServer::addCoroutine(Coroutine::ptr cor) {
 	m_main_reactor->addCoroutine(cor);
 }
 
+void TcpServer::registerService(google::protobuf::Service* service) {
+	m_dispatcher->registerService(service);
+}
+
 }

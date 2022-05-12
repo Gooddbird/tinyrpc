@@ -2,6 +2,7 @@
 #define TINYRPC_NET_TCP_TCP_SERVER_H
 
 #include <map>
+#include <google/protobuf/service.h>
 #include "io_thread.h"
 #include "../reactor.h"
 #include "../fd_event.h"
@@ -65,6 +66,8 @@ class TcpServer {
   TcpTimeWheel* getTimeWheel();
 
   NetAddress::ptr getPeerAddr();
+
+  void registerService(google::protobuf::Service* service);
 
  private:
   void MainAcceptCorFunc();

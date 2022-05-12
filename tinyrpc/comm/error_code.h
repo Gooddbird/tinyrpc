@@ -11,6 +11,7 @@ namespace tinyrpc {
 //
 // error
 // 
+const int ERROR_PEER_CLOSED = SYS_ERROR_PREFIX(0000);           // connect when peer close
 const int ERROR_FAILED_CONNECT = SYS_ERROR_PREFIX(0001);        // failed to connection peer host
 const int ERROR_FAILED_GET_REPLY = SYS_ERROR_PREFIX(0002);      // failed to get server reply
 const int ERROR_FAILED_DESERIALIZE = SYS_ERROR_PREFIX(0003);    // deserialize failed
