@@ -78,6 +78,7 @@ TinyRPC 的协程底层使用了腾讯的开源协程库 [libco](https://github.
 
 ### 5.5 TinyPb 协议
 --建设中，敬请期待--
+协议更多细节见 [TinyPb协议详解](./tinypb_protocal.md).
 
 ### 5.6 RPC 封装
 --建设中，敬请期待--
