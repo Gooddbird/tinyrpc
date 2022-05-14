@@ -26,9 +26,9 @@ namespace tinyrpc {
 
 void SignalHandler(int signal_no) {
   ErrorLog << "progress received invalid signal, will exit";
-  if (!gRpcLogger) {
-    gRpcLogger->flush();
-  }
+  gRpcLogger->flush();
+  pthread_join(gRpcLogger->getAsyncLogger()->m_thread, NULL);
+
   signal(signal_no, SIG_DFL);
   raise(signal_no);
 }
@@ -38,7 +38,7 @@ class Coroutine;
 static thread_local pid_t t_thread_id = 0;
 static pid_t g_pid = 0;
 
-LogLevel g_log_level = DEBUG;
+// LogLevel g_log_level = DEBUG;
 
 pid_t gettid() {
   if (t_thread_id == 0) {
@@ -48,7 +48,7 @@ pid_t gettid() {
 }
 
 void setLogLevel(LogLevel level) {
-  g_log_level = level;
+  // g_log_level = level;
 }
 
 
@@ -85,6 +85,24 @@ void levelToString(LogLevel level, std::string& re) {
       re = "";
       return;
   }
+}
+
+
+LogLevel stringToLevel(const std::string& str) {
+    if (str == "DEBUG")
+      return LogLevel::DEBUG;
+    
+    if (str == "INFO")
+      return LogLevel::INFO;
+
+    if (str == "WARN")
+      return LogLevel::WARN;
+
+    if (str == "ERROR")
+      return LogLevel::ERROR;
+
+
+    return LogLevel::DEBUG;
 }
 
 std::string LogTypeToString(LogType logtype) {
@@ -140,9 +158,8 @@ std::stringstream& LogEvent::getStringStream() {
 }
 
 void LogEvent::log() {
-	m_ss << "\n";
-  if (m_level >= g_log_level) {
-
+  if (m_level >= gRpcConfig->m_log_level) {
+    m_ss << "\n";
     printf("%s", m_ss.str().c_str());
     gRpcLogger->push(m_ss.str());
   }
@@ -180,6 +197,7 @@ void Logger::init(const char* file_name, LogType type /*= RPC_LOG*/) {
     signal(SIGABRT, SignalHandler);
     signal(SIGTERM, SignalHandler);
     signal(SIGKILL, SignalHandler);
+    signal(SIGINT, SignalHandler);
     signal(SIGSTKFLT, SignalHandler);
     m_is_init = true;
   }

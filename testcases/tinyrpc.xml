@@ -7,6 +7,9 @@
 
     <!--identify max size of single log file, MB-->>
     <log_max_file_size>5</log_max_file_size>
+
+    <!--log level: DEBUG < INFO < WARN < ERROR-->>
+    <log_level>DEBUG</log_level>
   </log>
 
   <coroutine>

@@ -8,6 +8,7 @@
 #include "tcp_client.h" 
 #include "../../comm/error_code.h"
 #include "../timer.h"
+#include "../fd_event.h"
 
 namespace tinyrpc {
 
@@ -34,6 +35,12 @@ TcpConnection* TcpClient::getConnection() {
   }
   return m_connection.get();
 }
+void TcpClient::resetFd() {
+  tinyrpc::FdEvent::ptr fd_event = tinyrpc::FdEventContainer::GetFdContainer()->getFdEvent(m_fd);
+  fd_event->unregisterFromReactor();
+  close(m_fd);
+  m_fd = socket(AF_INET, SOCK_STREAM, 0);
+}
 
 int TcpClient::sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct& res) {
   bool is_timeout = false;
@@ -56,6 +63,7 @@ int TcpClient::sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct& res) {
         m_connection->setUpClient();
         break;
       }
+      resetFd();
       if (is_timeout) {
         InfoLog << "connect timeout, break";
         goto timeout_deal;
@@ -64,8 +72,7 @@ int TcpClient::sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct& res) {
         std::stringstream ss;
         ss << "connect error, peer[ " << m_peer_addr->toString() <<  " ] closed.";
         m_err_info = ss.str();
-        close(m_fd);
-        m_fd = socket(AF_INET, SOCK_STREAM, 0);
+        m_reactor->getTimer()->delTimerEvent(event);
         return ERROR_PEER_CLOSED;
       }
     } else {
@@ -77,6 +84,7 @@ int TcpClient::sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct& res) {
     std::stringstream ss;
     ss << "connect peer addr[" << m_peer_addr->toString() << "] error. sys error=" << strerror(errno);
     m_err_info = ss.str();
+    m_reactor->getTimer()->delTimerEvent(event);
     return ERROR_FAILED_CONNECT;
   }
 

@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include "config.h"
+#include "log.h"
 
 
 namespace tinyrpc {
@@ -22,6 +23,7 @@ void Config::readConf() {
   m_log_path = std::string(root->FirstChildElement("log")->FirstChildElement("log_path")->GetText());
   int log_max_size = std::atoi(root->FirstChildElement("log")->FirstChildElement("log_max_file_size")->GetText());
   m_log_max_size = log_max_size * 1024 * 1024;
+  m_log_level = stringToLevel(std::string(root->FirstChildElement("log")->FirstChildElement("log_level")->GetText()));
 
   int cor_stack_size = std::atoi(root->FirstChildElement("coroutine")->FirstChildElement("coroutine_stack_size")->GetText());
   m_cor_stack_size = 1024 * cor_stack_size;

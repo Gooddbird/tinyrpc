@@ -5,8 +5,14 @@
 #include <string>
 #include <memory>
 
-
 namespace tinyrpc {
+
+enum LogLevel {
+	DEBUG = 1,
+	INFO = 2,
+	WARN = 3,
+	ERROR = 4
+};
 
 class Config {
 
@@ -23,6 +29,7 @@ class Config {
   // log params
   std::string m_log_path;
   int m_log_max_size {0};
+  LogLevel m_log_level {LogLevel::DEBUG};
 
   // coroutine params
   int m_cor_stack_size {0};

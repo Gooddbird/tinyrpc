@@ -13,44 +13,38 @@
 #include <vector>
 #include <queue>
 #include "../net/mutex.h"
+#include "config.h"
 
+
+extern tinyrpc::Config::ptr gRpcConfig;
 
 namespace tinyrpc {
-
-enum LogLevel {
-	DEBUG = 1,
-	INFO = 2,
-	WARN = 3,
-	ERROR = 4
-};
 
 enum LogType {
 	RPC_LOG = 1,
 	APP_LOG = 2,
 };
 
-extern LogLevel g_log_level;
-
 #define DebugLog \
-	if (tinyrpc::LogLevel::DEBUG >= tinyrpc::g_log_level) \
+	if (tinyrpc::LogLevel::DEBUG >= gRpcConfig->m_log_level) \
 		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::DEBUG, __FILE__, __LINE__, __func__))).getStringStream()
 
 #define InfoLog \
-	if (tinyrpc::LogLevel::INFO >= tinyrpc::g_log_level) \
+	if (tinyrpc::LogLevel::INFO >= gRpcConfig->m_log_level) \
 		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::INFO, __FILE__, __LINE__, __func__))).getStringStream()
 
 #define WarnLog \
-	if (tinyrpc::LogLevel::WARN >= tinyrpc::g_log_level) \
+	if (tinyrpc::LogLevel::WARN >= gRpcConfig->m_log_level) \
 		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::WARN, __FILE__, __LINE__, __func__))).getStringStream()
 
 #define ErrorLog \
-	if (tinyrpc::LogLevel::ERROR >= tinyrpc::g_log_level) \
+	if (tinyrpc::LogLevel::ERROR >= gRpcConfig->m_log_level) \
 		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::ERROR, __FILE__, __LINE__, __func__))).getStringStream()
 
 
-void setLogLevel(LogLevel level);
-
 pid_t gettid();
+
+LogLevel stringToLevel(const std::string& str);
 
 class LogEvent {
 

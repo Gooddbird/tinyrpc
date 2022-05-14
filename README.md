@@ -5,7 +5,7 @@
 
 麻雀虽小五脏俱全，从命名上就能看出来，TinyRPC 框架主要用义是为了让读者能**快速地**、**轻量化**地搭建出具有一定性能的 RPC 服务。我不敢说有多高的性能，但至少能应付目前大多数场景了。
 
-**TinyRPC** 没有实现跨平台，只支持 LINUX 系统，并且必须是 64 位的系统，因为协程切换只实现了 **64** 位系统的，而没有兼容 **32** 位系统。
+**TinyRPC** 没有实现跨平台，只支持 Linux 系统，并且必须是 64 位的系统，因为协程切换只实现了 **64** 位系统的，而没有兼容 **32** 位系统。
 
 **TinyRPC** 的自定义的 RPC 协议报文暂时只支持基于 **Protobuf** 的序列化。
 
@@ -43,14 +43,15 @@ make 完成后，会在 lib 目录下生成静态库文件 **libtinyrpc.a**。�
 testcase 提供了两个简单的 RPC 测试服务, **test_rpc_server1** 和 **test_rpc_server2**. 读者可自行运行测试。更多详细信息参考: [quick_stark](./quick_rpc_test.md).
 
 ## 4. RPC 服务搭建实例
+有一说一，使用 TinyRPC 框架搭建一个 RPC 服务还是比较简单地，核心代码几十行就能搞定。在这提供了几个 TinyRPC 搭建 RPC 服务的简单工程实例，这个工程的架构还是相对比较规范的。
 
-请移步项目：[TinyRPCExamples](https://github.com/Gooddbird/TinyRPCExamples)
+更多内容请移步项目：[TinyRPCExamples](https://github.com/Gooddbird/TinyRPCExamples)
 
 ## 5. 模块说明
 TinyRPC 框架的主要模块包括：异步日志、协程封装、Reactor封装、Tcp 封装、TinyPb、以及RPC封装模块等。
 
 ### 5.1 异步日志模块
-设计初期，TinyRPC 的日志主要参考了 (sylar)[https://github.com/protocolbuffers/protobuf]，并精简后实现了最基础的打印日志。
+设计初期，**TinyRPC** 的日志主要参考了 (**sylar**),并精简后实现了最基础的打印日志。
 
 在开发到一定程度后，发现同步日志或多或少有些影响性能，遂改为异步日志。TinyRPC 的异步日志实现非常简单，只是额外建立了一个线程来负责打印日志罢了。
 
@@ -59,13 +60,16 @@ TinyRPC 框架的主要模块包括：异步日志、协程封装、Reactor封�
 - **日志级别**：日志分级别打印，当设定级别高于待打印日志的级别时，日志打印是个空操作，无性能消耗。
 - **文件输出**：日志支持可以输出到文件中，特别是在生存环境上，把日志打印到控制台可不是一个好方法。
 - **滚动日志**：日志文件会自行滚动，当**跨天**或者**单个文件超过一定大小**后，会建立新的文件写入日志信息。
+- **崩溃处理**：TinyRPC 的日志库处理了程序突然崩溃的情况，简单来说就是当程序崩溃退出前先将日志信息同步到磁盘文件上。这是非常重要的，如果缺失了崩溃那一瞬间的日志内容，那就很难排查具体原因。
 
 ### 5.2 协程模块
 TinyRPC 的协程底层使用了腾讯的开源协程库 [libco](https://github.com/Tencent/libco)，即协程上下文切换那一块。而协程切换的原理不过是寄存器切换罢了。
 除了协程切换之外，TinyRPC 提供了一些基本函数的 hook，如 read、write、connect 等函数。
 
 更多协程的介绍请移步我的知乎文章：
+
 [C++实现的协程网络库tinyrpc（一）-- 协程封装](https://zhuanlan.zhihu.com/p/466349082)
+
 [协程篇（一）-- 函数调用栈](https://zhuanlan.zhihu.com/p/462968883)
 
 ### 5.3 Reactor 模块
@@ -99,9 +103,13 @@ TinyRPC 的协程底层使用了腾讯的开源协程库 [libco](https://github.
 
 ## 参考资料
 libco: https://github.com/Tencent/libco
+
 sylar: https://github.com/sylar-yin/sylar
+
 muduo: https://github.com/chenshuo/muduo
+
 tinyxml: https://github.com/leethomason/tinyxml2
+
 protobuf: https://github.com/protocolbuffers/protobuf
 
 

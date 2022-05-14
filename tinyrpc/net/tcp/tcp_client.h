@@ -25,6 +25,8 @@ class TcpClient {
 
   void init();
 
+  void resetFd();
+
   int sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct& res);
 
   void stop();
