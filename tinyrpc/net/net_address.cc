@@ -46,7 +46,7 @@ sockaddr* IPAddress::getSockAddr() {
   return reinterpret_cast<sockaddr*>(&m_addr);
 }
 
-std::string IPAddress::toString() {
+std::string IPAddress::toString() const {
   std::stringstream ss;
   ss << m_ip << ":" << m_port;
   return ss.str();
@@ -81,7 +81,7 @@ socklen_t UnixDomainAddress::getSockLen() const {
   return sizeof(m_addr);
 }
 
-std::string UnixDomainAddress::toString() {
+std::string UnixDomainAddress::toString() const {
   return m_path;
 }
 

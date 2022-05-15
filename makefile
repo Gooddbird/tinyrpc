@@ -24,7 +24,7 @@ CXX := g++
 
 CXXFLAGS += -g -O3 -std=c++11 -Wall -Wno-deprecated -Wno-unused-but-set-variable
 
-CXXFLAGS += -I$(PATH_TINYRPC)	-I$(PATH_COMM) -I$(PATH_COROUTINE) -I$(PATH_NET) -I$(PATH_HTTP) -I$(PATH_TCP) -I$(PATH_TINYPB)
+CXXFLAGS += -I./ -I$(PATH_TINYRPC)	-I$(PATH_COMM) -I$(PATH_COROUTINE) -I$(PATH_NET) -I$(PATH_HTTP) -I$(PATH_TCP) -I$(PATH_TINYPB)
 
 LIBS += /usr/lib/libprotobuf.a	/usr/lib/libtinyxml.a
 
@@ -72,7 +72,7 @@ $(PATH_BIN)/test_thread_pool: $(LIB_OUT)
 	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_thread_pool.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread
 
 $(PATH_BIN)/test_rpc_server1: $(LIB_OUT)
-	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_rpc_server1.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread
+	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_rpc_server1.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread -lmysqlclient
 
 $(PATH_BIN)/test_rpc_server2: $(LIB_OUT)
 	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_rpc_server2.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread
