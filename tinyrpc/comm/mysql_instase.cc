@@ -1,7 +1,9 @@
 #include <mysql/mysql.h>
+#include <mysql/errmsg.h>
 #include "tinyrpc/comm/mysql_instase.h"
 #include "tinyrpc/comm/config.h"
 #include "tinyrpc/comm/log.h"
+#include "tinyrpc/coroutine/coroutine_hook.h"
 
 extern tinyrpc::Config::ptr gRpcConfig;
 
@@ -36,31 +38,42 @@ MySQLInstase* MySQLInstaseFactroy::GetMySQLInstase(const std::string& key) {
 }
 
 
-MySQLInstase::MySQLInstase(const MySQLOption& option) {
-  Mutex::Lock lock(m_mutex);
-  MYSQL* re =  mysql_init(&m_sql_handler);
-  lock.unlock();
-  if (!re) {
-    ErrorLog << "faild to call mysql_init allocate MYSQL instase";
-    return;
-  }
+MySQLInstase::MySQLInstase(const MySQLOption& option) : m_option(option) {
 
-  int value = 1;
-  mysql_options(&m_sql_handler, MYSQL_OPT_RECONNECT, &value);
-  if (!option.m_char_set.empty()) {
-    mysql_options(&m_sql_handler, MYSQL_SET_CHARSET_NAME, option.m_char_set.c_str());
-  }
-  DebugLog << "begin to connect mysql{ip:" << option.m_addr.getIP() << ", port:" << option.m_addr.getPort() 
-    << ", user:" << option.m_user << ", passwd:" << option.m_passwd << ", select_db: "<< option.m_select_db << "charset:" << option.m_char_set << "}";
-  if (!mysql_real_connect(&m_sql_handler, option.m_addr.getIP().c_str(), option.m_user.c_str(), 
-      option.m_passwd.c_str(), option.m_select_db.c_str(), option.m_addr.getPort(), NULL, 0)) {
-    ErrorLog << "faild to call mysql_real_connect, peer addr[ " << option.m_addr.toString() << "], mysql sys errinfo[" << mysql_error(&m_sql_handler) << "]";
+  int ret = reconnect();
+  if (ret != 0) {
     return;
   }
-  DebugLog << "mysql_handler connect succ";
 
   m_init_succ = true;
 
+}
+
+int MySQLInstase::reconnect() {
+  mysql_close(&m_sql_handler);
+
+  Mutex::Lock lock(m_mutex);
+  MYSQL* re =  mysql_init(&m_sql_handler);
+  DebugLog << "mysql fd is " << m_sql_handler.net.fd;
+  lock.unlock();
+  if (!re) {
+    ErrorLog << "faild to call mysql_init allocate MYSQL instase";
+    return -1;
+  }
+  int value = 1;
+  mysql_options(&m_sql_handler, MYSQL_OPT_RECONNECT, &value);
+  if (!m_option.m_char_set.empty()) {
+    mysql_options(&m_sql_handler, MYSQL_SET_CHARSET_NAME, m_option.m_char_set.c_str());
+  }
+  DebugLog << "begin to connect mysql{ip:" << m_option.m_addr.getIP() << ", port:" << m_option.m_addr.getPort() 
+    << ", user:" << m_option.m_user << ", passwd:" << m_option.m_passwd << ", select_db: "<< m_option.m_select_db << "charset:" << m_option.m_char_set << "}";
+  if (!mysql_real_connect(&m_sql_handler, m_option.m_addr.getIP().c_str(), m_option.m_user.c_str(), 
+      m_option.m_passwd.c_str(), m_option.m_select_db.c_str(), m_option.m_addr.getPort(), NULL, 0)) {
+    ErrorLog << "faild to call mysql_real_connect, peer addr[ " << m_option.m_addr.toString() << "], mysql sys errinfo[" << mysql_error(&m_sql_handler) << "]";
+    return -1;
+  }
+  DebugLog << "mysql_handler connect succ";
+  return 0;
 }
 
 bool MySQLInstase::isInitSuccess() {
@@ -71,21 +84,31 @@ MySQLInstase::~MySQLInstase() {
   mysql_close(&m_sql_handler);
 }
 
-int MySQLInstase::Commit() {
-  if (!m_init_succ) {
-    ErrorLog << "query error, mysql_handler init faild";
-    return -1;
-  }
-  int rt = mysql_commit(&m_sql_handler);
-  if (rt != 0) {
-    ErrorLog << "excute mysql_commit error, mysql sys errinfo[" << mysql_error(&m_sql_handler) << "]"; 
-  } else {
-    InfoLog << "commit success";
+int MySQLInstase::commit() {
+  int rt = query("COMMIT;");
+  if (rt == 0) {
+    m_in_trans = false;
   }
   return rt;
 }
 
-int MySQLInstase::Query(const std::string& sql) {
+int MySQLInstase::begin() {
+  int rt = query("BEGIN;");
+  if (rt == 0) {
+    m_in_trans = true;
+  }
+  return rt;
+}
+
+int MySQLInstase::rollBack() {
+  int rt = query("ROLLBACK;");
+  if (rt == 0) {
+    m_in_trans = false;
+  }
+  return rt;
+}
+
+int MySQLInstase::query(const std::string& sql) {
   if (!m_init_succ) {
     ErrorLog << "query error, mysql_handler init faild";
     return -1;
@@ -94,13 +117,23 @@ int MySQLInstase::Query(const std::string& sql) {
   int rt = mysql_real_query(&m_sql_handler, sql.c_str(), sql.length());
   if (rt != 0) {
     ErrorLog << "excute mysql_real_query error, sql[" << sql << "], mysql sys errinfo[" << mysql_error(&m_sql_handler) << "]"; 
+    // if connect error, begin to reconnect
+    if (mysql_errno(&m_sql_handler) == CR_SERVER_GONE_ERROR || mysql_errno(&m_sql_handler) == CR_SERVER_LOST) {
+      
+      rt = reconnect();
+      if (rt != 0 && !m_in_trans) {
+        // if reconnect succ, and current is not a trans, can do query sql again 
+        rt = mysql_real_query(&m_sql_handler, sql.c_str(), sql.length());
+        return rt;
+      }
+    }
   } else {
     InfoLog << "excute mysql_real_query success, sql[" << sql << "]";
   }
   return rt;
 }
 
-MYSQL_RES* MySQLInstase::StoreResult() {
+MYSQL_RES* MySQLInstase::storeResult() {
   if (!m_init_succ) {
     ErrorLog << "query error, mysql_handler init faild";
     return NULL;
@@ -121,7 +154,7 @@ MYSQL_RES* MySQLInstase::StoreResult() {
 
 }
 
-MYSQL_ROW MySQLInstase::FetchRow(MYSQL_RES* res) {
+MYSQL_ROW MySQLInstase::fetchRow(MYSQL_RES* res) {
   if (!m_init_succ) {
     ErrorLog << "query error, mysql_handler init faild";
     return NULL;
@@ -129,7 +162,7 @@ MYSQL_ROW MySQLInstase::FetchRow(MYSQL_RES* res) {
   return mysql_fetch_row(res);
 }
 
-long long MySQLInstase::NumFields(MYSQL_RES* res) {
+long long MySQLInstase::numFields(MYSQL_RES* res) {
   if (!m_init_succ) {
     ErrorLog << "query error, mysql_handler init faild";
     return -1;
@@ -137,7 +170,7 @@ long long MySQLInstase::NumFields(MYSQL_RES* res) {
   return mysql_num_fields(res);
 }
 
-void MySQLInstase::FreeResult(MYSQL_RES* res) {
+void MySQLInstase::freeResult(MYSQL_RES* res) {
   if (!m_init_succ) {
     ErrorLog << "query error, mysql_handler init faild";
     return;
@@ -151,7 +184,7 @@ void MySQLInstase::FreeResult(MYSQL_RES* res) {
 }
 
 
-long long MySQLInstase::AffectedRows() {
+long long MySQLInstase::affectedRows() {
   if (!m_init_succ) {
     ErrorLog << "query error, mysql_handler init faild";
     return -1;

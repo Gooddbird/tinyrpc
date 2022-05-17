@@ -48,34 +48,34 @@ TEST_CASE_OUT := $(PATH_BIN)/test_connect $(PATH_BIN)/test_coroutine_hook $(PATH
 LIB_OUT := $(PATH_LIB)/libtinyrpc.a
 
 $(PATH_BIN)/test_log : $(LIB_OUT)
-	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_log.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread
+	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_log.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread -lmysqlclient
 
 $(PATH_BIN)/test_connect : $(LIB_OUT)
-	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_connect.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread
+	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_connect.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread -lmysqlclient
 
 $(PATH_BIN)/test_coroutine_hook: $(LIB_OUT)
-	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_coroutine_hook.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread
+	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_coroutine_hook.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread -lmysqlclient
 
 $(PATH_BIN)/test_coroutine: $(LIB_OUT)
-	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_coroutine.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread
+	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_coroutine.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread -lmysqlclient
 
 $(PATH_BIN)/test_iothread: $(LIB_OUT)
-	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_iothread.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread
+	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_iothread.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread -lmysqlclient
 
 $(PATH_BIN)/test_reactor: $(LIB_OUT)
-	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_reactor.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread
+	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_reactor.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread -lmysqlclient
 
 $(PATH_BIN)/test_tcpserver: $(LIB_OUT)
-	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_tcpserver.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread
+	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_tcpserver.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread -lmysqlclient
 
 $(PATH_BIN)/test_thread_pool: $(LIB_OUT)
-	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_thread_pool.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread
+	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_thread_pool.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread -lmysqlclient
 
 $(PATH_BIN)/test_rpc_server1: $(LIB_OUT)
 	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_rpc_server1.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread -lmysqlclient
 
 $(PATH_BIN)/test_rpc_server2: $(LIB_OUT)
-	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_rpc_server2.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread
+	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_rpc_server2.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread -lmysqlclient
 
 $(PATH_LIB)/libtinyrpc.a : $(COMM_OBJ) $(COROUTINE_OBJ) $(PATH_COROUTINE)/coctx_swap.o $(NET_OBJ) $(HTTP_OBJ) $(TCP_OBJ) $(TINYPB_OBJ)
 	@ar crsvT $@ $^

@@ -37,7 +37,7 @@ void connect_co() {
   ser_addr.sin_port = htons(39999); 
   ser_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-  int rt = connect_hook(connfd, reinterpret_cast<sockaddr*>(&ser_addr), sizeof(ser_addr));
+  int rt = connect(connfd, reinterpret_cast<sockaddr*>(&ser_addr), sizeof(ser_addr));
   DebugLog << "rt " << rt;
   if (rt == -1) {
     sleep(1);

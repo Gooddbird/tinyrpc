@@ -17,7 +17,7 @@ typedef int (*accept_fun_ptr_t)(int sockfd, struct sockaddr *addr, socklen_t *ad
 typedef int (*socket_fun_ptr_t)(int domain, int type, int protocol);
 
 
-extern "C" {
+namespace tinyrpc {
 
 int accept_hook(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 
@@ -29,13 +29,20 @@ int connect_hook(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 
 unsigned int sleep_hook(unsigned int seconds);
 
-MYSQL*  mysql_real_connect_hook(MYSQL *mysql, const char *host,
-                                  const char *user,
-                                  const char *passwd,
-                                  const char *db,
-                                  unsigned int port,
-                                  const char *unix_socket,
-                                  unsigned long clientflag);
+}
+
+extern "C" {
+
+int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+
+ssize_t read(int fd, void *buf, size_t count);
+
+ssize_t write(int fd, const void *buf, size_t count);
+
+int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+
+unsigned int sleep(unsigned int seconds);
+
 }
 
 #endif

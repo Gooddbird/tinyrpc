@@ -43,7 +43,8 @@
 
   <database>
     <db_key name="test_db_key1">
-      <ip>127.0.0.1</ip>
+      <!-- <ip>127.0.0.1</ip> -->
+      <ip>192.168.245.1</ip>
       <port>3306</port>
       <user>root</user>
       <passwd>Ikerli20220517!!</passwd>

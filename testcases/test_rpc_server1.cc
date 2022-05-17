@@ -37,15 +37,15 @@ class QueryServiceImpl : public QueryService {
     char query_sql[512];
     sprintf(query_sql, "select user_id, user_name, user_gender from user_db.t_user_information where user_id = '%s';", std::to_string(request->id()).c_str());
 
-    int rt = instase->Query(std::string(query_sql));
+    int rt = instase->query(std::string(query_sql));
     if (rt != 0) {
       ErrorLog << "query return not 0";
       return;
     }
-    MYSQL_RES* res = instase->StoreResult();
+    MYSQL_RES* res = instase->storeResult();
 
-    MYSQL_ROW row = instase->FetchRow(res);
-    if (!row) {
+    MYSQL_ROW row = instase->fetchRow(res);
+    if (row) {
       int i = 0;
       response->set_id(std::atoi(row[i++]));
       response->set_name(std::string(row[i++]));

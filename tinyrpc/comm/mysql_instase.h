@@ -32,23 +32,31 @@ class MySQLInstase {
 
   bool isInitSuccess();
 
-  int Query(const std::string& sql);
+  int query(const std::string& sql);
 
-  int Commit();
+  int commit();
 
-  MYSQL_RES* StoreResult();
+  int begin();
 
-  MYSQL_ROW FetchRow(MYSQL_RES* res);
+  int rollBack();
 
-  void FreeResult(MYSQL_RES* res);
+  MYSQL_RES* storeResult();
 
-  long long NumFields(MYSQL_RES* res);
+  MYSQL_ROW fetchRow(MYSQL_RES* res);
 
-  long long AffectedRows();
+  void freeResult(MYSQL_RES* res);
 
+  long long numFields(MYSQL_RES* res);
+
+  long long affectedRows();
+
+private:
+  int reconnect();
 
  private:
+  MySQLOption m_option;
   bool m_init_succ {false};
+  bool m_in_trans {false};
   Mutex m_mutex;
   MYSQL m_sql_handler;
 
