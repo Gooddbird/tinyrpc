@@ -19,10 +19,12 @@
 #include "../net/timer.h"
 
 
-extern tinyrpc::Logger::ptr gRpcLogger;
 extern tinyrpc::Config::ptr gRpcConfig;
 
+
 namespace tinyrpc {
+
+extern tinyrpc::Logger::ptr gRpcLogger;
 
 void SignalHandler(int signal_no) {
   ErrorLog << "progress received invalid signal, will exit";

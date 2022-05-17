@@ -97,9 +97,6 @@ int main(int argc, char* argv[]) {
   gRpcConfig = std::make_shared<tinyrpc::Config>("../testcases/tinyrpc.xml");
   gRpcConfig->readConf();
 
-  gRpcLogger = std::make_shared<tinyrpc::Logger>();
-  gRpcLogger->init("test_reactor");
-
 	listenfd = -1;	
 	if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) <= 0) {
 		ErrorLog << "socket error, exit!, errno=" << errno << ", err=" << strerror(errno);

@@ -51,8 +51,8 @@ void TinyPbCodeC::encode(TcpBuffer* buf, AbstractData* data) {
 }
 
 const char* TinyPbCodeC::encodePbData(TinyPbStruct* data, int& len) {
-  if (data->service_full_name.empty() || data->pb_data.length() == 0) {
-    ErrorLog << "parse error, service_full_name is empty or pb_data is empty";
+  if (data->service_full_name.empty()) {
+    ErrorLog << "parse error, service_full_name is empty";
     data->encode_succ = false;
     return nullptr;
   }

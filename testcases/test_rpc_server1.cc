@@ -11,7 +11,6 @@
 #include <mysql/mysql.h>
 #include <sstream>
 
-tinyrpc::Logger::ptr gRpcLogger; 
 tinyrpc::Config::ptr gRpcConfig;
 
 class QueryServiceImpl : public QueryService {
@@ -83,11 +82,8 @@ class QueryServiceImpl : public QueryService {
 
 int main(int argc, char* argv[]) {
 
-  gRpcConfig = std::make_shared<tinyrpc::Config>("../testcases/tinyrpc.xml");
+  gRpcConfig = std::make_shared<tinyrpc::Config>("../testcases/test_rpc_server1.xml");
   gRpcConfig->readConf();
-
-  gRpcLogger = std::make_shared<tinyrpc::Logger>();
-  gRpcLogger->init("test_rpc_server1");
 
   tinyrpc::IPAddress::ptr addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
   

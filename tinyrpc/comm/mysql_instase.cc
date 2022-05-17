@@ -10,7 +10,7 @@ namespace tinyrpc {
 static thread_local MySQLInstaseFactroy* t_mysql_factory = NULL;
 
 MySQLInstaseFactroy* MySQLInstaseFactroy::GetThreadMySQLFactory() {
-  if (!t_mysql_factory) {
+  if (t_mysql_factory) {
     return t_mysql_factory;
   }
   t_mysql_factory = new MySQLInstaseFactroy();
@@ -44,16 +44,20 @@ MySQLInstase::MySQLInstase(const MySQLOption& option) {
     ErrorLog << "faild to call mysql_init allocate MYSQL instase";
     return;
   }
+
   int value = 1;
   mysql_options(&m_sql_handler, MYSQL_OPT_RECONNECT, &value);
   if (!option.m_char_set.empty()) {
-    mysql_options(&m_sql_handler, MYSQL_SET_CHARSET_NAME, &(option.m_char_set));
+    mysql_options(&m_sql_handler, MYSQL_SET_CHARSET_NAME, option.m_char_set.c_str());
   }
+  DebugLog << "begin to connect mysql{ip:" << option.m_addr.getIP() << ", port:" << option.m_addr.getPort() 
+    << ", user:" << option.m_user << ", passwd:" << option.m_passwd << ", select_db: "<< option.m_select_db << "charset:" << option.m_char_set << "}";
   if (!mysql_real_connect(&m_sql_handler, option.m_addr.getIP().c_str(), option.m_user.c_str(), 
       option.m_passwd.c_str(), option.m_select_db.c_str(), option.m_addr.getPort(), NULL, 0)) {
     ErrorLog << "faild to call mysql_real_connect, peer addr[ " << option.m_addr.toString() << "], mysql sys errinfo[" << mysql_error(&m_sql_handler) << "]";
     return;
   }
+  DebugLog << "mysql_handler connect succ";
 
   m_init_succ = true;
 
@@ -86,6 +90,7 @@ int MySQLInstase::Query(const std::string& sql) {
     ErrorLog << "query error, mysql_handler init faild";
     return -1;
   }
+  DebugLog << "begin to excute sql[" << sql << "]";
   int rt = mysql_real_query(&m_sql_handler, sql.c_str(), sql.length());
   if (rt != 0) {
     ErrorLog << "excute mysql_real_query error, sql[" << sql << "], mysql sys errinfo[" << mysql_error(&m_sql_handler) << "]"; 

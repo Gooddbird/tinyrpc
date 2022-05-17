@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <mysql/mysql.h>
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -243,6 +244,18 @@ int connect_hook(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 
 	DebugLog << "connect error and errno=" << errno <<  ", error=" << strerror(errno);
 	return -1;
+
+}
+
+MYSQL*  mysql_real_connect_hook(MYSQL *mysql, const char *host,
+                                  const char *user,
+                                  const char *passwd,
+                                  const char *db,
+                                  unsigned int port,
+                                  const char *unix_socket,
+                                  unsigned long clientflag) {
+
+
 
 }
 

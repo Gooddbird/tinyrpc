@@ -28,10 +28,13 @@ class Config {
 
   void readDBConfig(TiXmlElement* node);
 
+  void readLogConfig(TiXmlElement* node);
+
  public:
 
   // log params
   std::string m_log_path;
+  std::string m_log_prefix;
   int m_log_max_size {0};
   LogLevel m_log_level {LogLevel::DEBUG};
   int m_log_sync_inteval {1000};

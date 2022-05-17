@@ -7,6 +7,8 @@
 
 namespace tinyrpc {
 
+tinyrpc::Logger::ptr gRpcLogger;
+
 Config::Config(const char* file_path) : m_file_path(std::string(file_path)) {
   m_xml_file = new TiXmlDocument();
   bool rt = m_xml_file->LoadFile(file_path);
@@ -15,6 +17,55 @@ Config::Config(const char* file_path) : m_file_path(std::string(file_path)) {
       file_path, m_xml_file->ErrorDesc(), m_xml_file->ErrorId(), m_xml_file->ErrorRow(), m_xml_file->ErrorCol());
     exit(0);
   }
+}
+
+
+void Config::readLogConfig(TiXmlElement* log_node) {
+  TiXmlElement* node = log_node->FirstChildElement("log_path");
+  if(!node || !node->GetText()) {
+    printf("start tinyrpc server error! read config file [%s] error, cannot read [log_path] xml node\n", m_file_path.c_str());
+    exit(0);
+  }
+  m_log_path = std::string(node->GetText());
+
+  node = log_node->FirstChildElement("log_prefix");
+  if(!node || !node->GetText()) {
+    printf("start tinyrpc server error! read config file [%s] error, cannot read [log_prefix] xml node\n", m_file_path.c_str());
+    exit(0);
+  }
+  m_log_prefix = std::string(node->GetText());
+
+  node = log_node->FirstChildElement("log_max_file_size");
+  if(!node || !node->GetText()) {
+    printf("start tinyrpc server error! read config file [%s] error, cannot read [log_max_file_size] xml node\n", m_file_path.c_str());
+    exit(0);
+  }
+
+  int log_max_size = std::atoi(node->GetText());
+  m_log_max_size = log_max_size * 1024 * 1024;
+
+
+  node = log_node->FirstChildElement("log_level");
+  if(!node || !node->GetText()) {
+    printf("start tinyrpc server error! read config file [%s] error, cannot read [log_level] xml node\n", m_file_path.c_str());
+    exit(0);
+  }
+
+  std::string log_level = std::string(node->GetText());
+  m_log_level = stringToLevel(log_level);
+
+  node = log_node->FirstChildElement("log_sync_inteval");
+  if(!node || !node->GetText()) {
+    printf("start tinyrpc server error! read config file [%s] error, cannot read [log_sync_inteval] xml node\n", m_file_path.c_str());
+    exit(0);
+  }
+
+  int log_sync_inteval = std::atoi(node->GetText());
+  m_log_sync_inteval = log_sync_inteval * 1000;
+
+  gRpcLogger = std::make_shared<Logger>();
+  gRpcLogger->init(m_log_prefix.c_str());
+
 }
 
 void Config::readDBConfig(TiXmlElement* node) {
@@ -37,28 +88,28 @@ void Config::readDBConfig(TiXmlElement* node) {
     }
 
     TiXmlElement* port_e = element->FirstChildElement("port");
-    if (port_e) {
+    if (port_e && port_e->GetText()) {
       port = std::atoi(port_e->GetText());
     }
     MySQLOption option(IPAddress(ip, port));
 
     TiXmlElement *user_e = element->FirstChildElement("user");
-    if (user_e) {
+    if (user_e && user_e->GetText()) {
       option.m_user = std::string(user_e->GetText());
     }
 
     TiXmlElement *passwd_e = element->FirstChildElement("passwd");
-    if (passwd_e) {
+    if (passwd_e && passwd_e->GetText()) {
       option.m_passwd = std::string(passwd_e->GetText());
     }
 
     TiXmlElement *select_db_e = element->FirstChildElement("select_db");
-    if (select_db_e) {
+    if (select_db_e && select_db_e->GetText()) {
       option.m_select_db = std::string(select_db_e->GetText());
     }
 
     TiXmlElement *char_set_e = element->FirstChildElement("char_set");
-    if (char_set_e) {
+    if (char_set_e && char_set_e->GetText()) {
       option.m_char_set = std::string(char_set_e->GetText());
     }
     m_mysql_options.insert(std::make_pair(key, option));
@@ -79,11 +130,7 @@ void Config::readConf() {
     exit(0);
   }
 
-  TiXmlElement* coroutine_node = root->FirstChildElement("coroutine");
-  if (!coroutine_node) {
-    printf("start tinyrpc server error! read config file [%s] error, cannot read [coroutine] xml node", m_file_path.c_str());
-    exit(0);
-  }
+  readLogConfig(log_node);
 
   TiXmlElement* time_wheel_node = root->FirstChildElement("time_wheel");
   if (!time_wheel_node) {
@@ -91,37 +138,71 @@ void Config::readConf() {
     exit(0);
   }
 
-  m_log_path = std::string(log_node->FirstChildElement("log_path")->GetText());
-  int log_max_size = std::atoi(log_node->FirstChildElement("log_max_file_size")->GetText());
-  m_log_max_size = log_max_size * 1024 * 1024;
-  std::string log_level = std::string(log_node->FirstChildElement("log_level")->GetText());
-  m_log_level = stringToLevel(log_level);
+  TiXmlElement* coroutine_node = root->FirstChildElement("coroutine");
+  if (!coroutine_node) {
+    printf("start tinyrpc server error! read config file [%s] error, cannot read [coroutine] xml node", m_file_path.c_str());
+    exit(0);
+  }
 
-  int log_sync_inteval = std::atoi(log_node->FirstChildElement("log_sync_inteval")->GetText());
-  m_log_sync_inteval = log_sync_inteval * 1000;
+  if (!coroutine_node->FirstChildElement("coroutine_stack_size") || !coroutine_node->FirstChildElement("coroutine_stack_size")->GetText()) {
+    printf("start tinyrpc server error! read config file [%s] error, cannot read [coroutine.coroutine_stack_size] xml node", m_file_path.c_str());
+    exit(0);
+  }
 
-  int cor_stack_size = std::atoi(root->FirstChildElement("coroutine")->FirstChildElement("coroutine_stack_size")->GetText());
+  if (!coroutine_node->FirstChildElement("coroutine_pool_size") || !coroutine_node->FirstChildElement("coroutine_pool_size")->GetText()) {
+    printf("start tinyrpc server error! read config file [%s] error, cannot read [coroutine.coroutine_pool_size] xml node", m_file_path.c_str());
+    exit(0);
+  }
+
+  int cor_stack_size = std::atoi(coroutine_node->FirstChildElement("coroutine_stack_size")->GetText());
   m_cor_stack_size = 1024 * cor_stack_size;
+  m_cor_pool_size = std::atoi(coroutine_node->FirstChildElement("coroutine_pool_size")->GetText());
 
-  m_cor_pool_size = std::atoi(root->FirstChildElement("coroutine")->FirstChildElement("coroutine_pool_size")->GetText());
+  if (!root->FirstChildElement("msg_req_len") || !root->FirstChildElement("msg_req_len")->GetText()) {
+    printf("start tinyrpc server error! read config file [%s] error, cannot read [msg_req_len] xml node", m_file_path.c_str());
+    exit(0);
+  }
 
   m_msg_req_len = std::atoi(root->FirstChildElement("msg_req_len")->GetText());
+
+  if (!root->FirstChildElement("max_connect_timeout") || !root->FirstChildElement("max_connect_timeout")->GetText()) {
+    printf("start tinyrpc server error! read config file [%s] error, cannot read [max_connect_timeout] xml node", m_file_path.c_str());
+    exit(0);
+  }
   int max_connect_timeout = std::atoi(root->FirstChildElement("max_connect_timeout")->GetText());
   m_max_connect_timeout = max_connect_timeout * 1000;
 
+
+  if (!root->FirstChildElement("iothread_num") || !root->FirstChildElement("iothread_num")->GetText()) {
+    printf("start tinyrpc server error! read config file [%s] error, cannot read [iothread_num] xml node", m_file_path.c_str());
+    exit(0);
+  }
+
   m_iothread_num = std::atoi(root->FirstChildElement("iothread_num")->GetText());
-  m_timewheel_bucket_num = std::atoi(root->FirstChildElement("time_wheel")->FirstChildElement("bucket_num")->GetText());
-  m_timewheel_inteval = std::atoi(root->FirstChildElement("time_wheel")->FirstChildElement("inteval")->GetText());
 
 
-  printf("read config from file [%s]: [log_path: %s], [log_max_size: %d MB], [log_level: %s], " 
+  if (!time_wheel_node->FirstChildElement("bucket_num") || !time_wheel_node->FirstChildElement("bucket_num")->GetText()) {
+    printf("start tinyrpc server error! read config file [%s] error, cannot read [time_wheel.bucket_num] xml node", m_file_path.c_str());
+    exit(0);
+  }
+  if (!time_wheel_node->FirstChildElement("inteval") || !time_wheel_node->FirstChildElement("inteval")->GetText()) {
+    printf("start tinyrpc server error! read config file [%s] error, cannot read [time_wheel.bucket_num] xml node", m_file_path.c_str());
+    exit(0);
+  }
+  m_timewheel_bucket_num = std::atoi(time_wheel_node->FirstChildElement("bucket_num")->GetText());
+  m_timewheel_inteval = std::atoi(time_wheel_node->FirstChildElement("inteval")->GetText());
+
+
+  printf("read config from file [%s]: [log_path: %s], [log_prefix: %s], [log_max_size: %d MB], [log_level: %s], " 
       "[coroutine_stack_size: %d KB], [coroutine_pool_size: %d], "
       "[msg_req_len: %d], [max_connect_timeout: %d s], "
       "[iothread_num:%d], [timewheel_bucket_num: %d], [timewheel_inteval: %d s]\n",
-      m_file_path.c_str(), m_log_path.c_str(), log_max_size, levelToString(m_log_level).c_str(), cor_stack_size, m_cor_pool_size, m_msg_req_len,
+      m_file_path.c_str(), m_log_path.c_str(), m_log_prefix.c_str(), m_log_max_size / 1024 / 1024, 
+      levelToString(m_log_level).c_str(), cor_stack_size, m_cor_pool_size, m_msg_req_len,
       max_connect_timeout, m_iothread_num, m_timewheel_bucket_num, m_timewheel_inteval);
 
   TiXmlElement* database_node = root->FirstChildElement("database");
+
   if (database_node) {
     readDBConfig(database_node);
   }

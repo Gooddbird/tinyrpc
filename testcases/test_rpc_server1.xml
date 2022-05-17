@@ -4,6 +4,7 @@
   <log>
     <!--identify path of log file-->
     <log_path>./</log_path>
+    <log_prefix>test_rpc_server1</log_prefix>
 
     <!--identify max size of single log file, MB-->
     <log_max_file_size>5</log_max_file_size>
@@ -42,10 +43,10 @@
 
   <database>
     <db_key name="test_db_key1">
-      <ip>192.168.245.1</ip>
+      <ip>127.0.0.1</ip>
       <port>3306</port>
       <user>root</user>
-      <passwd>handsomederen</passwd>
+      <passwd>Ikerli20220517!!</passwd>
       <select_db></select_db>
       <char_set>utf8mb4</char_set>
     </db_key>
