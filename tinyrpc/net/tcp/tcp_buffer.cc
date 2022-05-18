@@ -112,7 +112,7 @@ void TcpBuffer::clearBuffer() {
 
 void TcpBuffer::recycleRead(int index) {
   int j = m_read_index + index;
-  if (j >= (int)m_buffer.size()) {
+  if (j > (int)m_buffer.size()) {
     ErrorLog << "recycleRead error";
     return;
   }
@@ -122,7 +122,7 @@ void TcpBuffer::recycleRead(int index) {
 
 void TcpBuffer::recycleWrite(int index) {
   int j = m_write_index + index;
-  if (j >= (int)m_buffer.size()) {
+  if (j > (int)m_buffer.size()) {
     ErrorLog << "recycleWrite error";
     return;
   }
