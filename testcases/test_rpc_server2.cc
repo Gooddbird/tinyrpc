@@ -22,7 +22,7 @@ void fun() {
     DebugLog << "==========================test no:" << n;
     queryNameReq req_name;
     req_name.set_req_no(20220315);
-    req_name.set_id(10002);
+    req_name.set_id(1100110001);
     req_name.set_type(1);
 
     queryNameRes res_name;
@@ -46,6 +46,9 @@ void fun() {
 
     if (rpc_controller.ErrorCode() != 0) {
       ErrorLog << "call rpc method query_name failed, errcode=" << rpc_controller.ErrorCode() << ",error=" << rpc_controller.ErrorText();
+    }
+    if (res_name.ret_code() != 0) {
+      ErrorLog << "query name error, errcode=" << res_name.ret_code() << ", res_info=" << res_name.res_info(); 
     } else {
       DebugLog << "get res_name.age = " << res_name.name();
     }

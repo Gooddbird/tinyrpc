@@ -28,6 +28,10 @@ class QueryServiceImpl : public QueryService {
     // DebugLog << "first begin to sleep 6s";
     // sleep_hook(6);
     // DebugLog << "sleep 6s end";
+
+    response->set_ret_code(0);
+    response->set_res_info("OK");
+
     tinyrpc::MySQLInstase* instase =  tinyrpc::MySQLInstaseFactroy::GetThreadMySQLFactory()->GetMySQLInstase("test_db_key1");
     if (!instase->isInitSuccess()) {
       ErrorLog << "mysql instase init failed";
@@ -49,14 +53,12 @@ class QueryServiceImpl : public QueryService {
       int i = 0;
       response->set_id(std::atoi(row[i++]));
       response->set_name(std::string(row[i++]));
-
+    } else {
+      DebugLog << "query empty";
+      response->set_ret_code(999);
+      response->set_res_info("this user not exist");
     }
 
-    response->set_ret_code(0);
-    response->set_res_info("OK");
-    response->set_req_no(request->req_no());
-    response->set_id(request->id());
-    response->set_name("ikerli");
     
     DebugLog << "========================";
     done->Run();

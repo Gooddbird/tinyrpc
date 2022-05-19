@@ -54,7 +54,7 @@ int MySQLInstase::reconnect() {
 
   Mutex::Lock lock(m_mutex);
   MYSQL* re =  mysql_init(&m_sql_handler);
-  DebugLog << "mysql fd is " << m_sql_handler.net.fd;
+  // DebugLog << "mysql fd is " << m_sql_handler.net.fd;
   lock.unlock();
   if (!re) {
     ErrorLog << "faild to call mysql_init allocate MYSQL instase";

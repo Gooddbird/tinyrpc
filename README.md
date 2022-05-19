@@ -22,12 +22,12 @@
 由于 **TinyRPC** 读取配置使用了 xml 文件，因此需要安装 **tinyxml** 库来解析配置文件。
 其地址为: https://github.com/leethomason/tinyxml2
 
-### 2.3 mysql
+### 2.3 libmysqlclient
 需要安装 mysql 的 glibc 库，用于 MySQL 操作, 选择所需的版本安装即可(建议 5.7 以上)
 
-官方下载地址：https://cdn.mysql.com//Downloads/
+官方下载地址：https://downloads.mysql.com/archives/community/
 
-
+此外，安装 libmysqlclient 只是保证编译通过，但运行时如果需要连接 MYSQL 数据库，还需要在对方机器上安装 MYSQL 服务并启动才行。
 
 注意，以上几个库的头文件我都放在了 **/usr/include** 下， 库文件放在了 **/usr/lib** 下。因此在 [makefile](./makefile) 中并没有指定其头文件和库文件路径，因为其被安装在了系统默认搜索路径中，无需特殊指定。
 
