@@ -18,7 +18,7 @@
 #include "google/protobuf/message.h"
 
 
-tinyrpc::Logger::ptr gRpcLogger; 
+// tinyrpc::Logger::ptr gRpcLogger; 
 tinyrpc::Config::ptr gRpcConfig;
 
 int connfd = -1;
@@ -37,7 +37,7 @@ void connect_co() {
   ser_addr.sin_port = htons(39999); 
   ser_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-  int rt = connect_hook(connfd, reinterpret_cast<sockaddr*>(&ser_addr), sizeof(ser_addr));
+  int rt = connect(connfd, reinterpret_cast<sockaddr*>(&ser_addr), sizeof(ser_addr));
   DebugLog << "rt " << rt;
   if (rt == -1) {
     sleep(1);
@@ -88,9 +88,6 @@ int main(int argc, char* argv[]) {
   
   gRpcConfig = std::make_shared<tinyrpc::Config>("../testcases/tinyrpc.xml");
   gRpcConfig->readConf();
-
-  gRpcLogger = std::make_shared<tinyrpc::Logger>();
-  gRpcLogger->init("test_connect");
 
   DebugLog << "main begin";
   // tinyrpc::enableHook();

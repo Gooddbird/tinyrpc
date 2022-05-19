@@ -7,8 +7,10 @@
 #include "tinypb.pb.h"
 #include "coroutine_hook.h"
 #include "config.h"
+#include "tinyrpc/comm/mysql_instase.h"
+#include <mysql/mysql.h>
+#include <sstream>
 
-tinyrpc::Logger::ptr gRpcLogger; 
 tinyrpc::Config::ptr gRpcConfig;
 
 class QueryServiceImpl : public QueryService {
@@ -21,17 +23,42 @@ class QueryServiceImpl : public QueryService {
                        ::queryNameRes* response,
                        ::google::protobuf::Closure* done) {
     
-    DebugLog << "========================";
-    DebugLog << "this is query_name func";
-    DebugLog << "first begin to sleep 6s";
-    sleep_hook(6);
-    DebugLog << "sleep 6s end";
+    // DebugLog << "========================";
+    // DebugLog << "this is query_name func";
+    // DebugLog << "first begin to sleep 6s";
+    // sleep_hook(6);
+    // DebugLog << "sleep 6s end";
 
     response->set_ret_code(0);
     response->set_res_info("OK");
-    response->set_req_no(request->req_no());
-    response->set_id(request->id());
-    response->set_name("ikerli");
+
+    tinyrpc::MySQLInstase* instase =  tinyrpc::MySQLInstaseFactroy::GetThreadMySQLFactory()->GetMySQLInstase("test_db_key1");
+    if (!instase->isInitSuccess()) {
+      ErrorLog << "mysql instase init failed";
+      return;
+    }
+
+    char query_sql[512];
+    sprintf(query_sql, "select user_id, user_name, user_gender from user_db.t_user_information where user_id = '%s';", std::to_string(request->id()).c_str());
+
+    int rt = instase->query(std::string(query_sql));
+    if (rt != 0) {
+      ErrorLog << "query return not 0";
+      return;
+    }
+    MYSQL_RES* res = instase->storeResult();
+
+    MYSQL_ROW row = instase->fetchRow(res);
+    if (row) {
+      int i = 0;
+      response->set_id(std::atoi(row[i++]));
+      response->set_name(std::string(row[i++]));
+    } else {
+      DebugLog << "query empty";
+      response->set_ret_code(999);
+      response->set_res_info("this user not exist");
+    }
+
     
     DebugLog << "========================";
     done->Run();
@@ -57,11 +84,8 @@ class QueryServiceImpl : public QueryService {
 
 int main(int argc, char* argv[]) {
 
-  gRpcConfig = std::make_shared<tinyrpc::Config>("../testcases/tinyrpc.xml");
+  gRpcConfig = std::make_shared<tinyrpc::Config>("../testcases/test_rpc_server1.xml");
   gRpcConfig->readConf();
-
-  gRpcLogger = std::make_shared<tinyrpc::Logger>();
-  gRpcLogger->init("test_rpc_server1");
 
   tinyrpc::IPAddress::ptr addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
   

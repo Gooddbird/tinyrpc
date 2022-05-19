@@ -24,7 +24,7 @@ class NetAddress {
 	
   virtual int getFamily() const = 0;
 
-  virtual std::string toString() = 0;
+  virtual std::string toString() const = 0;
 
   virtual socklen_t getSockLen() const = 0;
 
@@ -46,9 +46,9 @@ class IPAddress : public NetAddress {
 
   socklen_t getSockLen() const;
 
-  std::string toString();
+  std::string toString() const;
 
-  std::string getIp() const {
+  std::string getIP() const {
     return m_ip;
   }
 
@@ -83,7 +83,7 @@ class UnixDomainAddress : public NetAddress {
     return m_path;
   }
 
-  std::string toString();
+  std::string toString() const;
 
 
  private:

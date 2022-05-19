@@ -22,7 +22,7 @@ void fun() {
     DebugLog << "==========================test no:" << n;
     queryNameReq req_name;
     req_name.set_req_no(20220315);
-    req_name.set_id(1234);
+    req_name.set_id(1100110001);
     req_name.set_type(1);
 
     queryNameRes res_name;
@@ -41,11 +41,14 @@ void fun() {
 
     QueryService_Stub stub(&channel);
     tinyrpc::TinyPbRpcController rpc_controller;
-    rpc_controller.SetTimeout(1000);
+    rpc_controller.SetTimeout(5000);
     stub.query_name(&rpc_controller, &req_name, &res_name, &cb);
 
     if (rpc_controller.ErrorCode() != 0) {
       ErrorLog << "call rpc method query_name failed, errcode=" << rpc_controller.ErrorCode() << ",error=" << rpc_controller.ErrorText();
+    }
+    if (res_name.ret_code() != 0) {
+      ErrorLog << "query name error, errcode=" << res_name.ret_code() << ", res_info=" << res_name.res_info(); 
     } else {
       DebugLog << "get res_name.age = " << res_name.name();
     }
@@ -57,7 +60,6 @@ void fun() {
 }
 
 
-tinyrpc::Logger::ptr gRpcLogger; 
 tinyrpc::Config::ptr gRpcConfig;
 
 int main(int argc, char* argv[]) {
@@ -68,13 +70,8 @@ int main(int argc, char* argv[]) {
     return 0;
   }
 
-
-  gRpcConfig = std::make_shared<tinyrpc::Config>("../testcases/tinyrpc.xml");
+  gRpcConfig = std::make_shared<tinyrpc::Config>("../testcases/test_rpc_server2.xml");
   gRpcConfig->readConf();
-
-  gRpcLogger = std::make_shared<tinyrpc::Logger>();
-  gRpcLogger->init("test_rpc_server2");
-
 
   int port = std::atoi(argv[1]);
   n = std::atoi(argv[2]);

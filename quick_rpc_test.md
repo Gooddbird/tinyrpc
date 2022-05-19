@@ -71,13 +71,42 @@ class QueryServiceImpl : public QueryService {
                        ::queryNameRes* response,
                        ::google::protobuf::Closure* done) {
     
-    DebugLog << "========================";
-    DebugLog << "this is query_name func";
+    // DebugLog << "========================";
+    // DebugLog << "this is query_name func";
+    // DebugLog << "first begin to sleep 6s";
+    // sleep_hook(6);
+    // DebugLog << "sleep 6s end";
+
     response->set_ret_code(0);
     response->set_res_info("OK");
-    response->set_req_no(request->req_no());
-    response->set_id(request->id());
-    response->set_name("ikerli");
+
+    tinyrpc::MySQLInstase* instase =  tinyrpc::MySQLInstaseFactroy::GetThreadMySQLFactory()->GetMySQLInstase("test_db_key1");
+    if (!instase->isInitSuccess()) {
+      ErrorLog << "mysql instase init failed";
+      return;
+    }
+
+    char query_sql[512];
+    sprintf(query_sql, "select user_id, user_name, user_gender from user_db.t_user_information where user_id = '%s';", std::to_string(request->id()).c_str());
+
+    int rt = instase->query(std::string(query_sql));
+    if (rt != 0) {
+      ErrorLog << "query return not 0";
+      return;
+    }
+    MYSQL_RES* res = instase->storeResult();
+
+    MYSQL_ROW row = instase->fetchRow(res);
+    if (row) {
+      int i = 0;
+      response->set_id(std::atoi(row[i++]));
+      response->set_name(std::string(row[i++]));
+    } else {
+      DebugLog << "query empty";
+      response->set_ret_code(999);
+      response->set_res_info("this user not exist");
+    }
+
     
     DebugLog << "========================";
     done->Run();
@@ -101,77 +130,135 @@ class QueryServiceImpl : public QueryService {
 };
 ```
 
-#### 4. Set Up RpcServer1
+#### 4. Create XML config file
+for example:
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+  <!--log config-->
+  <log>
+    <!--identify path of log file-->
+    <log_path>./</log_path>
+    <log_prefix>test_rpc_server1</log_prefix>
+
+    <!--identify max size of single log file, MB-->
+    <log_max_file_size>5</log_max_file_size>
+
+    <!--log level: DEBUG < INFO < WARN < ERROR-->
+    <log_level>DEBUG</log_level>
+
+    <!--inteval that put log info to async logger, s-->
+    <log_sync_inteval>1</log_sync_inteval>
+  </log>
+
+  <coroutine>
+    <!--coroutine stack size (KB)-->
+    <coroutine_stack_size>128</coroutine_stack_size>
+
+    <!--default coroutine pool size-->
+    <coroutine_pool_size>5000</coroutine_pool_size>
+
+  </coroutine>
+
+  <msg_req_len>20</msg_req_len>
+
+  <!--max time when call connect, s-->
+  <max_connect_timeout>75</max_connect_timeout>
+
+  <!--count of io threads, at least 1-->
+  <iothread_num>2</iothread_num>
+
+  <time_wheel>
+    <bucket_num>6</bucket_num>
+
+    <!--inteval that destroy bad TcpConnection, s-->
+    <inteval>10</inteval>
+  </time_wheel>
+
+
+  <database>
+    <db_key name="test_db_key1">
+      <!-- <ip>127.0.0.1</ip> -->
+      <ip>192.168.245.7</ip>
+      <port>3306</port>
+      <user>root</user>
+      <passwd>Ikerli20220517!!</passwd>
+      <select_db></select_db>
+      <char_set>utf8mb4</char_set>
+    </db_key>
+  </database>
+
+</root>
+```
+
+#### 5. Set Up RpcServer1
 It's very convenient to set uo RpcServer with **tinyrpc** framework
 
 ```c++
 
 // testcases/test_rpc_server1.cc
 int main(int argc, char* argv[]) {
-  // set ip and port
+
+  gRpcConfig = std::make_shared<tinyrpc::Config>("../testcases/test_rpc_server1.xml");
+  gRpcConfig->readConf();
+
   tinyrpc::IPAddress::ptr addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
   
   tinyrpc::TcpServer server(addr);
-  // you should register service to RpcDispatcher first
   tinyrpc::TinyPbRpcDispacther* dispatcher = server.getDispatcher();
   QueryService* service = new QueryServiceImpl();
   
   DebugLog << "================";
-
-  // register Service Instanse on RpcServer
-  // it make RpcServer can find the service and method which client call
   dispatcher->registerService(service);
 
-  // now start server
   server.start();
   return 0;
 }
 ```
 
-#### 5.Set Up RpcServer2 
+#### 6.Set Up RpcServer2 
 Like RpcServer1, but we don't register Service, because we just user RpcServer2 to call method of RpcServer1.
 ```c++
 // testcases/test_rpc_server2.cc
 void fun() {
-  // peer addr is RpcServer1's addr
   tinyrpc::IPAddress::ptr peer_addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
-
-  // init RpcChannel
   tinyrpc::TinyPbRpcChannel channel(peer_addr);
-  // init RpcController
-  tinyrpc::TinyPbRpcController rpc_controller;
   DebugLog << "input an integer to set count that send tinypb data";
-  int n;
-  std::cin >> n;
-
   while (n--) {
 
-  queryNameReq req_name;
-  req_name.set_req_no(20220315);
-  req_name.set_id(1234);
-  req_name.set_type(1);
+    DebugLog << "==========================test no:" << n;
+    queryNameReq req_name;
+    req_name.set_req_no(20220315);
+    req_name.set_id(1100110001);
+    req_name.set_type(1);
 
-  queryNameRes res_name;
+    queryNameRes res_name;
 
-  queryAgeReq req_age;
-  req_age.set_req_no(00001111);
-  req_age.set_id(6781);
+    queryAgeReq req_age;
+    req_age.set_req_no(00001111);
+    req_age.set_id(6781);
 
-  queryAgeRes res_age;
+    queryAgeRes res_age;
 
-  tinyrpc::TinyPbRpcClosure cb([]() {
-    DebugLog << "==========================";
-    DebugLog << "succ call rpc";
-    DebugLog << "==========================";
-  });
+    tinyrpc::TinyPbRpcClosure cb([]() {
+      DebugLog << "==========================";
+      DebugLog << "succ call rpc";
+      DebugLog << "==========================";
+    });
 
-  QueryService_Stub stub(&channel);
-  // directly call rpc method
-  stub.query_name(&rpc_controller, &req_name, &res_name, &cb);
-  stub.query_age(&rpc_controller, &req_age, &res_age, &cb);
+    QueryService_Stub stub(&channel);
+    tinyrpc::TinyPbRpcController rpc_controller;
+    rpc_controller.SetTimeout(5000);
+    stub.query_name(&rpc_controller, &req_name, &res_name, &cb);
 
-  DebugLog << "get res_name.age = " << res_name.name();
-  DebugLog << "get res_age.age = " << res_age.age();
+    if (rpc_controller.ErrorCode() != 0) {
+      ErrorLog << "call rpc method query_name failed, errcode=" << rpc_controller.ErrorCode() << ",error=" << rpc_controller.ErrorText();
+    }
+    if (res_name.ret_code() != 0) {
+      ErrorLog << "query name error, errcode=" << res_name.ret_code() << ", res_info=" << res_name.res_info(); 
+    } else {
+      DebugLog << "get res_name.age = " << res_name.name();
+    }
 
   }
 
@@ -179,10 +266,25 @@ void fun() {
 
 }
 
+
+tinyrpc::Config::ptr gRpcConfig;
+
 int main(int argc, char* argv[]) {
 
-  tinyrpc::IPAddress::ptr self_addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 20000);
-  tinyrpc::TcpServer server(self_addr, 1);
+  if (argc != 3) {
+    std::cout << "use example:  ./out [port] [num]" << std::endl;
+    std::cout << "./out 30001 1" << std::endl;
+    return 0;
+  }
+
+  gRpcConfig = std::make_shared<tinyrpc::Config>("../testcases/test_rpc_server2.xml");
+  gRpcConfig->readConf();
+
+  int port = std::atoi(argv[1]);
+  n = std::atoi(argv[2]);
+
+  tinyrpc::IPAddress::ptr self_addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", port);
+  tinyrpc::TcpServer server(self_addr);
   tinyrpc::Coroutine::ptr cor = tinyrpc::GetCoroutinePool()->getCoroutineInstanse();
   cor->setCallBack(&fun);
   server.addCoroutine(cor);
@@ -193,5 +295,6 @@ int main(int argc, char* argv[]) {
 }
 ```
 
-#### 6. Test Rpc
+#### 7. Test Rpc
 Directly run RpcServer1 and RpcServer2, notice if you recive correct result;
+You can see more detail in log file. like '**test_rpc_server1_20220516_rpc_0.log**'

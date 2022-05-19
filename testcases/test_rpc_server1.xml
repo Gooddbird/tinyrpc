@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+  <!--log config-->
+  <log>
+    <!--identify path of log file-->
+    <log_path>./</log_path>
+    <log_prefix>test_rpc_server1</log_prefix>
+
+    <!--identify max size of single log file, MB-->
+    <log_max_file_size>5</log_max_file_size>
+
+    <!--log level: DEBUG < INFO < WARN < ERROR-->
+    <log_level>DEBUG</log_level>
+
+    <!--inteval that put log info to async logger, s-->
+    <log_sync_inteval>1</log_sync_inteval>
+  </log>
+
+  <coroutine>
+    <!--coroutine stack size (KB)-->
+    <coroutine_stack_size>128</coroutine_stack_size>
+
+    <!--default coroutine pool size-->
+    <coroutine_pool_size>5000</coroutine_pool_size>
+
+  </coroutine>
+
+  <msg_req_len>20</msg_req_len>
+
+  <!--max time when call connect, s-->
+  <max_connect_timeout>75</max_connect_timeout>
+
+  <!--count of io threads, at least 1-->
+  <iothread_num>2</iothread_num>
+
+  <time_wheel>
+    <bucket_num>6</bucket_num>
+
+    <!--inteval that destroy bad TcpConnection, s-->
+    <inteval>10</inteval>
+  </time_wheel>
+
+
+  <database>
+    <db_key name="test_db_key1">
+      <!-- <ip>127.0.0.1</ip> -->
+      <ip>192.168.245.7</ip>
+      <port>3306</port>
+      <user>root</user>
+      <passwd>Ikerli20220517!!</passwd>
+      <select_db></select_db>
+      <char_set>utf8mb4</char_set>
+    </db_key>
+  </database>
+
+</root>

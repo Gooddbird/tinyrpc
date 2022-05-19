@@ -19,10 +19,12 @@
 #include "../net/timer.h"
 
 
-extern tinyrpc::Logger::ptr gRpcLogger;
 extern tinyrpc::Config::ptr gRpcConfig;
 
+
 namespace tinyrpc {
+
+extern tinyrpc::Logger::ptr gRpcLogger;
 
 void SignalHandler(int signal_no) {
   ErrorLog << "progress received invalid signal, will exit";
@@ -63,27 +65,27 @@ LogEvent::~LogEvent() {
 
 }
 
-void levelToString(LogLevel level, std::string& re) {
+std::string levelToString(LogLevel level) {
+  std::string re = "DEBUG";
   switch(level) {
     case DEBUG:
       re = "DEBUG";
-      return;
+      return re;
     
     case INFO:
       re = "INFO";
-      return;
+      return re;
 
     case WARN:
       re = "WARN";
-      return;
+      return re;
 
     case ERROR:
       re = "ERROR";
-      return;
+      return re;
 
     default:
-      re = "";
-      return;
+      return re;
   }
 }
 
@@ -132,8 +134,7 @@ std::stringstream& LogEvent::getStringStream() {
 
   m_ss << "[" << buf << "." << m_timeval.tv_usec << "]\t"; 
 
-  std::string s_level;
-  levelToString(m_level, s_level);
+  std::string s_level = levelToString(m_level);
   m_ss << "[" << s_level << "]\t";
 
   if (g_pid == 0) {
@@ -190,7 +191,7 @@ Logger::~Logger() {
 
 void Logger::init(const char* file_name, LogType type /*= RPC_LOG*/) {
   if (!m_is_init) {
-    TimerEvent::ptr event = std::make_shared<TimerEvent>(1000, true, std::bind(&Logger::loopFunc, this));
+    TimerEvent::ptr event = std::make_shared<TimerEvent>(gRpcConfig->m_log_sync_inteval, true, std::bind(&Logger::loopFunc, this));
     Reactor::GetReactor()->getTimer()->addTimerEvent(event);
     m_async_logger = std::make_shared<AsyncLogger>(file_name, type);
     signal(SIGSEGV, SignalHandler);
@@ -344,16 +345,10 @@ void AsyncLogger::stop() {
   }
 }
 
-
 void Exit(int code) {
 
-  // call sys exit function
   exit(code);
 }
-
-
-
-
 
 
 }

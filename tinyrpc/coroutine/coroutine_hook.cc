@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <mysql/mysql.h>
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -25,7 +26,7 @@ HOOK_SYS_FUNC(connect);
 
 extern tinyrpc::Config::ptr gRpcConfig;
 
-extern "C" {
+namespace tinyrpc {
 
 void toEpoll(tinyrpc::FdEvent::ptr fd_event, int events) {
 	
@@ -281,5 +282,31 @@ unsigned int sleep_hook(unsigned int seconds) {
 
 }
 
+
+}
+
+
+extern "C" {
+
+
+int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
+	return tinyrpc::accept_hook(sockfd, addr, addrlen);
+}
+
+ssize_t read(int fd, void *buf, size_t count) {
+	return tinyrpc::read_hook(fd, buf, count);
+}
+
+ssize_t write(int fd, const void *buf, size_t count) {
+	return tinyrpc::write_hook(fd, buf, count);
+}
+
+int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
+	return tinyrpc::connect_hook(sockfd, addr, addrlen);
+}
+
+unsigned int sleep(unsigned int seconds) {
+	return tinyrpc::sleep_hook(seconds);
+}
 
 }

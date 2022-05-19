@@ -1,5 +1,5 @@
-#ifndef TINYRPC_LOG_LOG_H
-#define TINYRPC_LOG_LOG_H
+#ifndef TINYRPC_COMM_LOG_H
+#define TINYRPC_COMM_LOG_H
 
 #include <sstream>
 #include <sstream>
@@ -45,6 +45,7 @@ enum LogType {
 pid_t gettid();
 
 LogLevel stringToLevel(const std::string& str);
+std::string levelToString(LogLevel level);
 
 class LogEvent {
 
@@ -158,12 +159,8 @@ class Logger {
 
 };
 
-
-// do something before exit progress, like flush log
-// it will be called when progress get something error
 void Exit(int code);
 
 }
-
 
 #endif

@@ -32,7 +32,7 @@ class TinyPbStruct : public AbstractData {
   int32_t err_code {0};               // err_code, 0 -- call rpc success, otherwise -- call rpc failed. it only be seted by RpcController
   int32_t err_info_len {0};           // len of err_info
   std::string err_info;               // err_info, empty -- call rpc success, otherwise -- call rpc failed, it will display details of reason why call rpc failed. it only be seted by RpcController
-  std::string pb_data {"1"};          // business pb data
+  std::string pb_data;                // business pb data
   int32_t check_num {-1};             // check_num of all package. to check legality of data
   // char end;                        // identify end of a TinyPb protocal data
 
