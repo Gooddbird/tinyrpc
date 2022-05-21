@@ -3,15 +3,16 @@
 #include "net_address.h"
 #include "tinypb_rpc_dispatcher.h"
 #include "log.h"
-#include "config.h"
+#include "tinyrpc/comm/start.h"
 #include "tinypb.pb.h"
 #include "coroutine_hook.h"
-#include "config.h"
+#include "tinyrpc/comm/start.h"
 #include "tinyrpc/comm/mysql_instase.h"
+#include "tinyrpc/comm/start.h"
 #include <mysql/mysql.h>
 #include <sstream>
 
-tinyrpc::Config::ptr gRpcConfig;
+// // tinyrpc::Config::ptr gRpcConfig;
 
 class QueryServiceImpl : public QueryService {
  public:
@@ -83,19 +84,19 @@ class QueryServiceImpl : public QueryService {
 
 
 int main(int argc, char* argv[]) {
+  if (argc != 2) {
+    printf("Start TinyRPC server error, input argc is not 2!");
+    printf("Start TinyRPC server like this: \n");
+    printf("./server a.xml\n");
+    return 0;
+  }
 
-  gRpcConfig = std::make_shared<tinyrpc::Config>("../testcases/test_rpc_server1.xml");
-  gRpcConfig->readConf();
-
-  tinyrpc::IPAddress::ptr addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
-  
-  tinyrpc::TcpServer server(addr);
-  tinyrpc::TinyPbRpcDispacther* dispatcher = server.getDispatcher();
+  tinyrpc::InitConfig(argv[1]);
   QueryService* service = new QueryServiceImpl();
-  
-  DebugLog << "================";
-  dispatcher->registerService(service);
 
-  server.start();
+  tinyrpc::RegisterService(service);
+
+  tinyrpc::StartRpcServer();
+  
   return 0;
 }

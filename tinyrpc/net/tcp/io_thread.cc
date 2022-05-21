@@ -8,12 +8,12 @@
 #include "../../coroutine/coroutine.h"
 #include "../../comm/config.h"
 
-extern tinyrpc::Config::ptr gRpcConfig;
 
 namespace tinyrpc {
 
-static thread_local Reactor* t_reactor_ptr = nullptr;
+extern tinyrpc::Config::ptr gRpcConfig;
 
+static thread_local Reactor* t_reactor_ptr = nullptr;
 
 IOThread::IOThread() {
   pthread_create(&m_thread, nullptr, &IOThread::main, this);

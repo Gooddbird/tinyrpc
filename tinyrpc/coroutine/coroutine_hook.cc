@@ -24,9 +24,10 @@ HOOK_SYS_FUNC(connect);
 
 // static int g_max_timeout = 75000;
 
-extern tinyrpc::Config::ptr gRpcConfig;
 
 namespace tinyrpc {
+
+extern tinyrpc::Config::ptr gRpcConfig;
 
 void toEpoll(tinyrpc::FdEvent::ptr fd_event, int events) {
 	

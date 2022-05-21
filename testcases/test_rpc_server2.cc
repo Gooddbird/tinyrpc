@@ -9,9 +9,9 @@
 #include "log.h"
 #include "coroutine_pool.h"
 #include "tinypb.pb.h"
-#include "config.h"
+#include "tinyrpc/comm/start.h"
 
-int n = 0;
+int n = 10;
 
 void fun() {
   tinyrpc::IPAddress::ptr peer_addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
@@ -60,29 +60,23 @@ void fun() {
 }
 
 
-tinyrpc::Config::ptr gRpcConfig;
-
 int main(int argc, char* argv[]) {
 
-  if (argc != 3) {
-    std::cout << "use example:  ./out [port] [num]" << std::endl;
-    std::cout << "./out 30001 1" << std::endl;
+  if (argc != 2) {
+    printf("Start TinyRPC server error, input argc is not 2!");
+    printf("Start TinyRPC server like this: \n");
+    printf("./server a.xml\n");
     return 0;
   }
 
-  gRpcConfig = std::make_shared<tinyrpc::Config>("../testcases/test_rpc_server2.xml");
-  gRpcConfig->readConf();
+  tinyrpc::InitConfig(argv[1]);
 
-  int port = std::atoi(argv[1]);
-  n = std::atoi(argv[2]);
-
-  tinyrpc::IPAddress::ptr self_addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", port);
-  tinyrpc::TcpServer server(self_addr);
   tinyrpc::Coroutine::ptr cor = tinyrpc::GetCoroutinePool()->getCoroutineInstanse();
   cor->setCallBack(&fun);
-  server.addCoroutine(cor);
 
-  server.start();
+  tinyrpc::GetRpcServer()->addCoroutine(cor);
+
+  tinyrpc::StartRpcServer();
 
   return 0;
 }

@@ -16,9 +16,10 @@
 #include "config.h"
 
 
-extern tinyrpc::Config::ptr gRpcConfig;
 
 namespace tinyrpc {
+
+extern tinyrpc::Config::ptr gRpcConfig;
 
 enum LogType {
 	RPC_LOG = 1,
@@ -26,19 +27,19 @@ enum LogType {
 };
 
 #define DebugLog \
-	if (tinyrpc::LogLevel::DEBUG >= gRpcConfig->m_log_level) \
+	if (tinyrpc::LogLevel::DEBUG >= tinyrpc::gRpcConfig->m_log_level) \
 		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::DEBUG, __FILE__, __LINE__, __func__))).getStringStream()
 
 #define InfoLog \
-	if (tinyrpc::LogLevel::INFO >= gRpcConfig->m_log_level) \
+	if (tinyrpc::LogLevel::INFO >= tinyrpc::gRpcConfig->m_log_level) \
 		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::INFO, __FILE__, __LINE__, __func__))).getStringStream()
 
 #define WarnLog \
-	if (tinyrpc::LogLevel::WARN >= gRpcConfig->m_log_level) \
+	if (tinyrpc::LogLevel::WARN >= tinyrpc::gRpcConfig->m_log_level) \
 		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::WARN, __FILE__, __LINE__, __func__))).getStringStream()
 
 #define ErrorLog \
-	if (tinyrpc::LogLevel::ERROR >= gRpcConfig->m_log_level) \
+	if (tinyrpc::LogLevel::ERROR >= tinyrpc::gRpcConfig->m_log_level) \
 		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::ERROR, __FILE__, __LINE__, __func__))).getStringStream()
 
 
@@ -98,7 +99,7 @@ class AsyncLogger {
  public:
   typedef std::shared_ptr<AsyncLogger> ptr;
 
-	AsyncLogger(const char* file_name, LogType logtype);
+	AsyncLogger(const char* file_name, const char* file_path, int max_size, LogType logtype);
 	~AsyncLogger();
 
 	void push(std::vector<std::string>& buffer);
@@ -114,7 +115,8 @@ class AsyncLogger {
 
  private:
 	const char* m_file_name;
-	// int m_max_size {0};
+	const char* m_file_path;
+	int m_max_size {0};
 	LogType m_log_type;
 	int m_no {0};
 	int m_fd {-1};
@@ -138,7 +140,7 @@ class Logger {
 	Logger();
 	~Logger();
 
-	void init(const char* file_name, LogType type = RPC_LOG);
+	void init(const char* file_name, const char* file_path, int max_size, int sync_inteval, LogType type = RPC_LOG);
 	void log();
 	void push(const std::string& log_msg);
 	void loopFunc();
