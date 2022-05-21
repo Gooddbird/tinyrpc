@@ -19,12 +19,10 @@
 #include "../net/timer.h"
 
 
-extern tinyrpc::Config::ptr gRpcConfig;
-
-
 namespace tinyrpc {
 
 extern tinyrpc::Logger::ptr gRpcLogger;
+extern tinyrpc::Config::ptr gRpcConfig;
 
 void SignalHandler(int signal_no) {
   ErrorLog << "progress received invalid signal, will exit";
@@ -161,7 +159,7 @@ std::stringstream& LogEvent::getStringStream() {
 void LogEvent::log() {
   if (m_level >= gRpcConfig->m_log_level) {
     m_ss << "\n";
-    printf("%s", m_ss.str().c_str());
+    // printf("%s", m_ss.str().c_str());
     gRpcLogger->push(m_ss.str());
   }
 }
@@ -189,11 +187,11 @@ Logger::~Logger() {
   pthread_join(m_async_logger->m_thread, NULL);
 }
 
-void Logger::init(const char* file_name, LogType type /*= RPC_LOG*/) {
+void Logger::init(const char* file_name, const char* file_path, int max_size, int sync_inteval, LogType type/* = RPC_LOG*/) {
   if (!m_is_init) {
-    TimerEvent::ptr event = std::make_shared<TimerEvent>(gRpcConfig->m_log_sync_inteval, true, std::bind(&Logger::loopFunc, this));
+    TimerEvent::ptr event = std::make_shared<TimerEvent>(sync_inteval, true, std::bind(&Logger::loopFunc, this));
     Reactor::GetReactor()->getTimer()->addTimerEvent(event);
-    m_async_logger = std::make_shared<AsyncLogger>(file_name, type);
+    m_async_logger = std::make_shared<AsyncLogger>(file_name, file_path, max_size, type);
     signal(SIGSEGV, SignalHandler);
     signal(SIGABRT, SignalHandler);
     signal(SIGTERM, SignalHandler);
@@ -226,8 +224,8 @@ void Logger::flush() {
   m_async_logger->flush();
 }
 
-AsyncLogger::AsyncLogger(const char* file_name, LogType log_type) 
-  : m_file_name(file_name), m_log_type(log_type) {
+AsyncLogger::AsyncLogger(const char* file_name, const char* file_path, int max_size, LogType logtype)
+  : m_file_name(file_name), m_file_path(file_path), m_max_size(max_size), m_log_type(logtype) {
 
   pthread_create(&m_thread, nullptr, &AsyncLogger::excute, this);
 }
@@ -274,7 +272,7 @@ void* AsyncLogger::excute(void* arg) {
     }    
 
     std::stringstream ss;
-    ss << gRpcConfig->m_log_path << ptr->m_file_name << "_" << ptr->m_date << "_" << LogTypeToString(ptr->m_log_type) << "_" << ptr->m_no << ".log";
+    ss << ptr->m_file_path << ptr->m_file_name << "_" << ptr->m_date << "_" << LogTypeToString(ptr->m_log_type) << "_" << ptr->m_no << ".log";
     std::string full_file_name = ss.str();
 
     if (ptr->m_need_reopen) {
@@ -286,13 +284,13 @@ void* AsyncLogger::excute(void* arg) {
       ptr->m_need_reopen = false;
     }
 
-    if (ftell(ptr->m_file_handle) > gRpcConfig->m_log_max_size) {
+    if (ftell(ptr->m_file_handle) > ptr->m_max_size) {
       fclose(ptr->m_file_handle);
 
       // single log file over max size
       ptr->m_no++;
       std::stringstream ss2;
-      ss2 << gRpcConfig->m_log_path << ptr->m_file_name << "_" << ptr->m_date << "_" << LogTypeToString(ptr->m_log_type) << "_" << ptr->m_no << ".log";
+      ss2 << ptr->m_file_path << ptr->m_file_name << "_" << ptr->m_date << "_" << LogTypeToString(ptr->m_log_type) << "_" << ptr->m_no << ".log";
       full_file_name = ss2.str();
 
       printf("open file %s", full_file_name.c_str());
@@ -346,8 +344,8 @@ void AsyncLogger::stop() {
 }
 
 void Exit(int code) {
-
-  exit(code);
+  printf("It's sorry to said we start TinyRPC server error, look up log file to get more deatils!\n")
+  _exit(code);
 }
 
 

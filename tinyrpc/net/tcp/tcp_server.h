@@ -51,6 +51,8 @@ class TcpServer {
 
  public:
 
+  typedef std::shared_ptr<TcpServer> ptr;
+
 	TcpServer(NetAddress::ptr addr);
 
   ~TcpServer();

@@ -11,9 +11,10 @@
 #include "../../coroutine/coroutine_pool.h"
 #include "../../comm/config.h"
 
-extern tinyrpc::Config::ptr gRpcConfig;
 
 namespace tinyrpc {
+
+extern tinyrpc::Config::ptr gRpcConfig;
 
 TcpAcceptor::TcpAcceptor(NetAddress::ptr net_addr) : m_local_addr(net_addr) {
 	

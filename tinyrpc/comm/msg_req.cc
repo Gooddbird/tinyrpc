@@ -8,9 +8,10 @@
 #include "config.h"
 #include "msg_req.h"
 
-extern tinyrpc::Config::ptr gRpcConfig;
 
 namespace tinyrpc {
+
+extern tinyrpc::Config::ptr gRpcConfig;
 
 static thread_local std::string t_msg_req_nu;
 static thread_local std::string t_max_msg_req_nu;

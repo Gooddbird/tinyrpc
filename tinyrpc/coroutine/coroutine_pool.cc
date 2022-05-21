@@ -3,13 +3,12 @@
 #include "coroutine_pool.h"
 #include "coroutine.h"
 
-extern tinyrpc::Config::ptr gRpcConfig;
 
 namespace tinyrpc {
 
+extern tinyrpc::Config::ptr gRpcConfig;
+
 static thread_local CoroutinePool* t_coroutine_container_ptr = nullptr; 
-// static thread_local int t_coroutine_stack_size = 1024 * 108; 
-// static thread_local int t_coroutine_pool_size = 100; 
 
 CoroutinePool* GetCoroutinePool() {
   if (!t_coroutine_container_ptr) {

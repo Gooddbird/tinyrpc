@@ -175,6 +175,10 @@ for example:
     <inteval>10</inteval>
   </time_wheel>
 
+  <server>
+    <ip>192.168.245.7</ip>
+    <port>39999</port>
+  </server>
 
   <database>
     <db_key name="test_db_key1">
@@ -192,32 +196,36 @@ for example:
 ```
 
 #### 5. Set Up RpcServer1
-It's very convenient to set uo RpcServer with **tinyrpc** framework
+It's very convenient to set uo RpcServer with **tinyrpc** framework, just do it like this:
 
 ```c++
-
-// testcases/test_rpc_server1.cc
 int main(int argc, char* argv[]) {
+  if (argc != 2) {
+    printf("Start TinyRPC server error, input argc is not 2!");
+    printf("Start TinyRPC server like this: \n");
+    printf("./server a.xml\n");
+    return 0;
+  }
 
-  gRpcConfig = std::make_shared<tinyrpc::Config>("../testcases/test_rpc_server1.xml");
-  gRpcConfig->readConf();
-
-  tinyrpc::IPAddress::ptr addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
-  
-  tinyrpc::TcpServer server(addr);
-  tinyrpc::TinyPbRpcDispacther* dispatcher = server.getDispatcher();
+  tinyrpc::InitConfig(argv[1]);
   QueryService* service = new QueryServiceImpl();
-  
-  DebugLog << "================";
-  dispatcher->registerService(service);
 
-  server.start();
+  tinyrpc::RegisterService(service);
+
+  tinyrpc::StartRpcServer();
+  
   return 0;
-}
+}/
+```
+argv[1] should be the xml config file on point 4.
+Then you can start it:
+```
+nohup ./test_rpc_server1 ../conf/test_rpc_server1.xml &
 ```
 
 #### 6.Set Up RpcServer2 
-Like RpcServer1, but we don't register Service, because we just user RpcServer2 to call method of RpcServer1.
+Like RpcServer1, but we don't register Service, because we just user RpcServer2 to call method of RpcServer1, so RpcServer need't to register Service.
+Just only add task to RpcServer2, which call method of RpcServer1.
 ```c++
 // testcases/test_rpc_server2.cc
 void fun() {
@@ -266,35 +274,41 @@ void fun() {
 
 }
 
-
-tinyrpc::Config::ptr gRpcConfig;
-
 int main(int argc, char* argv[]) {
 
-  if (argc != 3) {
-    std::cout << "use example:  ./out [port] [num]" << std::endl;
-    std::cout << "./out 30001 1" << std::endl;
+  if (argc != 2) {
+    printf("Start TinyRPC server error, input argc is not 2!");
+    printf("Start TinyRPC server like this: \n");
+    printf("./server a.xml\n");
     return 0;
   }
 
-  gRpcConfig = std::make_shared<tinyrpc::Config>("../testcases/test_rpc_server2.xml");
-  gRpcConfig->readConf();
+  tinyrpc::InitConfig(argv[1]);
 
-  int port = std::atoi(argv[1]);
-  n = std::atoi(argv[2]);
-
-  tinyrpc::IPAddress::ptr self_addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", port);
-  tinyrpc::TcpServer server(self_addr);
   tinyrpc::Coroutine::ptr cor = tinyrpc::GetCoroutinePool()->getCoroutineInstanse();
   cor->setCallBack(&fun);
-  server.addCoroutine(cor);
 
-  server.start();
+  tinyrpc::GetRpcServer()->addCoroutine(cor);
+
+  tinyrpc::StartRpcServer();
 
   return 0;
 }
 ```
 
+Of course, you should also make another xml config file: test_rpc_server2.xml. It can same to test_rpc_server1.xml, but you at least modify **port** attribute, ortherwise you will start RpcServer1 error beacasue this port has binded by RpcServer1. I choose port 40000 to start RpcServer2.
+
+```xml
+<server>
+  <ip>192.168.245.7</ip>
+  <port>40000</port>
+</server>
+
+```
+Then just start it:
+```
+nohup ./test_rpc_server2 ../conf/test_rpc_server2.xml &
+```
+
 #### 7. Test Rpc
-Directly run RpcServer1 and RpcServer2, notice if you recive correct result;
-You can see more detail in log file. like '**test_rpc_server1_20220516_rpc_0.log**'
+You should get more detail in log file. like '**test_rpc_server1_20220516_rpc_0.log**'.
