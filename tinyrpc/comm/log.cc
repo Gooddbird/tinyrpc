@@ -344,7 +344,7 @@ void AsyncLogger::stop() {
 }
 
 void Exit(int code) {
-
+  printf("It's sorry to said we start TinyRPC server error, look up log file to get more deatils!\n")
   _exit(code);
 }
 
