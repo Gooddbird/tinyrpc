@@ -12,11 +12,12 @@ namespace tinyrpc {
 class HttpDispacther : public AbstractDispatcher {
  public:
   HttpDispacther() = default;
+
   ~HttpDispacther() = default;
 
-  void dispatch(AbstractData* data, TcpConnection* conn) {}
+  void dispatch(AbstractData* data, TcpConnection* conn);
 
-  void registerService(google::protobuf::Service* service) {}
+  void registerService(google::protobuf::Service* service);
 
  public:
 
