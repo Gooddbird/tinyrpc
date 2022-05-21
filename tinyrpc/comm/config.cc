@@ -2,10 +2,10 @@
 #include <assert.h>
 #include <stdio.h>
 #include <memory>
-#include "config.h"
-#include "log.h"
-#include "../net/tcp/tcp_server.h"
-#include "../net/net_address.h"
+#include "tinyrpc/comm/config.h"
+#include "tinyrpc/comm/log.h"
+#include "tinyrpc/net/tcp/tcp_server.h"
+#include "tinyrpc/net/net_address.h"
 
 
 namespace tinyrpc {

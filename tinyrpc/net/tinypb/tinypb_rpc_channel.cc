@@ -2,14 +2,14 @@
 #include <google/protobuf/service.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/descriptor.h>
-#include "../net_address.h"
-#include "../../comm/error_code.h"
-#include "../tcp/tcp_client.h"
-#include "tinypb_rpc_channel.h"
-#include "tinypb_rpc_controller.h"
-#include "tinypb_codec.h"
-#include "tinypb_data.h"
-#include "../../comm/log.h"
+#include "tinyrpc/net/net_address.h"
+#include "tinyrpc/comm/error_code.h"
+#include "tinyrpc/net/tcp/tcp_client.h"
+#include "tinyrpc/net/tinypb/tinypb_rpc_channel.h"
+#include "tinyrpc/net/tinypb/tinypb_rpc_controller.h"
+#include "tinyrpc/net/tinypb/tinypb_codec.h"
+#include "tinyrpc/net/tinypb/tinypb_data.h"
+#include "tinyrpc/comm/log.h"
 
 
 namespace tinyrpc {
@@ -35,7 +35,7 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
     ErrorLog << "serialize send package error";
     return;
   }
-  TinyPbCodeC* m_codec = m_client->getConnection()->getCodec();
+  AbstractCodeC::ptr m_codec = m_client->getConnection()->getCodec();
   m_codec->encode(m_client->getConnection()->getOutBuffer(), &pb_struct);
   if (!pb_struct.encode_succ) {
     rpc_controller->SetError(ERROR_FAILED_ENCODE, "encode tinypb data error");

@@ -3,12 +3,12 @@
 #include <sstream>
 #include <memory>
 #include <string.h>
-#include "tinypb_codec.h"
-#include "../byte.h"
-#include "../../comm/log.h"
-#include "../abstract_data.h"
-#include "tinypb_data.h"
-#include "../../comm/msg_req.h"
+#include "tinyrpc/net/tinypb/tinypb_codec.h"
+#include "tinyrpc/net/byte.h"
+#include "tinyrpc/comm/log.h"
+#include "tinyrpc/net/abstract_data.h"
+#include "tinyrpc/net/tinypb/tinypb_data.h"
+#include "tinyrpc/comm/msg_req.h"
 
 
 namespace tinyrpc {
@@ -288,10 +288,6 @@ void TinyPbCodeC::decode(TcpBuffer* buf, AbstractData* data) {
   pb_struct->decode_succ = true;
   data = pb_struct;
 
-}
-
-CodeCType TinyPbCodeC::type() const {
-  return CODEC_TINYPB;
 }
 
 }

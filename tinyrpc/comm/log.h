@@ -12,9 +12,8 @@
 #include <memory>
 #include <vector>
 #include <queue>
-#include "../net/mutex.h"
-#include "config.h"
-
+#include "tinyrpc/net/mutex.h"
+#include "tinyrpc/comm/config.h"
 
 
 namespace tinyrpc {

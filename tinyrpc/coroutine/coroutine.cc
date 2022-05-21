@@ -2,8 +2,8 @@
 #include <assert.h>
 #include <string.h>
 #include <atomic>
-#include "coroutine.h"
-#include "../comm/log.h"
+#include "tinyrpc/coroutine/coroutine.h"
+#include "tinyrpc/comm/log.h"
 
 namespace tinyrpc {
 

@@ -1,16 +1,16 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/socket.h>
-#include "tcp_connection.h"
-#include "tcp_server.h"
-#include "tcp_client.h"
-#include "../tinypb/tinypb_codec.h"
-#include "../tinypb/tinypb_data.h"
-#include "../../coroutine/coroutine_hook.h"
-#include "../../coroutine/coroutine_pool.h"
-#include "tcp_connection_time_wheel.h"
-#include "abstract_slot.h"
-#include "../timer.h"
+#include "tinyrpc/net/tcp/tcp_connection.h"
+#include "tinyrpc/net/tcp/tcp_server.h"
+#include "tinyrpc/net/tcp/tcp_client.h"
+#include "tinyrpc/net/tinypb/tinypb_codec.h"
+#include "tinyrpc/net/tinypb/tinypb_data.h"
+#include "tinyrpc/coroutine/coroutine_hook.h"
+#include "tinyrpc/coroutine/coroutine_pool.h"
+#include "tinyrpc/net/tcp/tcp_connection_time_wheel.h"
+#include "tinyrpc/net/tcp/abstract_slot.h"
+#include "tinyrpc/net/timer.h"
 
 namespace tinyrpc {
 
@@ -20,7 +20,7 @@ TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_
 
   m_tcp_svr = tcp_svr;
 
-  m_codec = std::make_shared<TinyPbCodeC>();
+  m_codec = m_tcp_svr->getCodec();
   m_fd_event = FdEventContainer::GetFdContainer()->getFdEvent(fd);
   m_fd_event->setReactor(m_reactor);
   initBuffer(buff_size); 
@@ -39,7 +39,7 @@ TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reac
 
   m_tcp_cli = tcp_cli;
 
-  m_codec = std::make_shared<TinyPbCodeC>();
+  m_codec = m_tcp_cli->getCodeC();
 
   m_fd_event = FdEventContainer::GetFdContainer()->getFdEvent(fd);
   m_fd_event->setReactor(m_reactor);
@@ -282,8 +282,8 @@ bool TcpConnection::getResPackageData(const std::string& msg_req, TinyPbStruct& 
 }
 
 
-TinyPbCodeC* TcpConnection::getCodec() const {
-  return m_codec.get();
+AbstractCodeC::ptr TcpConnection::getCodec() const {
+  return m_codec;
 }
 
 TcpConnectionState TcpConnection::getState() const {

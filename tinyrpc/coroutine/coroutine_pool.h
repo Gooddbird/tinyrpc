@@ -2,7 +2,7 @@
 #define TINYRPC_COROUTINE_COUROUTINE_POOL_H
 
 #include <vector>
-#include "coroutine.h"
+#include "tinyrpc/coroutine/coroutine.h"
 
 namespace tinyrpc {
 

@@ -3,11 +3,6 @@
 
 namespace tinyrpc {
 
-enum CodeCType {
-  CODEC_HTTP = 1,
-  CODEC_TINYPB = 2,
-};
-
 class AbstractData {
  public:
   AbstractData() = default;

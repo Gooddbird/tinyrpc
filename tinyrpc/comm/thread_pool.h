@@ -4,7 +4,7 @@
 #include <pthread.h>
 #include <queue>
 #include <functional>
-#include "../net/mutex.h"
+#include "tinyrpc/net/mutex.h"
 
 namespace tinyrpc {
 

@@ -1,7 +1,7 @@
 #include "http_codec.h"
-#include "../../comm/log.h"
-#include "../abstract_data.h"
-#include "../abstract_codec.h"
+#include "tinyrpc/comm/log.h"
+#include "tinyrpc/net/abstract_data.h"
+#include "tinyrpc/net/abstract_codec.h"
 
 namespace tinyrpc {
 
@@ -25,10 +25,6 @@ void HttpCodeC::decode(TcpBuffer* buf, AbstractData* data) {
 
 
   DebugLog << "test decode end";
-}
-
-CodeCType HttpCodeC::type() const {
-  return CODEC_HTTP;
 }
 
 }

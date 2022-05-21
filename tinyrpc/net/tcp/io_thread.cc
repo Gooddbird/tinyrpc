@@ -1,12 +1,12 @@
 #include <memory>
 #include <map>
-#include "../reactor.h"
-#include "io_thread.h"
-#include "tcp_connection.h"
-#include "tcp_server.h"
-#include "tcp_connection_time_wheel.h"
-#include "../../coroutine/coroutine.h"
-#include "../../comm/config.h"
+#include "tinyrpc/net/reactor.h"
+#include "tinyrpc/net/tcp/io_thread.h"
+#include "tinyrpc/net/tcp/tcp_connection.h"
+#include "tinyrpc/net/tcp/tcp_server.h"
+#include "tinyrpc/net/tcp/tcp_connection_time_wheel.h"
+#include "tinyrpc/coroutine/coroutine.h"
+#include "tinyrpc/comm/config.h"
 
 
 namespace tinyrpc {

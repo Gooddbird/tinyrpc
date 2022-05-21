@@ -1,7 +1,7 @@
 #include <vector>
-#include "../comm/config.h"
-#include "coroutine_pool.h"
-#include "coroutine.h"
+#include "tinyrpc/comm/config.h"
+#include "tinyrpc/coroutine/coroutine_pool.h"
+#include "tinyrpc/coroutine/coroutine.h"
 
 
 namespace tinyrpc {

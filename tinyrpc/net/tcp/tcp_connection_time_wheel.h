@@ -3,9 +3,9 @@
 
 #include <queue>
 #include <vector>
-#include "abstract_slot.h"
-#include "../reactor.h"
-#include "../timer.h"
+#include "tinyrpc/net/tcp/abstract_slot.h"
+#include "tinyrpc/net/reactor.h"
+#include "tinyrpc/net/timer.h"
 
 namespace tinyrpc {
 

@@ -7,8 +7,8 @@
 #include <map>
 #include <memory>
 
-#include "../abstract_dispatcher.h"
-#include "tinypb_data.h"
+#include "tinyrpc/net/abstract_dispatcher.h"
+#include "tinyrpc/net/tinypb/tinypb_data.h"
 
 
 namespace tinyrpc {
@@ -16,7 +16,7 @@ namespace tinyrpc {
 class TinyPbRpcDispacther : public AbstractDispatcher {
  public:
 
-  typedef std::shared_ptr<TinyPbRpcDispacther> ptr;
+  // typedef std::shared_ptr<TinyPbRpcDispacther> ptr;
 
   TinyPbRpcDispacther() = default;
   ~TinyPbRpcDispacther() = default;

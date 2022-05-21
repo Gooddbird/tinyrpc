@@ -4,13 +4,13 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
-#include "coroutine_hook.h"
-#include "coroutine.h"
-#include "../net/fd_event.h"
-#include "../net/reactor.h"
-#include "../net/timer.h"
-#include "../comm/log.h"
-#include "../comm/config.h"
+#include "tinyrpc/coroutine/coroutine_hook.h"
+#include "tinyrpc/coroutine/coroutine.h"
+#include "tinyrpc/net/fd_event.h"
+#include "tinyrpc/net/reactor.h"
+#include "tinyrpc/net/timer.h"
+#include "tinyrpc/comm/log.h"
+#include "tinyrpc/comm/config.h"
 
 #define HOOK_SYS_FUNC(name) name##_fun_ptr_t g_sys_##name##_fun = (name##_fun_ptr_t)dlsym(RTLD_NEXT, #name);
 
