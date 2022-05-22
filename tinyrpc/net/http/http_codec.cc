@@ -7,9 +7,6 @@
 
 namespace tinyrpc {
 
-extern std::string g_CRLF = "\r\n";
-extern std::string g_CRLF_DOUBLE = "\r\n\r\n";
-
 HttpCodeC::HttpCodeC() {
 
 }
@@ -20,7 +17,7 @@ HttpCodeC::~HttpCodeC() {
 
 void HttpCodeC::encode(TcpBuffer* buf, AbstractData* data) {
   DebugLog << "test encode";
-  buf->readAble();
+  DebugLog << "test encode end";
 }
 
 void HttpCodeC::decode(TcpBuffer* buf, AbstractData* data) {
@@ -33,38 +30,85 @@ void HttpCodeC::decode(TcpBuffer* buf, AbstractData* data) {
   HttpRequest* request = dynamic_cast<HttpRequest*>(data);
 
   m_strs = buf->getBufferString();
-  int start_index = buf->readIndex();
-  int end_index = -1;
 
   bool is_parse_request_line = false;
   bool is_parse_request_header = false;
   bool is_parse_request_content = false;
   bool is_parse_succ = false;
+  int read_size = 0;
   std::string tmp(m_strs);
+  DebugLog << "pending to parse std:" << tmp;
   int len = tmp.length();
   while (1) {
-    size_t i = tmp.find(g_CRLF);
-    if (i == tmp.npos) {
-      DebugLog << "not found CRLF in buffer";
-      break;
-    }
-    if (i == tmp.length() - 2) {
-      DebugLog << "need to read more data";
-      break;
-    }
-    is_parse_request_line = parseHttpRequestLine(request, i);
     if (!is_parse_request_line) {
+      size_t i = tmp.find(g_CRLF);
+      if (i == tmp.npos) {
+        DebugLog << "not found CRLF in buffer";
+        return;
+      }
+      if (i == tmp.length() - 2) {
+        DebugLog << "need to read more data";
+        break;
+      }
+      is_parse_request_line = parseHttpRequestLine(request, tmp.substr(0, i));
+      if (!is_parse_request_line) {
+        return;
+      }    
+      tmp = m_strs.substr(i + 2, len - 3 - i);
+      len = tmp.length();
+      read_size = read_size + i + 2;
+    }
+
+    if (!is_parse_request_header) {
+      size_t j  = tmp.find(g_CRLF_DOUBLE);
+      if (j == tmp.npos) {
+        DebugLog << "not found CRLF CRLF in buffer";
+        return;
+      }
+      // if (j == tmp.length() - 4) {
+      //   DebugLog << "need to read more data";
+      //   goto parse_error;
+      // }
+      is_parse_request_header = parseHttpRequestHeader(request, tmp.substr(0, j));
+      if (!is_parse_request_header) {
+        return;
+      }
+      tmp = tmp.substr(j + 4, len - 5 - j);
+      len = tmp.length();
+      read_size = read_size + j + 4;
+    }
+    if (!is_parse_request_content) {
+      int content_len = std::atoi(request->m_requeset_header.m_content_length.c_str());
+      if (m_strs.length() - read_size < content_len) {
+        DebugLog << "need to read more data";
+        return;
+      }
+      if (request->m_request_method == POST && content_len != 0) {
+        is_parse_request_content = parseHttpRequestContent(request, tmp.substr(0, content_len));
+        if (!is_parse_request_content) {
+          return;
+        }
+        read_size = read_size + content_len;
+      } else {
+        is_parse_request_content = true;
+      }
+
+    }
+    if (is_parse_request_line && is_parse_request_header && is_parse_request_header) {
+      DebugLog << "parse http request success, read size is " << read_size << " bytes";
+      buf->recycleRead(read_size);
       break;
     }
-    tmp = tmp.substr(i + 2, len - 3 - i);
   }
 
-  DebugLog << "test decode end";
+  request->decode_succ = true;
+  data = request;
+
+  DebugLog << "test http decode end";
 }
 
 
-bool HttpCodeC::parseHttpRequestLine(HttpRequest* requset, int i) {
-  std::string tmp = m_strs.substr(0, i);
+bool HttpCodeC::parseHttpRequestLine(HttpRequest* requset, const std::string& tmp) {
   size_t s1 = tmp.find_first_of(" ");
   size_t s2 = tmp.find_last_of(" ");
 
@@ -119,8 +163,13 @@ bool HttpCodeC::parseHttpRequestLine(HttpRequest* requset, int i) {
 
 }
 
-bool HttpCodeC::parseHttpRequestHeader(HttpRequest* requset, int i) {
+bool HttpCodeC::parseHttpRequestHeader(HttpRequest* requset, const std::string& tmp) {
   return true;
+}
+bool HttpCodeC::parseHttpRequestContent(HttpRequest* requset, const std::string& tmp) {
+  if (tmp.empty()) {
+    return true;
+  }
 }
 
 }

@@ -7,6 +7,10 @@
 
 namespace tinyrpc {
 
+extern const char* default_html_template;
+extern std::string content_type_text;
+
+
 HttpServlet::HttpServlet(HttpRequest::ptr req, HttpResponse::ptr res) : m_request(req), m_response(res) {
   setCommParam();
 }
@@ -40,6 +44,3 @@ void HttpServlet::setCommParam() {
 }
 
 }
-
-
-

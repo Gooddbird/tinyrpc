@@ -137,7 +137,7 @@ void TcpBuffer::recycleWrite(int index) {
 // }
 
 std::string TcpBuffer::getBufferString() {
-  std::string re;
+  std::string re(m_buffer.size(), '0');
   memcpy(&re[0],  &m_buffer[m_read_index], readAble());
   return re;
 }

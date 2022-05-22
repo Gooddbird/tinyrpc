@@ -10,11 +10,6 @@
 
 namespace tinyrpc {
 
-enum HttpMethod {
-  GET = 1,
-  POST = 2, 
-};
-
 class HttpRequest : public AbstractData {
  public:
   typedef std::shared_ptr<HttpRequest> ptr; 

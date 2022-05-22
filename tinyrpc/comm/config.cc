@@ -204,8 +204,8 @@ void Config::readConf() {
     exit(0);
   }
 
-  if (!net_node->FirstChildElement("ip") || !net_node->FirstChildElement("port")) {
-    printf("start tinyrpc server error! read config file [%s] error, cannot read [server.ip] or [server.port] xml node\n", m_file_path.c_str());
+  if (!net_node->FirstChildElement("ip") || !net_node->FirstChildElement("port") || !net_node->FirstChildElement("protocal")) {
+    printf("start tinyrpc server error! read config file [%s] error, cannot read [server.ip] or [server.port] or [server.protocal] xml node\n", m_file_path.c_str());
     exit(0);
   }
   std::string ip = std::string(net_node->FirstChildElement("ip")->GetText());
@@ -217,19 +217,25 @@ void Config::readConf() {
     printf("start tinyrpc server error! read config file [%s] error, read [server.port] = 0\n", m_file_path.c_str());
     exit(0);
   }
+  std::string protocal = std::string(net_node->FirstChildElement("protocal")->GetText());
+  std::transform(protocal.begin(), protocal.end(), protocal.begin(), toupper);
 
   tinyrpc::IPAddress::ptr addr = std::make_shared<tinyrpc::IPAddress>(ip, port);
 
-  gRpcServer = std::make_shared<TcpServer>(addr);
+  if (protocal == "HTTP") {
+    gRpcServer = std::make_shared<TcpServer>(addr, Http_Protocal);
+  } else {
+    gRpcServer = std::make_shared<TcpServer>(addr, TinyPb_Protocal);
+  }
 
   char buff[512];
   sprintf(buff, "read config from file [%s]: [log_path: %s], [log_prefix: %s], [log_max_size: %d MB], [log_level: %s], " 
       "[coroutine_stack_size: %d KB], [coroutine_pool_size: %d], "
       "[msg_req_len: %d], [max_connect_timeout: %d s], "
-      "[iothread_num:%d], [timewheel_bucket_num: %d], [timewheel_inteval: %d s], [server_ip: %s], [server_Port: %d]\n",
+      "[iothread_num:%d], [timewheel_bucket_num: %d], [timewheel_inteval: %d s], [server_ip: %s], [server_Port: %d], [server_protocal: %s]\n",
       m_file_path.c_str(), m_log_path.c_str(), m_log_prefix.c_str(), m_log_max_size / 1024 / 1024, 
       levelToString(m_log_level).c_str(), cor_stack_size, m_cor_pool_size, m_msg_req_len,
-      max_connect_timeout, m_iothread_num, m_timewheel_bucket_num, m_timewheel_inteval, ip.c_str(), port);
+      max_connect_timeout, m_iothread_num, m_timewheel_bucket_num, m_timewheel_inteval, ip.c_str(), port, protocal.c_str());
 
   std::string s(buff);
   InfoLog << s;

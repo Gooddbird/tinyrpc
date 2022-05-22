@@ -15,7 +15,7 @@ class HttpResponse : public AbstractData {
 
  public:
   std::string m_response_version;   
-  HttpCode m_response_code;
+  int m_response_code;
   std::string m_response_info;
   HttpResponseHeader m_response_header;
   std::string m_response_body;   

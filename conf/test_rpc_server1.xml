@@ -43,6 +43,7 @@
   <server>
     <ip>0.0.0.0</ip>
     <port>39999</port>
+    <protocal>TinyPB</protocal>
   </server>
 
   <database>

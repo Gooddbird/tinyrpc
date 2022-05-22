@@ -19,8 +19,9 @@ class HttpCodeC : public AbstractCodeC {
   void decode(TcpBuffer* buf, AbstractData* data);
 
  private:
-  bool parseHttpRequestLine(HttpRequest* requset, int i);
-  bool parseHttpRequestHeader(HttpRequest* requset, int i);
+  bool parseHttpRequestLine(HttpRequest* requset, const std::string& tmp);
+  bool parseHttpRequestHeader(HttpRequest* requset, const std::string& tmp);
+  bool parseHttpRequestContent(HttpRequest* requset, const std::string& tmp);
 
  private:
   std::string m_strs;
