@@ -13,10 +13,12 @@ class TcpConnection;
 class AbstractDispatcher {
  public:
   typedef std::shared_ptr<AbstractDispatcher> ptr;
+
   AbstractDispatcher() {}
+
   virtual ~AbstractDispatcher() {}
+
   virtual void dispatch(AbstractData* data, TcpConnection* conn) = 0;
-  virtual void registerService(google::protobuf::Service* service) = 0;
 
 };
 

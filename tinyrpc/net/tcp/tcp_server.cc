@@ -177,7 +177,7 @@ void TcpServer::addCoroutine(Coroutine::ptr cor) {
 
 void TcpServer::registerService(google::protobuf::Service* service) {
 	if (m_protocal_type == TinyPb_Protocal) {
-		m_dispatcher->registerService(service);
+		dynamic_cast<TinyPbRpcDispacther*>(m_dispatcher.get())->registerService(service);
 	}
 }
 

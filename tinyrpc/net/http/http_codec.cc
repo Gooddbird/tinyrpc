@@ -7,11 +7,8 @@
 
 namespace tinyrpc {
 
-static std::string g_CRLF = "\r\n";
-static std::string g_CRLF_DOUBLE = "\r\n\r\n";
-static const char* g_GET_METHOD = "GET";
-static const char* g_POST_METHOD = "POST";
-
+extern std::string g_CRLF = "\r\n";
+extern std::string g_CRLF_DOUBLE = "\r\n\r\n";
 
 HttpCodeC::HttpCodeC() {
 
@@ -60,10 +57,7 @@ void HttpCodeC::decode(TcpBuffer* buf, AbstractData* data) {
       break;
     }
     tmp = tmp.substr(i + 2, len - 3 - i);
-    
-
   }
-
 
   DebugLog << "test decode end";
 }
@@ -79,18 +73,18 @@ bool HttpCodeC::parseHttpRequestLine(HttpRequest* requset, int i) {
     return false;
   }
   std::string method = tmp.substr(0, s1);
-  std::transform(method.begin(), method.end(), method.begin(), std::toupper);
+  std::transform(method.begin(), method.end(), method.begin(), toupper);
   if (method == "GET") {
-    requset->m_request_method = HTTPMETHOD::GET;
+    requset->m_request_method = HttpMethod::GET;
   } else if (method == "POST") {
-    requset->m_request_method = HTTPMETHOD::POST;
+    requset->m_request_method = HttpMethod::POST;
   } else {
     ErrorLog << "parse http request request line error, not support http method:" << method;
     return false;
   }
 
   std::string version = tmp.substr(s2 + 1, tmp.length() - s2 - 2);
-  std::transform(version.begin(), version.end(), version.begin(), std::toupper);
+  std::transform(version.begin(), version.end(), version.begin(), toupper);
   if (version != "HTTP/1.1" && version != "HTTP/1.0") {
     ErrorLog << "parse http request request line error, not support http version:" << version;
     return false;
@@ -126,7 +120,7 @@ bool HttpCodeC::parseHttpRequestLine(HttpRequest* requset, int i) {
 }
 
 bool HttpCodeC::parseHttpRequestHeader(HttpRequest* requset, int i) {
-
+  return true;
 }
 
 }
