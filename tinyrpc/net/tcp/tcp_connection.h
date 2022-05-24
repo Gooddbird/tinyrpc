@@ -63,7 +63,7 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
   AbstractCodeC::ptr getCodec() const;
 
-  bool getResPackageData(const std::string& msg_req, TinyPbStruct& pb_struct);
+  bool getResPackageData(const std::string& msg_req, TinyPbStruct::pb_ptr pb_struct);
 
   void registerToTimeWheel();
 
@@ -110,7 +110,7 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
   bool m_is_over_time {false};
 
-  std::map<std::string, TinyPbStruct> m_reply_datas;
+  std::map<std::string, std::shared_ptr<TinyPbStruct>> m_reply_datas;
 
   std::weak_ptr<AbstractSlot<TcpConnection>> m_weak_slot;
 

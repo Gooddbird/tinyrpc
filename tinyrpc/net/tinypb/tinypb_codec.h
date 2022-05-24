@@ -23,7 +23,11 @@ class TinyPbCodeC: public AbstractCodeC {
   // overwrite
   void decode(TcpBuffer* buf, AbstractData* data);
 
+  // overwrite
+  virtual ProtocalType getProtocalType();
+
   const char* encodePbData(TinyPbStruct* data, int& len);
+
 
 };
 

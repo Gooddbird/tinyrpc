@@ -7,11 +7,11 @@
 
 namespace tinyrpc {
 
-class HttpServlet {
+class HttpServlet : public std::enable_shared_from_this<HttpServlet> {
  public:
   typedef std::shared_ptr<HttpServlet> ptr;
 
-  HttpServlet(HttpRequest::ptr req, HttpResponse::ptr res);
+  HttpServlet(HttpRequest* req, HttpResponse* res);
 
   virtual ~HttpServlet();
 
@@ -21,12 +21,24 @@ class HttpServlet {
 
   void setHttpCode(const int code);
 
- private:
+ protected:
   void setCommParam();
 
- private:
-  HttpRequest::ptr m_request;
-  HttpResponse::ptr m_response;
+ protected:
+  HttpRequest* m_request;
+  HttpResponse* m_response;
+
+};
+
+
+class NotFoundHttpServlet: public HttpServlet {
+ public:
+
+  NotFoundHttpServlet(HttpRequest* req, HttpResponse* res);
+
+  ~NotFoundHttpServlet();
+
+  void handle();
 
 };
 

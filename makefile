@@ -22,7 +22,7 @@ PATH_TESTCASES = testcases
 
 CXX := g++
 
-CXXFLAGS += -g -O3 -std=c++11 -Wall -Wno-deprecated -Wno-unused-but-set-variable
+CXXFLAGS += -g -O0 -std=c++11 -Wall -Wno-deprecated -Wno-unused-but-set-variable
 
 CXXFLAGS += -I./ -I$(PATH_TINYRPC)	-I$(PATH_COMM) -I$(PATH_COROUTINE) -I$(PATH_NET) -I$(PATH_HTTP) -I$(PATH_TCP) -I$(PATH_TINYPB)
 

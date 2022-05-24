@@ -166,19 +166,28 @@ void TcpConnection::execute() {
 
   // it only server do this
   while(m_read_buffer->readAble() > 0) {
-    TinyPbStruct pb_struct; 
-    m_codec->decode(m_read_buffer.get(), &pb_struct);
+    std::shared_ptr<AbstractData> data;
+    if (m_codec->getProtocalType() == TinyPb_Protocal) {
+      data = std::make_shared<TinyPbStruct>();
+    } else {
+      data = std::make_shared<HttpRequest>();
+    }
+
+    m_codec->decode(m_read_buffer.get(), data.get());
     // DebugLog << "parse service_name=" << pb_struct.service_full_name;
-    if (!pb_struct.decode_succ) {
+    if (!data->decode_succ) {
       break;
     }
     if (m_connection_type == ServerConnection) {
       DebugLog << "to dispatch this package";
-      m_tcp_svr->getDispatcher()->dispatch(&pb_struct, this);
+      m_tcp_svr->getDispatcher()->dispatch(data.get(), this);
       DebugLog << "contine parse next package";
     } else if (m_connection_type == ClientConnection) {
       // TODO:
-      m_reply_datas.insert(std::make_pair(pb_struct.msg_req, std::move(pb_struct)));
+      std::shared_ptr<TinyPbStruct> tmp = std::dynamic_pointer_cast<TinyPbStruct>(data);
+      if (tmp) {
+        m_reply_datas.insert(std::make_pair(tmp->msg_req, tmp));
+      }
     }
 
   }
@@ -268,11 +277,11 @@ TcpBuffer* TcpConnection::getOutBuffer() {
   return m_write_buffer.get();
 }
 
-bool TcpConnection::getResPackageData(const std::string& msg_req, TinyPbStruct& pb_struct) {
+bool TcpConnection::getResPackageData(const std::string& msg_req, TinyPbStruct::pb_ptr pb_struct) {
   auto it = m_reply_datas.find(msg_req);
   if (it != m_reply_datas.end()) {
     DebugLog << "return a resdata";
-    pb_struct = std::move(it->second);
+    pb_struct = it->second;
     m_reply_datas.erase(it);
     return true;
   }

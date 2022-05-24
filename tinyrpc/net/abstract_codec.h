@@ -27,6 +27,8 @@ class AbstractCodeC {
 
   virtual void decode(TcpBuffer* buf, AbstractData* data) = 0;
 
+  virtual ProtocalType getProtocalType() = 0;
+
 };
 
 }

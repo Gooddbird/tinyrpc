@@ -290,4 +290,9 @@ void TinyPbCodeC::decode(TcpBuffer* buf, AbstractData* data) {
 
 }
 
+
+ProtocalType TinyPbCodeC::getProtocalType() {
+  return TinyPb_Protocal;
+}
+
 }

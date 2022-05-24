@@ -50,7 +50,7 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
   InfoLog << "============================================================";
   m_client->setTimeout(rpc_controller->Timeout());
 
-  TinyPbStruct res_data;
+  TinyPbStruct::pb_ptr res_data;
   int rt = m_client->sendAndRecvTinyPb(pb_struct.msg_req, res_data);
   if (rt != 0) {
     rpc_controller->SetError(rt, m_client->getErrInfo());
@@ -59,14 +59,14 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
     return;
   }
 
-  if (!response->ParseFromString(res_data.pb_data)) {
+  if (!response->ParseFromString(res_data->pb_data)) {
     rpc_controller->SetError(ERROR_FAILED_DESERIALIZE, "failed to deserialize data from server");
     ErrorLog << pb_struct.msg_req << "|failed to deserialize data";
     return;
   }
-  if (res_data.err_code != 0) {
-    ErrorLog << pb_struct.msg_req << "|server reply error_code=" << res_data.err_code << ", err_info=" << res_data.err_info;
-    rpc_controller->SetError(res_data.err_code, res_data.err_info);
+  if (res_data->err_code != 0) {
+    ErrorLog << pb_struct.msg_req << "|server reply error_code=" << res_data->err_code << ", err_info=" << res_data->err_info;
+    rpc_controller->SetError(res_data->err_code, res_data->err_info);
     return;
   }
 
