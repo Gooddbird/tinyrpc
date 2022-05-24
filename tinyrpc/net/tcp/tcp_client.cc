@@ -1,24 +1,32 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include "../../comm/log.h"
-#include "../../coroutine/coroutine.h"
-#include "../../coroutine/coroutine_hook.h"
-#include "../../coroutine/coroutine_pool.h"
-#include "../net_address.h"
-#include "tcp_client.h" 
-#include "../../comm/error_code.h"
-#include "../timer.h"
-#include "../fd_event.h"
+#include "tinyrpc/comm/log.h"
+#include "tinyrpc/coroutine/coroutine.h"
+#include "tinyrpc/coroutine/coroutine_hook.h"
+#include "tinyrpc/coroutine/coroutine_pool.h"
+#include "tinyrpc/net/net_address.h"
+#include "tinyrpc/net/tcp/tcp_client.h" 
+#include "tinyrpc/comm/error_code.h"
+#include "tinyrpc/net/timer.h"
+#include "tinyrpc/net/fd_event.h"
+#include "tinyrpc/net/http/http_codec.h"
+#include "tinyrpc/net/tinypb/tinypb_codec.h"
 
 namespace tinyrpc {
 
-TcpClient::TcpClient(NetAddress::ptr addr) : m_peer_addr(addr) {
+TcpClient::TcpClient(NetAddress::ptr addr, ProtocalType type /*= TinyPb_Protocal*/) : m_peer_addr(addr) {
 
   m_family = m_peer_addr->getFamily();
   m_fd = socket(AF_INET, SOCK_STREAM, 0);
   m_local_addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 0);
-
   m_reactor = Reactor::GetReactor();
+
+  if (type == Http_Protocal) {
+		m_codec = std::make_shared<HttpCodeC>();
+	} else {
+		m_codec = std::make_shared<TinyPbCodeC>();
+	}
+
   m_connection = std::make_shared<TcpConnection>(this, m_reactor, m_fd, 128, m_peer_addr);
 
 }
@@ -42,7 +50,7 @@ void TcpClient::resetFd() {
   m_fd = socket(AF_INET, SOCK_STREAM, 0);
 }
 
-int TcpClient::sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct& res) {
+int TcpClient::sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct::pb_ptr res) {
   bool is_timeout = false;
   tinyrpc::Coroutine* cur_cor = tinyrpc::Coroutine::GetCurrentCoroutine();
   auto timer_cb = [this, &is_timeout, cur_cor]() {

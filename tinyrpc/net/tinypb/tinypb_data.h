@@ -4,13 +4,14 @@
 #include <stdint.h>
 #include <vector>
 #include <string>
-#include "../abstract_data.h"
-#include "../../comm/log.h"
+#include "tinyrpc/net/abstract_data.h"
+#include "tinyrpc/comm/log.h"
 
 namespace tinyrpc {
 
 class TinyPbStruct : public AbstractData {
  public:
+  typedef std::shared_ptr<TinyPbStruct> pb_ptr;
   TinyPbStruct() = default;
   ~TinyPbStruct() = default;
   TinyPbStruct(const TinyPbStruct& ) = default;
@@ -36,9 +37,6 @@ class TinyPbStruct : public AbstractData {
   int32_t check_num {-1};             // check_num of all package. to check legality of data
   // char end;                        // identify end of a TinyPb protocal data
 
-  // CodeCType type() const {
-  //   return CodeCType::CODEC_TINYPB;
-  // }
 };
 
 }

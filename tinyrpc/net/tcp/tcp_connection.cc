@@ -1,16 +1,16 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/socket.h>
-#include "tcp_connection.h"
-#include "tcp_server.h"
-#include "tcp_client.h"
-#include "../tinypb/tinypb_codec.h"
-#include "../tinypb/tinypb_data.h"
-#include "../../coroutine/coroutine_hook.h"
-#include "../../coroutine/coroutine_pool.h"
-#include "tcp_connection_time_wheel.h"
-#include "abstract_slot.h"
-#include "../timer.h"
+#include "tinyrpc/net/tcp/tcp_connection.h"
+#include "tinyrpc/net/tcp/tcp_server.h"
+#include "tinyrpc/net/tcp/tcp_client.h"
+#include "tinyrpc/net/tinypb/tinypb_codec.h"
+#include "tinyrpc/net/tinypb/tinypb_data.h"
+#include "tinyrpc/coroutine/coroutine_hook.h"
+#include "tinyrpc/coroutine/coroutine_pool.h"
+#include "tinyrpc/net/tcp/tcp_connection_time_wheel.h"
+#include "tinyrpc/net/tcp/abstract_slot.h"
+#include "tinyrpc/net/timer.h"
 
 namespace tinyrpc {
 
@@ -20,7 +20,7 @@ TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_
 
   m_tcp_svr = tcp_svr;
 
-  m_codec = std::make_shared<TinyPbCodeC>();
+  m_codec = m_tcp_svr->getCodec();
   m_fd_event = FdEventContainer::GetFdContainer()->getFdEvent(fd);
   m_fd_event->setReactor(m_reactor);
   initBuffer(buff_size); 
@@ -39,7 +39,7 @@ TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reac
 
   m_tcp_cli = tcp_cli;
 
-  m_codec = std::make_shared<TinyPbCodeC>();
+  m_codec = m_tcp_cli->getCodeC();
 
   m_fd_event = FdEventContainer::GetFdContainer()->getFdEvent(fd);
   m_fd_event->setReactor(m_reactor);
@@ -166,19 +166,28 @@ void TcpConnection::execute() {
 
   // it only server do this
   while(m_read_buffer->readAble() > 0) {
-    TinyPbStruct pb_struct; 
-    m_codec->decode(m_read_buffer.get(), &pb_struct);
+    std::shared_ptr<AbstractData> data;
+    if (m_codec->getProtocalType() == TinyPb_Protocal) {
+      data = std::make_shared<TinyPbStruct>();
+    } else {
+      data = std::make_shared<HttpRequest>();
+    }
+
+    m_codec->decode(m_read_buffer.get(), data.get());
     // DebugLog << "parse service_name=" << pb_struct.service_full_name;
-    if (!pb_struct.decode_succ) {
+    if (!data->decode_succ) {
       break;
     }
     if (m_connection_type == ServerConnection) {
       DebugLog << "to dispatch this package";
-      m_tcp_svr->getDispatcher()->dispatch(&pb_struct, this);
+      m_tcp_svr->getDispatcher()->dispatch(data.get(), this);
       DebugLog << "contine parse next package";
     } else if (m_connection_type == ClientConnection) {
       // TODO:
-      m_reply_datas.insert(std::make_pair(pb_struct.msg_req, std::move(pb_struct)));
+      std::shared_ptr<TinyPbStruct> tmp = std::dynamic_pointer_cast<TinyPbStruct>(data);
+      if (tmp) {
+        m_reply_datas.insert(std::make_pair(tmp->msg_req, tmp));
+      }
     }
 
   }
@@ -268,11 +277,11 @@ TcpBuffer* TcpConnection::getOutBuffer() {
   return m_write_buffer.get();
 }
 
-bool TcpConnection::getResPackageData(const std::string& msg_req, TinyPbStruct& pb_struct) {
+bool TcpConnection::getResPackageData(const std::string& msg_req, TinyPbStruct::pb_ptr pb_struct) {
   auto it = m_reply_datas.find(msg_req);
   if (it != m_reply_datas.end()) {
     DebugLog << "return a resdata";
-    pb_struct = std::move(it->second);
+    pb_struct = it->second;
     m_reply_datas.erase(it);
     return true;
   }
@@ -282,8 +291,8 @@ bool TcpConnection::getResPackageData(const std::string& msg_req, TinyPbStruct& 
 }
 
 
-TinyPbCodeC* TcpConnection::getCodec() const {
-  return m_codec.get();
+AbstractCodeC::ptr TcpConnection::getCodec() const {
+  return m_codec;
 }
 
 TcpConnectionState TcpConnection::getState() const {

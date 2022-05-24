@@ -2,14 +2,17 @@
 #include <assert.h>
 #include <fcntl.h>
 #include <string.h>
-#include "tcp_server.h"
-#include "tcp_connection.h"
-#include "io_thread.h"
-#include "tcp_connection_time_wheel.h"
-#include "../../coroutine/coroutine.h"
-#include "../../coroutine/coroutine_hook.h"
-#include "../../coroutine/coroutine_pool.h"
-#include "../../comm/config.h"
+#include "tinyrpc/net/tcp/tcp_server.h"
+#include "tinyrpc/net/tcp/tcp_connection.h"
+#include "tinyrpc/net/tcp/io_thread.h"
+#include "tinyrpc/net/tcp/tcp_connection_time_wheel.h"
+#include "tinyrpc/coroutine/coroutine.h"
+#include "tinyrpc/coroutine/coroutine_hook.h"
+#include "tinyrpc/coroutine/coroutine_pool.h"
+#include "tinyrpc/comm/config.h"
+#include "tinyrpc/net/http/http_codec.h"
+#include "tinyrpc/net/http/http_dispatcher.h"
+#include "tinyrpc/net/tinypb/tinypb_rpc_dispatcher.h"
 
 
 namespace tinyrpc {
@@ -100,9 +103,17 @@ int TcpAcceptor::toAccept() {
 }
 
 
-TcpServer::TcpServer(NetAddress::ptr addr) : m_addr(addr) {
+TcpServer::TcpServer(NetAddress::ptr addr, ProtocalType type /*= TinyPb_Protocal*/) : m_addr(addr) {
   m_io_pool = std::make_shared<IOThreadPool>(gRpcConfig->m_iothread_num);
-	m_dispatcher = std::make_shared<TinyPbRpcDispacther>();
+	if (type == Http_Protocal) {
+		m_dispatcher = std::make_shared<HttpDispacther>();
+		m_codec = std::make_shared<HttpCodeC>();
+		m_protocal_type = Http_Protocal;
+	} else {
+		m_dispatcher = std::make_shared<TinyPbRpcDispacther>();
+		m_codec = std::make_shared<TinyPbCodeC>();
+		m_protocal_type = TinyPb_Protocal;
+	}
 	m_main_reactor = tinyrpc::Reactor::GetReactor();
 	InfoLog << "TcpServer setup on [" << m_addr->toString() << "]";
 }
@@ -152,8 +163,12 @@ void TcpServer::MainAcceptCorFunc() {
 }
 
 
-TinyPbRpcDispacther* TcpServer::getDispatcher() {	
-	return m_dispatcher.get();	
+AbstractDispatcher::ptr TcpServer::getDispatcher() {	
+	return m_dispatcher;	
+}
+
+AbstractCodeC::ptr TcpServer::getCodec() {
+	return m_codec;
 }
 
 void TcpServer::addCoroutine(Coroutine::ptr cor) {
@@ -161,7 +176,9 @@ void TcpServer::addCoroutine(Coroutine::ptr cor) {
 }
 
 void TcpServer::registerService(google::protobuf::Service* service) {
-	m_dispatcher->registerService(service);
+	if (m_protocal_type == TinyPb_Protocal) {
+		dynamic_cast<TinyPbRpcDispacther*>(m_dispatcher.get())->registerService(service);
+	}
 }
 
 }

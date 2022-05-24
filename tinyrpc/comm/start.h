@@ -2,7 +2,7 @@
 #define TINYRPC_COMM_START_H
 
 #include <google/protobuf/service.h>
-#include "../net/tcp/tcp_server.h"
+#include "tinyrpc/net/tcp/tcp_server.h"
 
 namespace tinyrpc {
 

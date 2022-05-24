@@ -2,16 +2,16 @@
 #define TINYRPC_NET_TINYPB_TINYPB_CODEC_H
 
 #include <stdint.h>
-#include "../abstract_codec.h"
-#include "../abstract_data.h"
-#include "tinypb_data.h"
+#include "tinyrpc/net/abstract_codec.h"
+#include "tinyrpc/net/abstract_data.h"
+#include "tinyrpc/net/tinypb/tinypb_data.h"
 
 namespace tinyrpc {
 
 
 class TinyPbCodeC: public AbstractCodeC {
  public:
-  typedef std::shared_ptr<TinyPbCodeC> ptr;
+  // typedef std::shared_ptr<TinyPbCodeC> ptr;
 
   TinyPbCodeC();
 
@@ -23,9 +23,11 @@ class TinyPbCodeC: public AbstractCodeC {
   // overwrite
   void decode(TcpBuffer* buf, AbstractData* data);
 
+  // overwrite
+  virtual ProtocalType getProtocalType();
+
   const char* encodePbData(TinyPbStruct* data, int& len);
 
-  CodeCType type() const;
 
 };
 

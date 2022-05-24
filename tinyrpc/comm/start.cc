@@ -1,8 +1,8 @@
 #include <google/protobuf/service.h>
-#include "start.h"
-#include "log.h"
-#include "config.h"
-#include "../net/tcp/tcp_server.h"
+#include "tinyrpc/comm/start.h"
+#include "tinyrpc/comm/log.h"
+#include "tinyrpc/comm/config.h"
+#include "tinyrpc/net/tcp/tcp_server.h"
 
 namespace tinyrpc {
 

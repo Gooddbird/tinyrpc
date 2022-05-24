@@ -4,64 +4,22 @@
 #include <string>
 #include <memory>
 
+#include "tinyrpc/net/abstract_data.h"
+#include "tinyrpc/net/http/http_define.h"
+
 
 namespace tinyrpc {
 
-class HttpRequest {
+class HttpRequest : public AbstractData {
+ public:
+  typedef std::shared_ptr<HttpRequest> ptr; 
 
  public:
-
-  typedef std::shared_ptr<HttpRequest> ptr; 
-  enum METHOD {
-    GET = 1,
-    POST = 2, 
-  };
-
-  void setRequertMethod(const METHOD v) {
-    m_request_method = v; 
-  }
-
-  METHOD getRequertMethod() const {
-    return m_request_method;
-  }
-
-  void setRequestUrl(const std::string& v) {
-    m_request_url = v;
-  }
-
-  std::string getRequertUrl() const {
-    return m_request_url;
-  }
-  
-  void setRequestHeader(const std::string& v) {
-    m_request_header = v;
-  }
-
-  std::string getRequertHeader() const {
-    return m_request_header;
-  }
-  
-  void setRequestVersion(const std::string& v) {
-    m_request_version = v;
-  }
-
-  std::string getRequertVersion() const {
-    return m_request_version;
-  }
-
-  void setRequestBody(const std::string& v) {
-    m_request_body = v;
-  }
-
-  std::string getRequertBody() const {
-    return m_request_body;
-  }
-
- private:
-  METHOD m_request_method;   
-  std::string m_request_url;   
+  HttpMethod m_request_method;   
+  std::string m_request_path;   
+  std::string m_request_query;   
   std::string m_request_version;   
-  std::string m_request_header;   
+  HttpRequestHeader m_requeset_header;
   std::string m_request_body;   
 
 

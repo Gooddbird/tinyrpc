@@ -3,15 +3,15 @@
 
 #include <map>
 #include <google/protobuf/service.h>
-#include "io_thread.h"
-#include "../reactor.h"
-#include "../fd_event.h"
-#include "../timer.h"
-#include "../net_address.h"
-#include "tcp_connection.h"
-#include "io_thread.h"
-#include "tcp_connection_time_wheel.h"
-#include "../tinypb/tinypb_rpc_dispatcher.h"
+#include "tinyrpc/net/reactor.h"
+#include "tinyrpc/net/fd_event.h"
+#include "tinyrpc/net/timer.h"
+#include "tinyrpc/net/net_address.h"
+#include "tinyrpc/net/tcp/tcp_connection.h"
+#include "tinyrpc/net/tcp/io_thread.h"
+#include "tinyrpc/net/tcp/tcp_connection_time_wheel.h"
+#include "tinyrpc/net/abstract_codec.h"
+#include "tinyrpc/net/abstract_dispatcher.h"
 
 
 namespace tinyrpc {
@@ -53,7 +53,7 @@ class TcpServer {
 
   typedef std::shared_ptr<TcpServer> ptr;
 
-	TcpServer(NetAddress::ptr addr);
+	TcpServer(NetAddress::ptr addr, ProtocalType type = TinyPb_Protocal);
 
   ~TcpServer();
 
@@ -63,7 +63,9 @@ class TcpServer {
 
   bool addClient(int fd);
 
-  TinyPbRpcDispacther* getDispatcher();
+  AbstractDispatcher::ptr getDispatcher();
+
+  AbstractCodeC::ptr getCodec();
 
   TcpTimeWheel* getTimeWheel();
 
@@ -92,11 +94,13 @@ class TcpServer {
 
   Coroutine::ptr m_accept_cor;
   
-  // TimerEvent::ptr m_timer_event;
-  // Timer::ptr m_timer;
-  TinyPbRpcDispacther::ptr m_dispatcher;
+  AbstractDispatcher::ptr m_dispatcher;
+
+  AbstractCodeC::ptr m_codec;
 
   IOThreadPool::ptr m_io_pool;
+
+  ProtocalType m_protocal_type {TinyPb_Protocal};
 
 
 };

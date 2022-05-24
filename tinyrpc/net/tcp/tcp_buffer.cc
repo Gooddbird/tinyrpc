@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include <string.h>
-#include "tcp_buffer.h"
-#include "../../comm/log.h"
+#include "tinyrpc/net/tcp/tcp_buffer.h"
+#include "tinyrpc/comm/log.h"
 
 
 namespace tinyrpc {
@@ -135,6 +135,12 @@ void TcpBuffer::recycleWrite(int index) {
 //   memcpy(&tmp, &m_buffer[m_read_index], readAble());
 //   return tmp;
 // }
+
+std::string TcpBuffer::getBufferString() {
+  std::string re(readAble(), '0');
+  memcpy(&re[0],  &m_buffer[m_read_index], readAble());
+  return re;
+}
 
 std::vector<char> TcpBuffer::getBufferVector() {
   return m_buffer;

@@ -4,7 +4,7 @@
   <log>
     <!--identify path of log file-->
     <log_path>./</log_path>
-    <log_prefix>test_rpc_server2</log_prefix>
+    <log_prefix>http_server</log_prefix>
 
     <!--identify max size of single log file, MB-->
     <log_max_file_size>5</log_max_file_size>
@@ -41,21 +41,9 @@
   </time_wheel>
 
   <server>
-    <ip>0.0.0.0</ip>
-    <port>40000</port>
-    <protocal>TinyPB</protocal>
+    <ip>192.168.245.7</ip>
+    <port>19999</port>
+    <protocal>HTTP</protocal>
   </server>
-
-
-  <database>
-    <db_key name="test_db_key1">
-      <ip>192.168.245.7</ip>
-      <port>3306</port>
-      <user>root</user>
-      <passwd>Ikerli20220517!!</passwd>
-      <select_db></select_db>
-      <char_set>utf8mb4</char_set>
-    </db_key>
-  </database>
 
 </root>

@@ -12,11 +12,11 @@
 #include <signal.h>
 
 
-#include "log.h"
-#include "config.h"
-#include "../coroutine/coroutine.h"
-#include "../net/reactor.h"
-#include "../net/timer.h"
+#include "tinyrpc/comm/log.h"
+#include "tinyrpc/comm/config.h"
+#include "tinyrpc/coroutine/coroutine.h"
+#include "tinyrpc/net/reactor.h"
+#include "tinyrpc/net/timer.h"
 
 
 namespace tinyrpc {
@@ -344,7 +344,7 @@ void AsyncLogger::stop() {
 }
 
 void Exit(int code) {
-  printf("It's sorry to said we start TinyRPC server error, look up log file to get more deatils!\n")
+  printf("It's sorry to said we start TinyRPC server error, look up log file to get more deatils!\n");
   _exit(code);
 }
 

@@ -4,17 +4,17 @@
 #include <memory>
 #include <vector>
 #include <queue>
-#include "../../comm/log.h"
-#include "../fd_event.h"
-#include "../reactor.h"
-#include "tcp_buffer.h"
-#include "../../coroutine/coroutine.h"
-#include "../http/http_request.h"
-#include "../tinypb/tinypb_codec.h"
-#include "io_thread.h"
-#include "tcp_connection_time_wheel.h"
-#include "abstract_slot.h"
-#include "../net_address.h"
+#include "tinyrpc/comm/log.h"
+#include "tinyrpc/net/fd_event.h"
+#include "tinyrpc/net/reactor.h"
+#include "tinyrpc/net/tcp/tcp_buffer.h"
+#include "tinyrpc/coroutine/coroutine.h"
+#include "tinyrpc/net/http/http_request.h"
+#include "tinyrpc/net/tinypb/tinypb_codec.h"
+#include "tinyrpc/net/tcp/io_thread.h"
+#include "tinyrpc/net/tcp/tcp_connection_time_wheel.h"
+#include "tinyrpc/net/tcp/abstract_slot.h"
+#include "tinyrpc/net/net_address.h"
 
 namespace tinyrpc {
 
@@ -61,9 +61,9 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
   TcpBuffer* getOutBuffer();
 
-  TinyPbCodeC* getCodec() const;
+  AbstractCodeC::ptr getCodec() const;
 
-  bool getResPackageData(const std::string& msg_req, TinyPbStruct& pb_struct);
+  bool getResPackageData(const std::string& msg_req, TinyPbStruct::pb_ptr pb_struct);
 
   void registerToTimeWheel();
 
@@ -110,7 +110,7 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
   bool m_is_over_time {false};
 
-  std::map<std::string, TinyPbStruct> m_reply_datas;
+  std::map<std::string, std::shared_ptr<TinyPbStruct>> m_reply_datas;
 
   std::weak_ptr<AbstractSlot<TcpConnection>> m_weak_slot;
 

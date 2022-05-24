@@ -41,6 +41,8 @@ class TcpBuffer {
 
   std::vector<char> getBufferVector();
 
+  std::string getBufferString();
+
   void recycleRead(int index);
 
   void recycleWrite(int index);
