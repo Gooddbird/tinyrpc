@@ -11,22 +11,21 @@ class HttpServlet : public std::enable_shared_from_this<HttpServlet> {
  public:
   typedef std::shared_ptr<HttpServlet> ptr;
 
-  HttpServlet(HttpRequest* req, HttpResponse* res);
+  HttpServlet();
 
   virtual ~HttpServlet();
 
-  virtual void handle() = 0;
+  virtual void handle(HttpRequest* req, HttpResponse* res) = 0;
 
-  void handleNotFound();
+  void handleNotFound(HttpRequest* req, HttpResponse* res);
 
-  void setHttpCode(const int code);
+  void setHttpCode(HttpResponse* res, const int code);
+  
+  void setHttpContentType(HttpResponse* res, const std::string& content_type);
+  
+  void setHttpBody(HttpResponse* res, const std::string& body);
 
- protected:
-  void setCommParam();
-
- protected:
-  HttpRequest* m_request;
-  HttpResponse* m_response;
+  void setCommParam(HttpRequest* req, HttpResponse* res);
 
 };
 
@@ -34,11 +33,11 @@ class HttpServlet : public std::enable_shared_from_this<HttpServlet> {
 class NotFoundHttpServlet: public HttpServlet {
  public:
 
-  NotFoundHttpServlet(HttpRequest* req, HttpResponse* res);
+  NotFoundHttpServlet();
 
   ~NotFoundHttpServlet();
 
-  void handle();
+  void handle(HttpRequest* req, HttpResponse* res);
 
 };
 

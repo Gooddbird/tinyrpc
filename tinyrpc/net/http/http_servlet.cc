@@ -11,40 +11,48 @@ extern const char* default_html_template;
 extern std::string content_type_text;
 
 
-HttpServlet::HttpServlet(HttpRequest* req, HttpResponse* res) : m_request(req), m_response(res) {
-  setCommParam();
+HttpServlet::HttpServlet() {
 }
 
 HttpServlet::~HttpServlet() {
 
 }
 
-void HttpServlet::handle() {
+void HttpServlet::handle(HttpRequest* req, HttpResponse* res) {
   // handleNotFound();
 }
 
-void HttpServlet::handleNotFound() {
+void HttpServlet::handleNotFound(HttpRequest* req, HttpResponse* res) {
   DebugLog << "return 404 html";
-  setHttpCode(HttpNotFound);
+  setHttpCode(res, HTTP_NOTFOUND);
   char buf[512];
-  sprintf(buf, default_html_template, std::to_string(HttpNotFound).c_str(), httpCodeToString(HttpNotFound));
-  m_response->m_response_body = std::string(buf);
-  m_response->m_response_header.m_maps["Content-Type"] = content_type_text;
-  m_response->m_response_header.m_maps["Content-Length"]= m_response->m_response_body.length();
+  sprintf(buf, default_html_template, std::to_string(HTTP_NOTFOUND).c_str(), httpCodeToString(HTTP_NOTFOUND));
+  res->m_response_body = std::string(buf);
+  res->m_response_header.m_maps["Content-Type"] = content_type_text;
+  res->m_response_header.m_maps["Content-Length"]= std::to_string(res->m_response_body.length());
 }
 
-void HttpServlet::setHttpCode(const int code) {
-  m_response->m_response_code = code;
-  m_response->m_response_info = std::string(httpCodeToString(code));
+void HttpServlet::setHttpCode(HttpResponse* res, const int code) {
+  res->m_response_code = code;
+  res->m_response_info = std::string(httpCodeToString(code));
 }
 
-void HttpServlet::setCommParam() {
-  DebugLog << "set response version=" << m_request->m_request_version;
-  m_response->m_response_version = m_request->m_request_version;
+void HttpServlet::setHttpContentType(HttpResponse* res, const std::string& content_type) {
+  res->m_response_header.m_maps["Content-Type"] = content_type;
+}
+
+void HttpServlet::setHttpBody(HttpResponse* res, const std::string& body) {
+  res->m_response_body = body;
+  res->m_response_header.m_maps["Content-Length"]= std::to_string(res->m_response_body.length());
+}
+
+void HttpServlet::setCommParam(HttpRequest* req, HttpResponse* res) {
+  DebugLog << "set response version=" << req->m_request_version;
+  res->m_response_version = req->m_request_version;
 }
 
 
-NotFoundHttpServlet::NotFoundHttpServlet(HttpRequest* req, HttpResponse* res) : HttpServlet(req, res) {
+NotFoundHttpServlet::NotFoundHttpServlet() {
 
 }
 
@@ -53,8 +61,8 @@ NotFoundHttpServlet::~NotFoundHttpServlet() {
 }
 
 
-void NotFoundHttpServlet::handle() {
-  handleNotFound();
+void NotFoundHttpServlet::handle(HttpRequest* req, HttpResponse* res) {
+  handleNotFound(req, res);
 }
 
 }

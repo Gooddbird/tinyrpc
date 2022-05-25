@@ -177,8 +177,26 @@ void TcpServer::addCoroutine(Coroutine::ptr cor) {
 
 void TcpServer::registerService(google::protobuf::Service* service) {
 	if (m_protocal_type == TinyPb_Protocal) {
-		dynamic_cast<TinyPbRpcDispacther*>(m_dispatcher.get())->registerService(service);
-	}
+		if (service) {
+			dynamic_cast<TinyPbRpcDispacther*>(m_dispatcher.get())->registerService(service);
+		} else {
+			ErrorLog << "service is nullptr";
+		}
+	} else {
+		ErrorLog << "register service error. Just TinyPB protocal server need to resgister Service";
+	} 
+}
+
+void TcpServer::registerHttpServlet(const std::string& url_path, HttpServlet::ptr servlet) {
+	if (m_protocal_type == Http_Protocal) {
+		if (servlet) {
+			dynamic_cast<HttpDispacther*>(m_dispatcher.get())->registerServlet(url_path, servlet);
+		} else {
+			ErrorLog << "service is nullptr";
+		}
+	} else {
+		ErrorLog << "register service error. Just Http protocal server need to resgister HttpServlet";
+	} 
 }
 
 }

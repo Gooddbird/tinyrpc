@@ -12,6 +12,8 @@
 #include "tinyrpc/net/tcp/tcp_connection_time_wheel.h"
 #include "tinyrpc/net/abstract_codec.h"
 #include "tinyrpc/net/abstract_dispatcher.h"
+#include "tinyrpc/net/http/http_dispatcher.h"
+#include "tinyrpc/net/http/http_servlet.h"
 
 
 namespace tinyrpc {
@@ -72,6 +74,8 @@ class TcpServer {
   NetAddress::ptr getPeerAddr();
 
   void registerService(google::protobuf::Service* service);
+
+  void registerHttpServlet(const std::string& url_path, HttpServlet::ptr servlet);
 
  private:
   void MainAcceptCorFunc();

@@ -14,19 +14,19 @@ const char* default_html_template = "<html><body><h1>%s</h1><p>%s</p></body></ht
 const char* httpCodeToString(const int code) {
   switch (code)
   {
-  case HttpOk: 
+  case HTTP_OK: 
     return "OK"; 
   
-  case HttpBadRequset:
+  case HTTP_BADREQUEST:
     return "Bad Request";
   
-  case HttpForbidden:
+  case HTTP_FORBIDDEN:
     return "Forbidden";
   
-  case HttpNotFound:
+  case HTTP_NOTFOUND:
     return "Not Found";
   
-  case HttpInternalServerError:
+  case HTTP_INTERNALSERVERERROR:
     return "Internal Server Error";
   
   default:
