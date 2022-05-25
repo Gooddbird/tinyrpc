@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
   tinyrpc::Coroutine::ptr cor = tinyrpc::GetCoroutinePool()->getCoroutineInstanse();
   cor->setCallBack(&fun);
 
-  tinyrpc::GetRpcServer()->addCoroutine(cor);
+  tinyrpc::GetServer()->addCoroutine(cor);
 
   tinyrpc::StartRpcServer();
 

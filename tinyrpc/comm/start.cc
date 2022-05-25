@@ -24,7 +24,7 @@ void RegisterService(google::protobuf::Service* service) {
   gRpcServer->registerService(service);
 }
 
-TcpServer::ptr GetRpcServer() {
+TcpServer::ptr GetServer() {
   return gRpcServer;
 }
 

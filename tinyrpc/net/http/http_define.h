@@ -18,11 +18,11 @@ enum HttpMethod {
 };
 
 enum HttpCode {
-  HttpOk = 200,
-  HttpBadRequset = 400,
-  HttpForbidden = 403,
-  HttpNotFound = 404,
-  HttpInternalServerError = 500,
+  HTTP_OK = 200,
+  HTTP_BADREQUEST = 400,
+  HTTP_FORBIDDEN = 403,
+  HTTP_NOTFOUND = 404,
+  HTTP_INTERNALSERVERERROR = 500,
 };
 
 const char* httpCodeToString(const int code);

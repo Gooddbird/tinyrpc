@@ -17,7 +17,7 @@ class HttpDispacther : public AbstractDispatcher {
 
   void dispatch(AbstractData* data, TcpConnection* conn);
 
-  void registerServlet(const std::string path, HttpServlet::ptr servlet);
+  void registerServlet(const std::string& path, HttpServlet::ptr servlet);
 
  public:
   std::map<std::string, HttpServlet::ptr> m_servlets;

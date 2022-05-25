@@ -12,7 +12,7 @@ void RegisterService(google::protobuf::Service* service);
 
 void StartRpcServer();
 
-TcpServer::ptr GetRpcServer();
+TcpServer::ptr GetServer();
 
 }
 
