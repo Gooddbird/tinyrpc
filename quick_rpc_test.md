@@ -1,5 +1,4 @@
-## This is an example that how to make a simple rpc testcase with "tinyrpc"
-
+# Quick Start of TinyRPC
 #### 1. Define protobuf file
 
 A simple **protobuf** file like this:
