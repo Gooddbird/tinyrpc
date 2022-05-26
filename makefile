@@ -17,6 +17,21 @@ PATH_TINYPB = $(PATH_TINYRPC)/net/tinypb
 
 PATH_TESTCASES = testcases
 
+# will install lib to /usr/lib/libtinyrpc.a
+PATH_INSTALL_LIB_ROOT = /usr/lib
+
+# will install all header file to /usr/include/tinyrpc
+PATH_INSTALL_INC_ROOT = /usr/include
+
+PATH_INSTALL_INC_COMM = $(PATH_INSTALL_INC_ROOT)/$(PATH_COMM)
+PATH_INSTALL_INC_COROUTINE = $(PATH_INSTALL_INC_ROOT)/$(PATH_COROUTINE)
+PATH_INSTALL_INC_NET = $(PATH_INSTALL_INC_ROOT)/$(PATH_NET)
+PATH_INSTALL_INC_HTTP = $(PATH_INSTALL_INC_ROOT)/$(PATH_HTTP)
+PATH_INSTALL_INC_TCP = $(PATH_INSTALL_INC_ROOT)/$(PATH_TCP)
+PATH_INSTALL_INC_TINYPB = $(PATH_INSTALL_INC_ROOT)/$(PATH_TINYPB)
+
+
+
 # PATH_PROTOBUF = /usr/include/google
 # PATH_TINYXML = /usr/include/tinyxml
 
@@ -85,3 +100,20 @@ PRINT-% : ; @echo $* = $($*)
 # to clean 
 clean :
 	rm -f $(COMM_OBJ) $(COROUTINE_OBJ) $(NET_OBJ) $(HTTP_OBJ) $(TCP_OBJ) $(TINYPB_OBJ) $(TESTCASES) $(PATH_COROUTINE)/coctx_swap.o $(TEST_CASE_OUT) $(PATH_LIB)/libtinyrpc.a
+
+# install
+install:
+	mkdir -p $(PATH_INSTALL_INC_COMM) $(PATH_INSTALL_INC_COROUTINE) $(PATH_INSTALL_INC_NET) \
+		&& mkdir -p $(PATH_INSTALL_INC_TCP) $(PATH_INSTALL_INC_HTTP) $(PATH_INSTALL_INC_TINYPB) \
+		&& cp $(PATH_COMM)/*.h $(PATH_INSTALL_INC_COMM) \
+		&& cp $(PATH_COROUTINE)/*.h $(PATH_INSTALL_INC_COROUTINE) \
+		&& cp $(PATH_NET)/*.h $(PATH_INSTALL_INC_NET) \
+		&& cp $(PATH_HTTP)/*.h $(PATH_INSTALL_INC_HTTP) \
+		&& cp $(PATH_TCP)/*.h $(PATH_INSTALL_INC_TCP) \
+		&& cp $(PATH_TINYPB)/*.h $(PATH_INSTALL_INC_TINYPB) \
+		&& cp $(LIB_OUT) $(PATH_INSTALL_LIB_ROOT)/
+
+
+# uninstall
+uninstall:
+	rm -rf $(PATH_INSTALL_INC_ROOT)/tinyrpc && rm -f $(PATH_INSTALL_LIB_ROOT)/libtinyrpc.a
