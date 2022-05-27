@@ -73,7 +73,7 @@ class TcpServer {
 
   NetAddress::ptr getPeerAddr();
 
-  void registerService(google::protobuf::Service* service);
+  void registerService(std::shared_ptr<google::protobuf::Service> service);
 
   void registerHttpServlet(const std::string& url_path, HttpServlet::ptr servlet);
 

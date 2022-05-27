@@ -50,7 +50,7 @@ void TcpClient::resetFd() {
   m_fd = socket(AF_INET, SOCK_STREAM, 0);
 }
 
-int TcpClient::sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct::pb_ptr res) {
+int TcpClient::sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct::pb_ptr& res) {
   bool is_timeout = false;
   tinyrpc::Coroutine* cur_cor = tinyrpc::Coroutine::GetCurrentCoroutine();
   auto timer_cb = [this, &is_timeout, cur_cor]() {

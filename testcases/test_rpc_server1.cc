@@ -35,6 +35,8 @@ class QueryServiceImpl : public QueryService {
 
     tinyrpc::MySQLInstase* instase =  tinyrpc::MySQLInstaseFactroy::GetThreadMySQLFactory()->GetMySQLInstase("test_db_key1");
     if (!instase->isInitSuccess()) {
+      response->set_ret_code(-1);
+      response->set_res_info("faild to init mysql");
       ErrorLog << "mysql instase init failed";
       return;
     }
@@ -44,26 +46,30 @@ class QueryServiceImpl : public QueryService {
 
     int rt = instase->query(std::string(query_sql));
     if (rt != 0) {
-      ErrorLog << "query return not 0";
+      response->set_ret_code(-1);
+      response->set_res_info(instase->getMySQLErrorInfo());
+      ErrorLog << "failed to excute sql" << std::string(query_sql);
       return;
     }
+
     MYSQL_RES* res = instase->storeResult();
 
     MYSQL_ROW row = instase->fetchRow(res);
     if (row) {
       int i = 0;
+      DebugLog << "query success";
       response->set_id(std::atoi(row[i++]));
       response->set_name(std::string(row[i++]));
     } else {
       DebugLog << "query empty";
-      response->set_ret_code(999);
+      response->set_ret_code(-1);
       response->set_res_info("this user not exist");
     }
-
-    
-    DebugLog << "========================";
-    done->Run();
+    if (done) {
+      done->Run();
+    }
   }
+
   void query_age(google::protobuf::RpcController* controller,
                        const ::queryAgeReq* request,
                        ::queryAgeRes* response,
@@ -92,9 +98,8 @@ int main(int argc, char* argv[]) {
   }
 
   tinyrpc::InitConfig(argv[1]);
-  QueryService* service = new QueryServiceImpl();
 
-  tinyrpc::RegisterService(service);
+  tinyrpc::GetServer()->registerService(std::make_shared<QueryServiceImpl>());
 
   tinyrpc::StartRpcServer();
   

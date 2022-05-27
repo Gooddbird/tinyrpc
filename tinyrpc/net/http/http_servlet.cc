@@ -51,7 +51,6 @@ void HttpServlet::setCommParam(HttpRequest* req, HttpResponse* res) {
   res->m_response_version = req->m_request_version;
 }
 
-
 NotFoundHttpServlet::NotFoundHttpServlet() {
 
 }
@@ -59,7 +58,6 @@ NotFoundHttpServlet::NotFoundHttpServlet() {
 NotFoundHttpServlet::~NotFoundHttpServlet() {
 
 }
-
 
 void NotFoundHttpServlet::handle(HttpRequest* req, HttpResponse* res) {
   handleNotFound(req, res);

@@ -194,5 +194,12 @@ long long MySQLInstase::affectedRows() {
 }
 
 
+std::string MySQLInstase::getMySQLErrorInfo() {
+  return std::string(mysql_error(&m_sql_handler));
+}
+
+int MySQLInstase::getMySQLErrno() {
+  return mysql_errno(&m_sql_handler);
+}
 
 }

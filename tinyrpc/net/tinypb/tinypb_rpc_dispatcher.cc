@@ -57,7 +57,7 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
 
   }
 
-  google::protobuf::Service* service = (*it).second;
+  service_ptr service = (*it).second;
 
   const google::protobuf::MethodDescriptor* method = service->GetDescriptor()->FindMethodByName(method_name);
   if (!method) {
@@ -143,7 +143,7 @@ bool TinyPbRpcDispacther::parseServiceFullName(const std::string& full_name, std
 
 }
 
-void TinyPbRpcDispacther::registerService(google::protobuf::Service *service) {
+void TinyPbRpcDispacther::registerService(service_ptr service) {
   std::string service_name = service->GetDescriptor()->full_name();
   m_service_map[service_name] = service;
   InfoLog << "succ register service[" << service_name << "]!"; 

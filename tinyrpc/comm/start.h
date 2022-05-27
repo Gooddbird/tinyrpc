@@ -8,7 +8,7 @@ namespace tinyrpc {
 
 void InitConfig(const char* file);
 
-void RegisterService(google::protobuf::Service* service);
+// void RegisterService(google::protobuf::Service* service);
 
 void StartRpcServer();
 
