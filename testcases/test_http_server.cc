@@ -10,7 +10,7 @@
 #include "tinyrpc/net/net_address.h"
 
 
-const char* html = "<html><body><h1>Welcome to TINYRPC, just enjoy it!</h1><p>%s</p></body></html>";
+const char* html = "<html><body><h1>Welcome to TinyRPC, just enjoy it!</h1><p>%s</p></body></html>";
 
 class RootHttpServlet : public tinyrpc::HttpServlet {
  public:
