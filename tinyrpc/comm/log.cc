@@ -26,6 +26,7 @@ extern tinyrpc::Config::ptr gRpcConfig;
 
 void SignalHandler(int signal_no) {
   ErrorLog << "progress received invalid signal, will exit";
+  printf("progress received invalid signal, will exit\n");
   gRpcLogger->flush();
   pthread_join(gRpcLogger->getAsyncLogger()->m_thread, NULL);
 
@@ -159,7 +160,7 @@ std::stringstream& LogEvent::getStringStream() {
 void LogEvent::log() {
   if (m_level >= gRpcConfig->m_log_level) {
     m_ss << "\n";
-    // printf("%s", m_ss.str().c_str());
+    printf("%s", m_ss.str().c_str());
     gRpcLogger->push(m_ss.str());
   }
 }
@@ -293,7 +294,7 @@ void* AsyncLogger::excute(void* arg) {
       ss2 << ptr->m_file_path << ptr->m_file_name << "_" << ptr->m_date << "_" << LogTypeToString(ptr->m_log_type) << "_" << ptr->m_no << ".log";
       full_file_name = ss2.str();
 
-      printf("open file %s", full_file_name.c_str());
+      // printf("open file %s", full_file_name.c_str());
       ptr->m_file_handle = fopen(full_file_name.c_str(), "a");
       ptr->m_need_reopen = false;
     }

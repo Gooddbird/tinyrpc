@@ -142,7 +142,7 @@ void TcpConnection::input() {
         // read all data in socket buffer, skip out loop
         read_all = true;
         break;
-      } 
+      }
     }
   }
   if (close_flag || m_is_over_time) {

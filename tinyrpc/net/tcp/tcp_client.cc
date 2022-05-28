@@ -18,6 +18,10 @@ TcpClient::TcpClient(NetAddress::ptr addr, ProtocalType type /*= TinyPb_Protocal
 
   m_family = m_peer_addr->getFamily();
   m_fd = socket(AF_INET, SOCK_STREAM, 0);
+  if (m_fd == -1) {
+    ErrorLog << "call socket error, fd=-1, sys error=" << strerror(errno);
+  }
+  DebugLog << "TcpClient() create fd = " << m_fd;
   m_local_addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 0);
   m_reactor = Reactor::GetReactor();
 
@@ -33,7 +37,9 @@ TcpClient::TcpClient(NetAddress::ptr addr, ProtocalType type /*= TinyPb_Protocal
 
 TcpClient::~TcpClient() {
   if (m_fd > 0) {
+    FdEventContainer::GetFdContainer()->getFdEvent(m_fd)->unregisterFromReactor(); 
     close(m_fd);
+    DebugLog << "~TcpClient() close fd = " << m_fd;
   }
 }
 
@@ -48,6 +54,11 @@ void TcpClient::resetFd() {
   fd_event->unregisterFromReactor();
   close(m_fd);
   m_fd = socket(AF_INET, SOCK_STREAM, 0);
+  if (m_fd == -1) {
+    ErrorLog << "call socket error, fd=-1, sys error=" << strerror(errno);
+  } else {
+
+  }
 }
 
 int TcpClient::sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct::pb_ptr& res) {
@@ -74,7 +85,7 @@ int TcpClient::sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct::pb_ptr
       resetFd();
       if (is_timeout) {
         InfoLog << "connect timeout, break";
-        goto timeout_deal;
+        goto err_deal;
       }
       if (errno == ECONNREFUSED) {
         std::stringstream ss;
@@ -100,7 +111,8 @@ int TcpClient::sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct::pb_ptr
   m_connection->output();
   if (m_connection->getOverTimerFlag()) {
     InfoLog << "send data over time";
-    goto timeout_deal;
+    is_timeout = true;
+    goto err_deal;
   }
 
   while (!m_connection->getResPackageData(msg_no, res)) {
@@ -109,7 +121,12 @@ int TcpClient::sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct::pb_ptr
 
     if (m_connection->getOverTimerFlag()) {
       InfoLog << "read data over time";
-      goto timeout_deal;
+      is_timeout = true;
+      goto err_deal;
+    }
+    if (m_connection->getState() == Closed) {
+      InfoLog << "peer close";
+      goto err_deal;
     }
 
     m_connection->execute();
@@ -120,16 +137,23 @@ int TcpClient::sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct::pb_ptr
   m_err_info = "";
   return 0;
 
-timeout_deal:
+err_deal:
   // connect error should close fd and reopen new one
+  FdEventContainer::GetFdContainer()->getFdEvent(m_fd)->unregisterFromReactor();
   close(m_fd);
   m_fd = socket(AF_INET, SOCK_STREAM, 0);
   std::stringstream ss;
-  ss << "call rpc falied, over " << m_max_timeout << " ms";
-  m_err_info = ss.str();
+  if (is_timeout) {
+    ss << "call rpc falied, over " << m_max_timeout << " ms";
+    m_err_info = ss.str();
 
-  m_connection->setOverTimeFlag(false);
-  return ERROR_RPC_CALL_TIMEOUT;
+    m_connection->setOverTimeFlag(false);
+    return ERROR_RPC_CALL_TIMEOUT;
+  } else {
+    ss << "call rpc falied, peer closed [" << m_peer_addr->toString() << "]";
+    m_err_info = ss.str();
+    return ERROR_PEER_CLOSED;
+  }
 
 }
 

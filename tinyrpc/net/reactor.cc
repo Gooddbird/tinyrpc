@@ -170,7 +170,7 @@ void Reactor::addEventInLoopThread(int fd, epoll_event event) {
 	// event.events = fd_event->getListenEvents();
 
 	if (epoll_ctl(m_epfd, op, fd, &event) != 0) {
-		ErrorLog << "epoo_ctl error, fd[" << fd << "]";
+		ErrorLog << "epoo_ctl error, fd[" << fd << "], sys errinfo = " << strerror(errno);
 		return;
 	}
 	if (is_add) {
