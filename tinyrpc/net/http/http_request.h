@@ -3,6 +3,7 @@
 
 #include <string>
 #include <memory>
+#include <map>
 
 #include "tinyrpc/net/abstract_data.h"
 #include "tinyrpc/net/http/http_define.h"
@@ -21,6 +22,8 @@ class HttpRequest : public AbstractData {
   std::string m_request_version;   
   HttpRequestHeader m_requeset_header;
   std::string m_request_body;   
+
+  std::map<std::string, std::string> m_query_maps;
 
 
 };

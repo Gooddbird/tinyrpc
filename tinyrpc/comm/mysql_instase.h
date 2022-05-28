@@ -28,6 +28,7 @@ class MySQLInstase {
   typedef std::shared_ptr<MySQLInstase> ptr;
 
   MySQLInstase(const MySQLOption& option);
+
   ~MySQLInstase();
 
   bool isInitSuccess();
@@ -49,6 +50,10 @@ class MySQLInstase {
   long long numFields(MYSQL_RES* res);
 
   long long affectedRows();
+
+  std::string getMySQLErrorInfo();
+
+  int getMySQLErrno();
 
 private:
   int reconnect();

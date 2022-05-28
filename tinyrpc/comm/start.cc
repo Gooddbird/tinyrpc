@@ -20,9 +20,9 @@ void InitConfig(const char* file) {
   }
 }
 
-void RegisterService(google::protobuf::Service* service) {
-  gRpcServer->registerService(service);
-}
+// void RegisterService(google::protobuf::Service* service) {
+//   gRpcServer->registerService(service);
+// }
 
 TcpServer::ptr GetServer() {
   return gRpcServer;

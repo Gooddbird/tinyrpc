@@ -195,6 +195,7 @@ bool HttpCodeC::parseHttpRequestLine(HttpRequest* requset, const std::string& tm
   requset->m_request_path = url.substr(0, j);
   requset->m_request_query = url.substr(j + 1, l - j - 1);
   DebugLog << "http request path:" << requset->m_request_path << ", and query:" << requset->m_request_query;
+  StringUtil::SplitStrToMap(requset->m_request_query, "&", "=", requset->m_query_maps);
   return true;
 
 }

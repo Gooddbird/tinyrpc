@@ -175,7 +175,7 @@ void TcpServer::addCoroutine(Coroutine::ptr cor) {
 	m_main_reactor->addCoroutine(cor);
 }
 
-void TcpServer::registerService(google::protobuf::Service* service) {
+void TcpServer::registerService(std::shared_ptr<google::protobuf::Service> service) {
 	if (m_protocal_type == TinyPb_Protocal) {
 		if (service) {
 			dynamic_cast<TinyPbRpcDispacther*>(m_dispatcher.get())->registerService(service);

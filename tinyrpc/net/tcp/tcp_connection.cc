@@ -277,7 +277,7 @@ TcpBuffer* TcpConnection::getOutBuffer() {
   return m_write_buffer.get();
 }
 
-bool TcpConnection::getResPackageData(const std::string& msg_req, TinyPbStruct::pb_ptr pb_struct) {
+bool TcpConnection::getResPackageData(const std::string& msg_req, TinyPbStruct::pb_ptr& pb_struct) {
   auto it = m_reply_datas.find(msg_req);
   if (it != m_reply_datas.end()) {
     DebugLog << "return a resdata";

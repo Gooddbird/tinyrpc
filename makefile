@@ -65,7 +65,7 @@ $(PATH_BIN)/test_rpc_server2: $(LIB_OUT)
 	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_rpc_server2.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread -lmysqlclient
 
 $(PATH_BIN)/test_http_server: $(LIB_OUT)
-	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_http_server.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread -lmysqlclient
+	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_http_server.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -lpthread -lmysqlclient
 
 $(PATH_LIB)/libtinyrpc.a : $(COMM_OBJ) $(COROUTINE_OBJ) $(PATH_COROUTINE)/coctx_swap.o $(NET_OBJ) $(HTTP_OBJ) $(TCP_OBJ) $(TINYPB_OBJ)
 	@ar crsvT $@ $^

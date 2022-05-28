@@ -77,7 +77,9 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
   InfoLog<< "============================================================";
 
   // excute callback function
-  done->Run();
+  if (done) {
+    done->Run();
+  }
 }
 
 
