@@ -49,6 +49,7 @@ void HttpServlet::setHttpBody(HttpResponse* res, const std::string& body) {
 void HttpServlet::setCommParam(HttpRequest* req, HttpResponse* res) {
   DebugLog << "set response version=" << req->m_request_version;
   res->m_response_version = req->m_request_version;
+  res->m_response_header.m_maps["Connection"]= req->m_requeset_header.m_maps["Connection"];
 }
 
 NotFoundHttpServlet::NotFoundHttpServlet() {

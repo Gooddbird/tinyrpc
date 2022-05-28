@@ -33,38 +33,40 @@ class QueryServiceImpl : public QueryService {
     response->set_ret_code(0);
     response->set_res_info("OK");
 
-    tinyrpc::MySQLInstase* instase =  tinyrpc::MySQLInstaseFactroy::GetThreadMySQLFactory()->GetMySQLInstase("test_db_key1");
-    if (!instase->isInitSuccess()) {
-      response->set_ret_code(-1);
-      response->set_res_info("faild to init mysql");
-      ErrorLog << "mysql instase init failed";
-      return;
-    }
+    // tinyrpc::MySQLInstase* instase =  tinyrpc::MySQLInstaseFactroy::GetThreadMySQLFactory()->GetMySQLInstase("test_db_key1");
+    // if (!instase->isInitSuccess()) {
+    //   response->set_ret_code(-1);
+    //   response->set_res_info("faild to init mysql");
+    //   ErrorLog << "mysql instase init failed";
+    //   return;
+    // }
 
-    char query_sql[512];
-    sprintf(query_sql, "select user_id, user_name, user_gender from user_db.t_user_information where user_id = '%s';", std::to_string(request->id()).c_str());
+    // char query_sql[512];
+    // sprintf(query_sql, "select user_id, user_name, user_gender from user_db.t_user_information where user_id = '%s';", std::to_string(request->id()).c_str());
 
-    int rt = instase->query(std::string(query_sql));
-    if (rt != 0) {
-      response->set_ret_code(-1);
-      response->set_res_info(instase->getMySQLErrorInfo());
-      ErrorLog << "failed to excute sql" << std::string(query_sql);
-      return;
-    }
+    // int rt = instase->query(std::string(query_sql));
+    // if (rt != 0) {
+    //   response->set_ret_code(-1);
+    //   response->set_res_info(instase->getMySQLErrorInfo());
+    //   ErrorLog << "failed to excute sql" << std::string(query_sql);
+    //   return;
+    // }
 
-    MYSQL_RES* res = instase->storeResult();
+    // MYSQL_RES* res = instase->storeResult();
 
-    MYSQL_ROW row = instase->fetchRow(res);
-    if (row) {
-      int i = 0;
-      DebugLog << "query success";
-      response->set_id(std::atoi(row[i++]));
-      response->set_name(std::string(row[i++]));
-    } else {
-      DebugLog << "query empty";
-      response->set_ret_code(-1);
-      response->set_res_info("this user not exist");
-    }
+    // MYSQL_ROW row = instase->fetchRow(res);
+    // if (row) {
+    //   int i = 0;
+    //   DebugLog << "query success";
+    //   response->set_id(std::atoi(row[i++]));
+    //   response->set_name(std::string(row[i++]));
+    // } else {
+    //   DebugLog << "query empty";
+    //   response->set_ret_code(-1);
+    //   response->set_res_info("this user not exist");
+    // }
+    response->set_id(request->id());
+    response->set_name("ikerli");
     if (done) {
       done->Run();
     }

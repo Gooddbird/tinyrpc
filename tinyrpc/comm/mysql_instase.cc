@@ -50,7 +50,9 @@ MySQLInstase::MySQLInstase(const MySQLOption& option) : m_option(option) {
 }
 
 int MySQLInstase::reconnect() {
-  mysql_close(&m_sql_handler);
+  // if (&m_sql_handler) {
+  //   mysql_close(&m_sql_handler);
+  // }
 
   Mutex::Lock lock(m_mutex);
   MYSQL* re =  mysql_init(&m_sql_handler);
@@ -60,8 +62,8 @@ int MySQLInstase::reconnect() {
     ErrorLog << "faild to call mysql_init allocate MYSQL instase";
     return -1;
   }
-  int value = 1;
-  mysql_options(&m_sql_handler, MYSQL_OPT_RECONNECT, &value);
+  // int value = 1;
+  // mysql_options(&m_sql_handler, MYSQL_OPT_RECONNECT, &value);
   if (!m_option.m_char_set.empty()) {
     mysql_options(&m_sql_handler, MYSQL_SET_CHARSET_NAME, m_option.m_char_set.c_str());
   }
