@@ -19,6 +19,7 @@ HOOK_SYS_FUNC(accept);
 HOOK_SYS_FUNC(read);
 HOOK_SYS_FUNC(write);
 HOOK_SYS_FUNC(connect);
+HOOK_SYS_FUNC(sleep);
 
 // static int g_hook_enable = false;
 
@@ -28,6 +29,12 @@ HOOK_SYS_FUNC(connect);
 namespace tinyrpc {
 
 extern tinyrpc::Config::ptr gRpcConfig;
+
+static bool g_hook = true;
+
+void SetHook(bool value) {
+	g_hook = value;
+}
 
 void toEpoll(tinyrpc::FdEvent::ptr fd_event, int events) {
 	
@@ -253,7 +260,7 @@ unsigned int sleep_hook(unsigned int seconds) {
 	DebugLog << "this is hook sleep";
   if (tinyrpc::Coroutine::IsMainCoroutine()) {
     DebugLog << "hook disable, call sys sleep func";
-    return sleep(seconds);
+    return g_sys_sleep_fun(seconds);
   }
 
 	tinyrpc::Coroutine* cur_cor = tinyrpc::Coroutine::GetCurrentCoroutine();
@@ -291,23 +298,43 @@ extern "C" {
 
 
 int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
-	return tinyrpc::accept_hook(sockfd, addr, addrlen);
+	if (tinyrpc::g_hook) {
+		return tinyrpc::accept_hook(sockfd, addr, addrlen);
+	} else {
+		return g_sys_accept_fun(sockfd, addr, addrlen);
+	}
 }
 
 ssize_t read(int fd, void *buf, size_t count) {
-	return tinyrpc::read_hook(fd, buf, count);
+	if (tinyrpc::g_hook) {
+		return tinyrpc::read_hook(fd, buf, count);
+	} else {
+		return g_sys_read_fun(fd, buf, count);
+	}
 }
 
 ssize_t write(int fd, const void *buf, size_t count) {
-	return tinyrpc::write_hook(fd, buf, count);
+	if (tinyrpc::g_hook) {
+		return tinyrpc::write_hook(fd, buf, count);
+	} else {
+		return g_sys_write_fun(fd, buf, count);
+	}
 }
 
 int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
-	return tinyrpc::connect_hook(sockfd, addr, addrlen);
+	if (tinyrpc::g_hook) {
+		return tinyrpc::connect_hook(sockfd, addr, addrlen);
+	} else {
+		return g_sys_connect_fun(sockfd, addr, addrlen);
+	}
 }
 
 unsigned int sleep(unsigned int seconds) {
-	return tinyrpc::sleep_hook(seconds);
+	if (tinyrpc::g_hook) {
+		return tinyrpc::sleep_hook(seconds);
+	} else {
+		return g_sys_sleep_fun(seconds);
+	}
 }
 
 }

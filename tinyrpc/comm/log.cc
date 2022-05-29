@@ -345,6 +345,8 @@ void AsyncLogger::stop() {
 }
 
 void Exit(int code) {
+  mysql_library_end();
+
   printf("It's sorry to said we start TinyRPC server error, look up log file to get more deatils!\n");
   gRpcLogger->flush();
   pthread_join(gRpcLogger->getAsyncLogger()->m_thread, NULL);

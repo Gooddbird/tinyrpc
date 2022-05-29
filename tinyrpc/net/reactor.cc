@@ -189,11 +189,12 @@ void Reactor::delEventInLoopThread(int fd) {
 	auto it = find(m_fds.begin(), m_fds.end(), fd);
 	if (it == m_fds.end()) {
 		DebugLog << "fd[" << fd << "] not in this loop";
+		return;
 	}
 	int op = EPOLL_CTL_DEL;
 
 	if ((epoll_ctl(m_epfd, op, fd, nullptr)) != 0) {
-		ErrorLog << "epoo_ctl error, fd[" << fd << "]";
+		ErrorLog << "epoo_ctl error, fd[" << fd << "], sys errinfo = " << strerror(errno);
 	}
 
 	m_fds.erase(it);

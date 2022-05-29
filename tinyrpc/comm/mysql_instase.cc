@@ -11,6 +11,17 @@ namespace tinyrpc {
 
 static thread_local MySQLInstaseFactroy* t_mysql_factory = NULL;
 
+
+MySQLThreadInit::MySQLThreadInit() {
+  DebugLog << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< call mysql_thread_init";
+  mysql_thread_init();
+}
+
+MySQLThreadInit::~MySQLThreadInit() {
+  mysql_thread_end();
+  DebugLog << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> call mysql_thread_end";
+}
+
 MySQLInstaseFactroy* MySQLInstaseFactroy::GetThreadMySQLFactory() {
   if (t_mysql_factory) {
     return t_mysql_factory;
@@ -39,7 +50,6 @@ MySQLInstase* MySQLInstaseFactroy::GetMySQLInstase(const std::string& key) {
 
 
 MySQLInstase::MySQLInstase(const MySQLOption& option) : m_option(option) {
-
   int ret = reconnect();
   if (ret != 0) {
     return;
@@ -50,28 +60,37 @@ MySQLInstase::MySQLInstase(const MySQLOption& option) : m_option(option) {
 }
 
 int MySQLInstase::reconnect() {
-  // if (&m_sql_handler) {
-  //   mysql_close(&m_sql_handler);
-  // }
+  // this static value only call once
+  // it will call mysql_thread_init when first call MySQLInstase::reconnect function
+  // and it will call mysql_thread_end when current thread destroy
+  static thread_local MySQLThreadInit t_mysql_thread_init;
+
+  if (m_sql_handler) {
+    mysql_close(m_sql_handler);
+    m_sql_handler = NULL;
+  }
 
   Mutex::Lock lock(m_mutex);
-  MYSQL* re =  mysql_init(&m_sql_handler);
+  m_sql_handler =  mysql_init(NULL);
   // DebugLog << "mysql fd is " << m_sql_handler.net.fd;
   lock.unlock();
-  if (!re) {
+  if (!m_sql_handler) {
     ErrorLog << "faild to call mysql_init allocate MYSQL instase";
     return -1;
   }
-  // int value = 1;
-  // mysql_options(&m_sql_handler, MYSQL_OPT_RECONNECT, &value);
+  int value = 0;
+  mysql_options(m_sql_handler, MYSQL_OPT_RECONNECT, &value);
   if (!m_option.m_char_set.empty()) {
-    mysql_options(&m_sql_handler, MYSQL_SET_CHARSET_NAME, m_option.m_char_set.c_str());
+    mysql_options(m_sql_handler, MYSQL_SET_CHARSET_NAME, m_option.m_char_set.c_str());
   }
   DebugLog << "begin to connect mysql{ip:" << m_option.m_addr.getIP() << ", port:" << m_option.m_addr.getPort() 
     << ", user:" << m_option.m_user << ", passwd:" << m_option.m_passwd << ", select_db: "<< m_option.m_select_db << "charset:" << m_option.m_char_set << "}";
-  if (!mysql_real_connect(&m_sql_handler, m_option.m_addr.getIP().c_str(), m_option.m_user.c_str(), 
+  // mysql_real_connect(m_sql_handler, m_option.m_addr.getIP().c_str(), m_option.m_user.c_str(), 
+  //     m_option.m_passwd.c_str(), m_option.m_select_db.c_str(), m_option.m_addr.getPort(), NULL, 0);
+  if (!mysql_real_connect(m_sql_handler, m_option.m_addr.getIP().c_str(), m_option.m_user.c_str(), 
       m_option.m_passwd.c_str(), m_option.m_select_db.c_str(), m_option.m_addr.getPort(), NULL, 0)) {
-    ErrorLog << "faild to call mysql_real_connect, peer addr[ " << m_option.m_addr.toString() << "], mysql sys errinfo[" << mysql_error(&m_sql_handler) << "]";
+
+    ErrorLog << "faild to call mysql_real_connect, peer addr[ " << m_option.m_addr.toString() << "], mysql sys errinfo[" << mysql_error(m_sql_handler) << "]";
     return -1;
   }
   DebugLog << "mysql_handler connect succ";
@@ -83,7 +102,10 @@ bool MySQLInstase::isInitSuccess() {
 }
 
 MySQLInstase::~MySQLInstase() {
-  mysql_close(&m_sql_handler);
+  if (m_sql_handler) {
+    mysql_close(m_sql_handler);
+    m_sql_handler = NULL;
+  }
 }
 
 int MySQLInstase::commit() {
@@ -115,17 +137,26 @@ int MySQLInstase::query(const std::string& sql) {
     ErrorLog << "query error, mysql_handler init faild";
     return -1;
   }
+  if (!m_sql_handler) {
+    DebugLog << "*************** will reconnect mysql ";
+    reconnect();
+  }
+  if (!m_sql_handler) {
+    DebugLog << "reconnect error, query return -1";
+    return -1;
+  }
+
   DebugLog << "begin to excute sql[" << sql << "]";
-  int rt = mysql_real_query(&m_sql_handler, sql.c_str(), sql.length());
+  int rt = mysql_real_query(m_sql_handler, sql.c_str(), sql.length());
   if (rt != 0) {
-    ErrorLog << "excute mysql_real_query error, sql[" << sql << "], mysql sys errinfo[" << mysql_error(&m_sql_handler) << "]"; 
+    ErrorLog << "excute mysql_real_query error, sql[" << sql << "], mysql sys errinfo[" << mysql_error(m_sql_handler) << "]"; 
     // if connect error, begin to reconnect
-    if (mysql_errno(&m_sql_handler) == CR_SERVER_GONE_ERROR || mysql_errno(&m_sql_handler) == CR_SERVER_LOST) {
+    if (mysql_errno(m_sql_handler) == CR_SERVER_GONE_ERROR || mysql_errno(m_sql_handler) == CR_SERVER_LOST) {
       
       rt = reconnect();
       if (rt != 0 && !m_in_trans) {
         // if reconnect succ, and current is not a trans, can do query sql again 
-        rt = mysql_real_query(&m_sql_handler, sql.c_str(), sql.length());
+        rt = mysql_real_query(m_sql_handler, sql.c_str(), sql.length());
         return rt;
       }
     }
@@ -140,11 +171,11 @@ MYSQL_RES* MySQLInstase::storeResult() {
     ErrorLog << "query error, mysql_handler init faild";
     return NULL;
   }
-  int count = mysql_field_count(&m_sql_handler);
+  int count = mysql_field_count(m_sql_handler);
   if (count != 0) {
-    MYSQL_RES* res = mysql_store_result(&m_sql_handler);
+    MYSQL_RES* res = mysql_store_result(m_sql_handler);
     if (!res) {
-      ErrorLog << "excute mysql_store_result error, mysql sys errinfo[" << mysql_error(&m_sql_handler) << "]";
+      ErrorLog << "excute mysql_store_result error, mysql sys errinfo[" << mysql_error(m_sql_handler) << "]";
     } else {
       DebugLog << "excute mysql_store_result success";
     }
@@ -191,17 +222,17 @@ long long MySQLInstase::affectedRows() {
     ErrorLog << "query error, mysql_handler init faild";
     return -1;
   }
-  return mysql_affected_rows(&m_sql_handler);
+  return mysql_affected_rows(m_sql_handler);
 
 }
 
 
 std::string MySQLInstase::getMySQLErrorInfo() {
-  return std::string(mysql_error(&m_sql_handler));
+  return std::string(mysql_error(m_sql_handler));
 }
 
 int MySQLInstase::getMySQLErrno() {
-  return mysql_errno(&m_sql_handler);
+  return mysql_errno(m_sql_handler);
 }
 
 }

@@ -3,6 +3,7 @@
 #include "tinyrpc/comm/log.h"
 #include "tinyrpc/comm/config.h"
 #include "tinyrpc/net/tcp/tcp_server.h"
+#include "tinyrpc/coroutine/coroutine_hook.h"
 
 namespace tinyrpc {
 
@@ -13,6 +14,15 @@ tinyrpc::TcpServer::ptr gRpcServer;
 static int g_init_config = 0;
 
 void InitConfig(const char* file) {
+  tinyrpc::SetHook(false);
+  int rt = mysql_library_init(0, NULL, NULL);
+  if (rt != 0) {
+    printf("Start TinyRPC server error, call mysql_library_init error\n");
+    mysql_library_end();
+    exit(0);
+  }
+  tinyrpc::SetHook(true);
+
   if (g_init_config == 0) {
     gRpcConfig = std::make_shared<tinyrpc::Config>(file);
     gRpcConfig->readConf();
