@@ -9,6 +9,15 @@
 
 namespace tinyrpc {
 
+class MySQLThreadInit {
+ public:
+
+  MySQLThreadInit();
+  
+  ~MySQLThreadInit();
+
+};
+
 struct MySQLOption {
  public:
   explicit MySQLOption(const IPAddress& addr) : m_addr(addr) {};
@@ -63,7 +72,7 @@ private:
   bool m_init_succ {false};
   bool m_in_trans {false};
   Mutex m_mutex;
-  MYSQL m_sql_handler;
+  MYSQL* m_sql_handler {NULL};
 
 };
 
@@ -71,6 +80,7 @@ private:
 class MySQLInstaseFactroy {
  public:
   MySQLInstaseFactroy() = default;
+
   ~MySQLInstaseFactroy() = default;
 
   MySQLInstase* GetMySQLInstase(const std::string& key);

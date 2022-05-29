@@ -81,7 +81,7 @@ void HttpCodeC::decode(TcpBuffer* buf, AbstractData* data) {
       if (!is_parse_request_line) {
         return;
       }    
-      tmp = m_strs.substr(i + 2, len - 2 - i);
+      tmp = tmp.substr(i + 2, len - 2 - i);
       len = tmp.length();
       read_size = read_size + i + 2;
     }

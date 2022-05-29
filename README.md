@@ -59,8 +59,6 @@ make install
 
 如果编译出现问题，欢迎提 [issue](https://github.com/Gooddbird/tinyrpc/issues/), 我会尽快回应。
 
-此外，在 **bin** 文件夹下会生成几个简单的 RPC 测试服务, **test_rpc_server1** 和 **test_rpc_server2** 以及 **test_http_server**. 读者可自行运行测试。更多详细信息请参考文档: [quick_stark](./quick_rpc_test.md).
-
 ### 2.2.2 卸载 TinyRPC
 卸载也很简单，如下即可：
 ```
@@ -70,14 +68,20 @@ make uninstall
 
 
 ## 3. 使用 TinyRPC 快速搭建服务
-此外，还会在 bin 目录下生成一些单元测试文件。运行 bin/test_xxxx 文件，可以简单测试下 TinyRPC 的一些单元模块功能是否正常。
+
+### 3.1 快速上手
+在 make 成功之后，出了生成静态库文件。此外，还会在 bin 目录下生成一些单元测试文件。TinyRPC 提供了一个简单地 RPC 服务调用示例，更多内容请参考文档：[quick_stark](./quick_rpc_test.md).
+
+
+### 3.2 标准示例
 
 有一说一，使用 TinyRPC 框架搭建一个 RPC 服务还是比较简单地，核心代码几十行就能搞定。在这提供了几个 TinyRPC 搭建 RPC 服务的简单工程实例，这个工程的架构还是相对比较规范的。
 
-更多内容请移步项目：[TinyRPCExamples](https://github.com/Gooddbird/TinyRPCExamples)
+更多内容请移步项目(建设中)：[TinyRPCExamples](https://github.com/Gooddbird/TinyRPCExamples)
+
 
 ## 4. 模块设计
-TinyRPC 框架的主要模块包括：异步日志、协程封装、Reactor封装、Tcp 封装、TinyPb、以及RPC封装模块等。
+TinyRPC 框架的主要模块包括：异步日志、协程封装、Reactor封装、Tcp 封装、TinyPb协议封装、HTTP 协议封装、以及RPC封装模块等。
 
 ### 4.1 异步日志模块
 设计初期，**TinyRPC** 的日志主要参考了 (**sylar**),并精简后实现了最基础的打印日志。
