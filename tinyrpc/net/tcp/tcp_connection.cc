@@ -176,8 +176,10 @@ void TcpConnection::execute() {
     m_codec->decode(m_read_buffer.get(), data.get());
     // DebugLog << "parse service_name=" << pb_struct.service_full_name;
     if (!data->decode_succ) {
+      DebugLog << "it parse request error";
       break;
     }
+    DebugLog << "it parse request success";
     if (m_connection_type == ServerConnection) {
       DebugLog << "to dispatch this package";
       m_tcp_svr->getDispatcher()->dispatch(data.get(), this);

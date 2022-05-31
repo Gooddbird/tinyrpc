@@ -12,7 +12,7 @@
 
 
 const char* html = "<html><body><h1>Welcome to TinyRPC, just enjoy it!</h1><p>%s</p></body></html>";
-static std::atomic_int count{0};
+static std::atomic_int count{1};
 
 class RootHttpServlet : public tinyrpc::HttpServlet {
  public:
@@ -20,7 +20,7 @@ class RootHttpServlet : public tinyrpc::HttpServlet {
   ~RootHttpServlet() = default;
 
   void handle(tinyrpc::HttpRequest* req, tinyrpc::HttpResponse* res) {
-    DebugLog << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&get request count =" << count++;
+    DebugLog << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&get request count =" << count;
     DebugLog << "success recive http request, now to get http response";
     setHttpCode(res, tinyrpc::HTTP_OK);
     setHttpContentType(res, "text/html;charset=utf-8");
@@ -58,11 +58,12 @@ class RootHttpServlet : public tinyrpc::HttpServlet {
     // }
 
     std::stringstream ss;
-    ss << "Success!! Your name is " << rpc_res.name() << ", and Your id is " << rpc_res.id();
+    ss << "req_count = " << count <<  "Success!! Your name is " << rpc_res.name() << ", and Your id is " << rpc_res.id();
 
     char buf[512];
     sprintf(buf, html, ss.str().c_str());
     setHttpBody(res, std::string(buf));
+    count++;
 
   }
 
