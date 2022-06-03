@@ -21,7 +21,7 @@
     <coroutine_stack_size>128</coroutine_stack_size>
 
     <!--default coroutine pool size-->
-    <coroutine_pool_size>5000</coroutine_pool_size>
+    <coroutine_pool_size>1000</coroutine_pool_size>
 
   </coroutine>
 

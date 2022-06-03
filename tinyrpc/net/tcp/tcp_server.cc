@@ -151,25 +151,24 @@ NetAddress::ptr TcpServer::getPeerAddr() {
 void TcpServer::MainAcceptCorFunc() {
   DebugLog << "enable Hook here";
 
-	m_acceptor->init();	
-	while(!m_is_stop_accept) {
+  m_acceptor->init();
+  while (!m_is_stop_accept) {
 
-		int fd = m_acceptor->toAccept();
-		if (fd == -1) {
-			ErrorLog << "accept ret -1 error, return, to yield";
+    int fd = m_acceptor->toAccept();
+    if (fd == -1) {
+      ErrorLog << "accept ret -1 error, return, to yield";
       Coroutine::Yield();
       continue;
-		}
-		IOThread* io_thread = m_io_pool->getIOThread();
-		auto cb = [this, io_thread, fd]() {
-			io_thread->addClient(this, fd);
-		};
-		io_thread->getReactor()->addTask(cb);
-		m_tcp_counts++;
-		DebugLog << "current tcp connection count is [" << m_tcp_counts << "]";
-	}
+    }
+    IOThread *io_thread = m_io_pool->getIOThread();
+    auto cb = [this, io_thread, fd]() {
+      io_thread->addClient(this, fd);
+    };
+    io_thread->getReactor()->addTask(cb);
+    m_tcp_counts++;
+    DebugLog << "current tcp connection count is [" << m_tcp_counts << "]";
+  }
 }
-
 
 AbstractDispatcher::ptr TcpServer::getDispatcher() {	
 	return m_dispatcher;	

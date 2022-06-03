@@ -27,26 +27,26 @@ class QueryServiceImpl : public QueryService {
                        ::queryNameRes* response,
                        ::google::protobuf::Closure* done) {
     
+    DebugLog << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&get request count =" << count++;
     // DebugLog << "========================";
     // DebugLog << "this is query_name func";
     // DebugLog << "first begin to sleep 6s";
-    // sleep_hook(6);
+    // sleep(6);
     // DebugLog << "sleep 6s end";
 
     response->set_ret_code(0);
     response->set_res_info("OK");
-    DebugLog << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&get request count =" << count++;
 
-    tinyrpc::MySQLInstase* instase =  tinyrpc::MySQLInstaseFactroy::GetThreadMySQLFactory()->GetMySQLInstase("test_db_key1");
-    if (!instase->isInitSuccess()) {
+    tinyrpc::MySQLInstase::ptr instase =  tinyrpc::MySQLInstaseFactroy::GetThreadMySQLFactory()->GetMySQLInstase("test_db_key1");
+    if (!instase || !instase->isInitSuccess()) {
       response->set_ret_code(-1);
       response->set_res_info("faild to init mysql");
       ErrorLog << "mysql instase init failed";
       return;
     }
 
-    int n = 100;
-    while(n--) {
+    int n = 1000000;
+    // while(n--) {
     DebugLog << "88888888888888888888 excute n=" << n;
     char query_sql[512];
     sprintf(query_sql, "select user_id, user_name, user_gender from user_db.t_user_information where user_id = '%s';", std::to_string(request->id()).c_str());
@@ -75,7 +75,7 @@ class QueryServiceImpl : public QueryService {
     instase->freeResult(res);
     // response->set_id(request->id());
     // response->set_name("ikerli");
-    }
+    // }
     if (done) {
       done->Run();
     }

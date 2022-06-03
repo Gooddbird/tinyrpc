@@ -249,7 +249,10 @@ void Config::readConf() {
 }
 
 Config::~Config() {
-
+  if (m_xml_file) {
+    delete m_xml_file;
+    m_xml_file = NULL;
+  }
 }
 
 

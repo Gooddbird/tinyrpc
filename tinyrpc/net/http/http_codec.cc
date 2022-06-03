@@ -26,10 +26,6 @@ void HttpCodeC::encode(TcpBuffer* buf, AbstractData* data) {
   HttpResponse* response = dynamic_cast<HttpResponse*>(data);
   response->encode_succ = false;
 
-  // int total_len = response->m_response_version.length() + 1 + 3 + 1 + response->m_response_info.length() + 2
-                    // + response->m_response_header.getHeaderTotalLength() + 2 + response->m_response_body.length();
-
-  // char* buf = reinterpret_cast<char*>(malloc(total_len));
   std::stringstream ss;
   ss << response->m_response_version << " " << response->m_response_code << " "
     << response->m_response_info << "\r\n" << response->m_response_header.toHttpString()

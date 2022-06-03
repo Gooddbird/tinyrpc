@@ -34,7 +34,7 @@
   <iothread_num>10</iothread_num>
 
   <time_wheel>
-    <bucket_num>6</bucket_num>
+    <bucket_num>3</bucket_num>
 
     <!--inteval that destroy bad TcpConnection, s-->
     <inteval>10</inteval>

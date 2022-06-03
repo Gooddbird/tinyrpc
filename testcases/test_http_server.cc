@@ -20,45 +20,106 @@ class RootHttpServlet : public tinyrpc::HttpServlet {
   ~RootHttpServlet() = default;
 
   void handle(tinyrpc::HttpRequest* req, tinyrpc::HttpResponse* res) {
-    DebugLog << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&get request count =" << count;
-    DebugLog << "success recive http request, now to get http response";
+    DebugLog << "RootHttpServlet get request count =" << count;
+    DebugLog << "RootHttpServlet success recive http request, now to get http response";
     setHttpCode(res, tinyrpc::HTTP_OK);
     setHttpContentType(res, "text/html;charset=utf-8");
 
 
     queryNameReq rpc_req;
     queryNameRes rpc_res;
-    // DebugLog << "now to call QueryServer TinyRPC server to query who's id is " << req->m_query_maps["id"];
-    // rpc_req.set_id(std::atoi(req->m_query_maps["id"].c_str()));
+    DebugLog << "now to call QueryServer TinyRPC server to query who's id is " << req->m_query_maps["id"];
+    rpc_req.set_id(std::atoi(req->m_query_maps["id"].c_str()));
 
-    // tinyrpc::TinyPbRpcChannel channel(std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999));
-    // QueryService_Stub stub(&channel);
+    tinyrpc::TinyPbRpcChannel channel(std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999));
+    QueryService_Stub stub(&channel);
 
-    // tinyrpc::TinyPbRpcController rpc_controller;
-    // rpc_controller.SetTimeout(5000);
+    tinyrpc::TinyPbRpcController rpc_controller;
+    rpc_controller.SetTimeout(10000);
 
-    // stub.query_name(&rpc_controller, &rpc_req, &rpc_res, NULL);
+    DebugLog << "RootHttpServlet begin to call RPC" << count;
+    stub.query_name(&rpc_controller, &rpc_req, &rpc_res, NULL);
+    DebugLog << "RootHttpServlet end to call RPC" << count;
 
-    // if (rpc_controller.ErrorCode() != 0) {
-    //   ErrorLog << "failed to call QueryServer rpc server";
-    //   char buf[512];
-    //   sprintf(buf, html, "failed to call QueryServer rpc server");
-    //   setHttpBody(res, std::string(buf));
-    //   return;
-    // }
+    if (rpc_controller.ErrorCode() != 0) {
+      ErrorLog << "failed to call QueryServer rpc server";
+      char buf[512];
+      sprintf(buf, html, "failed to call QueryServer rpc server");
+      setHttpBody(res, std::string(buf));
+      return;
+    }
 
-    // if (rpc_res.ret_code() != 0) {
-    //   std::stringstream ss;
-    //   ss << "QueryServer rpc server return bad result, ret = " << rpc_res.ret_code() << ", and res_info = " << rpc_res.res_info();
-    //   ErrorLog << ss.str();
-    //   char buf[512];
-    //   sprintf(buf, html, ss.str().c_str());
-    //   setHttpBody(res, std::string(buf));
-    //   return;
-    // }
+    if (rpc_res.ret_code() != 0) {
+      std::stringstream ss;
+      ss << "QueryServer rpc server return bad result, ret = " << rpc_res.ret_code() << ", and res_info = " << rpc_res.res_info();
+      ErrorLog << ss.str();
+      char buf[512];
+      sprintf(buf, html, ss.str().c_str());
+      setHttpBody(res, std::string(buf));
+      return;
+    }
 
     std::stringstream ss;
     ss << "req_count = " << count <<  "Success!! Your name is " << rpc_res.name() << ", and Your id is " << rpc_res.id();
+
+    char buf[512];
+    sprintf(buf, html, ss.str().c_str());
+    setHttpBody(res, std::string(buf));
+    count++;
+
+  }
+
+ private:
+
+};
+
+class AnotherHttpServlet : public tinyrpc::HttpServlet {
+ public:
+  AnotherHttpServlet() = default;
+  ~AnotherHttpServlet() = default;
+
+  void handle(tinyrpc::HttpRequest* req, tinyrpc::HttpResponse* res) {
+    DebugLog << "AnotherHttpServlet get request count =" << count;
+    DebugLog << "AnotherHttpServlet success recive http request, now to get http response";
+    setHttpCode(res, tinyrpc::HTTP_OK);
+    setHttpContentType(res, "text/html;charset=utf-8");
+
+
+    queryAgeReq rpc_req;
+    queryAgeRes rpc_res;
+    DebugLog << "now to call QueryServer TinyRPC server to query who's id is " << req->m_query_maps["id"];
+    rpc_req.set_id(std::atoi(req->m_query_maps["id"].c_str()));
+
+    tinyrpc::TinyPbRpcChannel channel(std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999));
+    QueryService_Stub stub(&channel);
+
+    tinyrpc::TinyPbRpcController rpc_controller;
+    rpc_controller.SetTimeout(5000);
+
+    DebugLog << "AnotherHttpServlet end to call RPC" << count;
+    stub.query_age(&rpc_controller, &rpc_req, &rpc_res, NULL);
+    DebugLog << "AnotherHttpServlet end to call RPC" << count;
+
+    if (rpc_controller.ErrorCode() != 0) {
+      ErrorLog << "failed to call QueryServer rpc server";
+      char buf[512];
+      sprintf(buf, html, "failed to call QueryServer rpc server");
+      setHttpBody(res, std::string(buf));
+      return;
+    }
+
+    if (rpc_res.ret_code() != 0) {
+      std::stringstream ss;
+      ss << "QueryServer rpc server return bad result, ret = " << rpc_res.ret_code() << ", and res_info = " << rpc_res.res_info();
+      ErrorLog << ss.str();
+      char buf[512];
+      sprintf(buf, html, ss.str().c_str());
+      setHttpBody(res, std::string(buf));
+      return;
+    }
+
+    std::stringstream ss;
+    ss << "req_count = " << count <<  "Success!! Your age is," << rpc_res.age() << " and Your id is " << rpc_res.id();
 
     char buf[512];
     sprintf(buf, html, ss.str().c_str());
@@ -82,6 +143,7 @@ int main(int argc, char* argv[]) {
   tinyrpc::InitConfig(argv[1]);
 
   tinyrpc::GetServer()->registerHttpServlet("/user", std::make_shared<RootHttpServlet>());
+  tinyrpc::GetServer()->registerHttpServlet("/another", std::make_shared<AnotherHttpServlet>());
 
   tinyrpc::StartRpcServer();
 
