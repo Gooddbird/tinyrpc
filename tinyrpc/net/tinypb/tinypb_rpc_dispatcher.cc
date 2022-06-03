@@ -92,7 +92,7 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
 
   DebugLog << reply_pk.msg_req << "|response.name = " << response->GetDescriptor()->full_name();
 
-  TinyPbRpcController* rpc_controller = new TinyPbRpcController();
+  TinyPbRpcController rpc_controller;
 
   std::function<void()> reply_package_func = [&reply_pk, response, request]()
   {
@@ -116,7 +116,7 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
   };
 
   TinyPbRpcClosure closure(reply_package_func);
-  service->CallMethod(method, rpc_controller, request, response, &closure);
+  service->CallMethod(method, &rpc_controller, request, response, &closure);
 
   conn->getCodec()->encode(conn->getOutBuffer(), dynamic_cast<AbstractData*>(&reply_pk));
 

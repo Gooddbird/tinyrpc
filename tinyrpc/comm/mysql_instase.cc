@@ -31,21 +31,15 @@ MySQLInstaseFactroy* MySQLInstaseFactroy::GetThreadMySQLFactory() {
 
 }
 
-MySQLInstase* MySQLInstaseFactroy::GetMySQLInstase(const std::string& key) {
-  auto it = m_conn_pools.find(key);
-  if (it != m_conn_pools.end()) {
-    return (it->second).get();
-  }
-   
+MySQLInstase::ptr MySQLInstaseFactroy::GetMySQLInstase(const std::string& key) {
   auto it2 = gRpcConfig->m_mysql_options.find(key);
   if (it2 == gRpcConfig->m_mysql_options.end()) {
     ErrorLog << "get MySQLInstase error, not this key[" << key << "] exist";
+    return NULL;
   }
   DebugLog << "create MySQLInstase of key " << key;
   MySQLInstase::ptr instase = std::make_shared<MySQLInstase>(it2->second);
-  m_conn_pools.insert(std::make_pair(key, instase));
-  return instase.get();
-
+  return instase;
 }
 
 
@@ -78,8 +72,8 @@ int MySQLInstase::reconnect() {
     ErrorLog << "faild to call mysql_init allocate MYSQL instase";
     return -1;
   }
-  int value = 0;
-  mysql_options(m_sql_handler, MYSQL_OPT_RECONNECT, &value);
+  // int value = 0;
+  // mysql_options(m_sql_handler, MYSQL_OPT_RECONNECT, &value);
   if (!m_option.m_char_set.empty()) {
     mysql_options(m_sql_handler, MYSQL_SET_CHARSET_NAME, m_option.m_char_set.c_str());
   }
@@ -90,7 +84,7 @@ int MySQLInstase::reconnect() {
   if (!mysql_real_connect(m_sql_handler, m_option.m_addr.getIP().c_str(), m_option.m_user.c_str(), 
       m_option.m_passwd.c_str(), m_option.m_select_db.c_str(), m_option.m_addr.getPort(), NULL, 0)) {
 
-    ErrorLog << "faild to call mysql_real_connect, peer addr[ " << m_option.m_addr.toString() << "], mysql sys errinfo[" << mysql_error(m_sql_handler) << "]";
+    ErrorLog << "faild to call mysql_real_connect, peer addr[ " << m_option.m_addr.getIP() << ":" << m_option.m_addr.getPort() << "], mysql sys errinfo[" << mysql_error(m_sql_handler) << "]";
     return -1;
   }
   DebugLog << "mysql_handler connect succ";

@@ -24,7 +24,7 @@ namespace tinyrpc {
 extern tinyrpc::Logger::ptr gRpcLogger;
 extern tinyrpc::Config::ptr gRpcConfig;
 
-void SignalHandler(int signal_no) {
+void CoredumpHandler(int signal_no) {
   ErrorLog << "progress received invalid signal, will exit";
   printf("progress received invalid signal, will exit\n");
   gRpcLogger->flush();
@@ -193,12 +193,15 @@ void Logger::init(const char* file_name, const char* file_path, int max_size, in
     TimerEvent::ptr event = std::make_shared<TimerEvent>(sync_inteval, true, std::bind(&Logger::loopFunc, this));
     Reactor::GetReactor()->getTimer()->addTimerEvent(event);
     m_async_logger = std::make_shared<AsyncLogger>(file_name, file_path, max_size, type);
-    signal(SIGSEGV, SignalHandler);
-    signal(SIGABRT, SignalHandler);
-    signal(SIGTERM, SignalHandler);
-    signal(SIGKILL, SignalHandler);
-    signal(SIGINT, SignalHandler);
-    signal(SIGSTKFLT, SignalHandler);
+    signal(SIGSEGV, CoredumpHandler);
+    signal(SIGABRT, CoredumpHandler);
+    signal(SIGTERM, CoredumpHandler);
+    signal(SIGKILL, CoredumpHandler);
+    signal(SIGINT, CoredumpHandler);
+    signal(SIGSTKFLT, CoredumpHandler);
+
+    // ignore SIGPIPE 
+    signal(SIGPIPE, SIG_IGN);
     m_is_init = true;
   }
 }

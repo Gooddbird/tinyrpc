@@ -83,13 +83,9 @@ class MySQLInstaseFactroy {
 
   ~MySQLInstaseFactroy() = default;
 
-  MySQLInstase* GetMySQLInstase(const std::string& key);
+  MySQLInstase::ptr GetMySQLInstase(const std::string& key);
  public:
   static MySQLInstaseFactroy* GetThreadMySQLFactory();
-  
-
- private:
-  std::map<std::string, MySQLInstase::ptr> m_conn_pools;
 
 };
 

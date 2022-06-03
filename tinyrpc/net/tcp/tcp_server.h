@@ -80,8 +80,6 @@ class TcpServer {
  private:
   void MainAcceptCorFunc();
 
-  void MainLoopTimerFunc();
-
  private:
   
   NetAddress::ptr m_addr;
@@ -91,8 +89,6 @@ class TcpServer {
   int m_tcp_counts {0};
 
   Reactor* m_main_reactor {nullptr};
-
-  std::map<int, TcpConnection::ptr> m_clients;
 
   bool m_is_stop_accept {false};
 

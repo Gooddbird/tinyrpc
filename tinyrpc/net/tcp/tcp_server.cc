@@ -74,24 +74,32 @@ TcpAcceptor::~TcpAcceptor() {
 int TcpAcceptor::toAccept() {
 
 	socklen_t len = 0;
-	sockaddr cli_addr;
-	
-	// call hook accept
-	int rt = accept_hook(m_fd, reinterpret_cast<sockaddr*>(&cli_addr), &len);
-	if (rt == -1) {
-		DebugLog << "error, no new client coming, errno=" << errno << "error=" << strerror(errno);
-		return -1;
-	}
+	int rt = 0;
 
 	if (m_family == AF_INET) {
-		sockaddr_in* ipv4_addr = reinterpret_cast<sockaddr_in*>(&cli_addr); 
-
-		m_peer_addr = std::make_shared<IPAddress>(*ipv4_addr);
+		sockaddr_in cli_addr;
+		memset(&cli_addr, 0, sizeof(cli_addr));
+		len = sizeof(cli_addr);
+		// call hook accept
+		rt = accept_hook(m_fd, reinterpret_cast<sockaddr *>(&cli_addr), &len);
+		if (rt == -1) {
+			DebugLog << "error, no new client coming, errno=" << errno << "error=" << strerror(errno);
+			return -1;
+		}
+		InfoLog << "New client accepted succ! port:[" << cli_addr.sin_port;
+		m_peer_addr = std::make_shared<IPAddress>(cli_addr);
 	} else if (m_family == AF_UNIX) {
+		sockaddr_un cli_addr;
+		len = sizeof(cli_addr);
+		memset(&cli_addr, 0, sizeof(cli_addr));
+		// call hook accept
+		rt = accept_hook(m_fd, reinterpret_cast<sockaddr *>(&cli_addr), &len);
+		if (rt == -1) {
+			DebugLog << "error, no new client coming, errno=" << errno << "error=" << strerror(errno);
+			return -1;
+		}
+		m_peer_addr = std::make_shared<UnixDomainAddress>(cli_addr);
 
-		sockaddr_un* unix_addr = reinterpret_cast<sockaddr_un*>(&cli_addr);	
-
-		m_peer_addr = std::make_shared<UnixDomainAddress>(*unix_addr);
 	} else {
 		ErrorLog << "unknown type protocol!";
 		close(rt);
@@ -143,25 +151,24 @@ NetAddress::ptr TcpServer::getPeerAddr() {
 void TcpServer::MainAcceptCorFunc() {
   DebugLog << "enable Hook here";
 
-	m_acceptor->init();	
-	while(!m_is_stop_accept) {
+  m_acceptor->init();
+  while (!m_is_stop_accept) {
 
-		int fd = m_acceptor->toAccept();
-		if (fd == -1) {
-			ErrorLog << "accept ret -1 error, return, to yield";
+    int fd = m_acceptor->toAccept();
+    if (fd == -1) {
+      ErrorLog << "accept ret -1 error, return, to yield";
       Coroutine::Yield();
       continue;
-		}
-		IOThread* io_thread = m_io_pool->getIOThread();
-		auto cb = [this, io_thread, fd]() {
-			io_thread->addClient(this, fd);
-		};
-		io_thread->getReactor()->addTask(cb);
-		m_tcp_counts++;
-		DebugLog << "current tcp connection count is [" << m_tcp_counts << "]";
-	}
+    }
+    IOThread *io_thread = m_io_pool->getIOThread();
+    auto cb = [this, io_thread, fd]() {
+      io_thread->addClient(this, fd);
+    };
+    io_thread->getReactor()->addTask(cb);
+    m_tcp_counts++;
+    DebugLog << "current tcp connection count is [" << m_tcp_counts << "]";
+  }
 }
-
 
 AbstractDispatcher::ptr TcpServer::getDispatcher() {	
 	return m_dispatcher;	

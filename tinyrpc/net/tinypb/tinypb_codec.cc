@@ -46,6 +46,10 @@ void TinyPbCodeC::encode(TcpBuffer* buf, AbstractData* data) {
     DebugLog << "succ encode and write to buffer, writeindex=" << buf->writeIndex();
   }
   data = tmp;
+  if (re) {
+    free((void*)re);
+    re = NULL;
+  }
   // DebugLog << "test encode end";
 
 }
