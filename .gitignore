@@ -9,3 +9,5 @@ lib/*
 *.log
 *.o
 *.a
+*.pb.h
+*.pb.cc

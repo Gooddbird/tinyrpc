@@ -41,7 +41,7 @@ void HttpCodeC::encode(TcpBuffer* buf, AbstractData* data) {
 
 void HttpCodeC::decode(TcpBuffer* buf, AbstractData* data) {
   DebugLog << "test http decode start";
-  m_strs = "";
+  std::string strs = "";
   if (!buf || !data) {
     ErrorLog << "decode error! buf or data nullptr";
     return;
@@ -52,14 +52,14 @@ void HttpCodeC::decode(TcpBuffer* buf, AbstractData* data) {
     return;
   }
 
-  m_strs = buf->getBufferString();
+  strs = buf->getBufferString();
 
   bool is_parse_request_line = false;
   bool is_parse_request_header = false;
   bool is_parse_request_content = false;
   // bool is_parse_succ = false;
   int read_size = 0;
-  std::string tmp(m_strs);
+  std::string tmp(strs);
   DebugLog << "pending to parse str:" << tmp << ", total size =" << tmp.size();
   int len = tmp.length();
   while (1) {
@@ -102,7 +102,7 @@ void HttpCodeC::decode(TcpBuffer* buf, AbstractData* data) {
     }
     if (!is_parse_request_content) {
       int content_len = std::atoi(request->m_requeset_header.m_maps["Content-Length"].c_str());
-      if ((int)m_strs.length() - read_size < content_len) {
+      if ((int)strs.length() - read_size < content_len) {
         DebugLog << "need to read more data";
         return;
       }
