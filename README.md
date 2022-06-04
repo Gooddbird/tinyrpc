@@ -50,6 +50,11 @@ git clone https://github.com/Gooddbird/tinyrpc
 cd tinyrpc
 mkdir bin && mkdir lib
 
+// 生成测试pb桩文件
+cd testcases
+protoc --cpp_out=./ tinypb.proto
+
+cd ..
 // 先执行编译
 make -j4
 

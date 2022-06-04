@@ -62,6 +62,9 @@ class RootHttpServlet : public tinyrpc::HttpServlet {
     std::stringstream ss;
     ss << "req_count = " << count <<  "Success!! Your name is " << rpc_res.name() << ", and Your id is " << rpc_res.id();
 
+    // std::stringstream ss;
+    // ss << "req_count = " << count <<  "Success!! Your name is " << "ikerli " << ", and Your id is " << "1111";
+
     char buf[512];
     sprintf(buf, html, ss.str().c_str());
     setHttpBody(res, std::string(buf));

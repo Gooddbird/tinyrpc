@@ -78,11 +78,17 @@ void FdEvent::updateToReactor() {
   event.events = m_listen_events;
   event.data.ptr = this;
   // DebugLog << "reactor = " << m_reactor << "log m_tid =" << m_reactor->getTid();
+  if (!m_reactor) {
+    m_reactor = tinyrpc::Reactor::GetReactor();
+  }
 
   m_reactor->addEvent(m_fd, event);
 }
 
 void FdEvent::unregisterFromReactor () {
+  if (!m_reactor) {
+    m_reactor = tinyrpc::Reactor::GetReactor();
+  }
   m_reactor->delEvent(m_fd);
   m_listen_events = 0;
   m_read_callback = nullptr;
