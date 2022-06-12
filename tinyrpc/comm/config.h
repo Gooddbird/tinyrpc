@@ -37,6 +37,7 @@ class Config {
   std::string m_log_prefix;
   int m_log_max_size {0};
   LogLevel m_log_level {LogLevel::DEBUG};
+  LogLevel m_app_log_level {LogLevel::DEBUG};
   int m_log_sync_inteval {1000};
 
   // coroutine params

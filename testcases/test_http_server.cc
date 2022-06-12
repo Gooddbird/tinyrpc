@@ -29,6 +29,7 @@ class RootHttpServlet : public tinyrpc::HttpServlet {
     queryNameReq rpc_req;
     queryNameRes rpc_res;
     DebugLog << "now to call QueryServer TinyRPC server to query who's id is " << req->m_query_maps["id"];
+    AppDebugLog("1111111111111111") << "now to call QueryServer TinyRPC server to query who's id is " << req->m_query_maps["id"];
     rpc_req.set_id(std::atoi(req->m_query_maps["id"].c_str()));
 
     tinyrpc::TinyPbRpcChannel channel(std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999));

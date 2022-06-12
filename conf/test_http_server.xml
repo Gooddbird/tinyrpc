@@ -10,7 +10,8 @@
     <log_max_file_size>5</log_max_file_size>
 
     <!--log level: DEBUG < INFO < WARN < ERROR-->
-    <log_level>DEBUG</log_level>
+    <rpc_log_level>DEBUG</rpc_log_level>
+    <app_log_level>DEBUG</app_log_level>
 
     <!--inteval that put log info to async logger, s-->
     <log_sync_inteval>1</log_sync_inteval>

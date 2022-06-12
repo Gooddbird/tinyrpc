@@ -27,19 +27,26 @@ enum LogType {
 
 #define DebugLog \
 	if (tinyrpc::LogLevel::DEBUG >= tinyrpc::gRpcConfig->m_log_level) \
-		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::DEBUG, __FILE__, __LINE__, __func__))).getStringStream()
+		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::DEBUG, __FILE__, __LINE__, __func__, tinyrpc::LogType::RPC_LOG))).getStringStream()
 
 #define InfoLog \
 	if (tinyrpc::LogLevel::INFO >= tinyrpc::gRpcConfig->m_log_level) \
-		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::INFO, __FILE__, __LINE__, __func__))).getStringStream()
+		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::INFO, __FILE__, __LINE__, __func__, tinyrpc::LogType::RPC_LOG))).getStringStream()
 
 #define WarnLog \
 	if (tinyrpc::LogLevel::WARN >= tinyrpc::gRpcConfig->m_log_level) \
-		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::WARN, __FILE__, __LINE__, __func__))).getStringStream()
+		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::WARN, __FILE__, __LINE__, __func__, tinyrpc::LogType::RPC_LOG))).getStringStream()
 
 #define ErrorLog \
 	if (tinyrpc::LogLevel::ERROR >= tinyrpc::gRpcConfig->m_log_level) \
-		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::ERROR, __FILE__, __LINE__, __func__))).getStringStream()
+		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::ERROR, __FILE__, __LINE__, __func__, tinyrpc::LogType::RPC_LOG))).getStringStream()
+
+
+#define AppDebugLog(x) \
+	if (tinyrpc::LogLevel::DEBUG >= tinyrpc::gRpcConfig->m_app_log_level) \
+		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::DEBUG, __FILE__, __LINE__, __func__, tinyrpc::LogType::APP_LOG, x))).getStringStream()
+
+
 
 
 pid_t gettid();
@@ -52,7 +59,7 @@ class LogEvent {
  public:
  	
 	typedef std::shared_ptr<LogEvent> ptr;
-	LogEvent(LogLevel level, const char* file_name, int line, const char* func_name);
+	LogEvent(LogLevel level, const char* file_name, int line, const char* func_name, LogType type, const std::string& msgno = "");
 
 	~LogEvent();
 
@@ -63,7 +70,6 @@ class LogEvent {
 
  private:
 		
-	const char* m_msg_no;
 	// uint64_t m_timestamp;
 	timeval m_timeval;
 	LogLevel m_level;
@@ -74,7 +80,8 @@ class LogEvent {
 	const char* m_file_name;
 	int m_line {0};
 	const char* m_func_name;
-
+	LogType m_type;
+	std::string m_msg_no;
 	std::stringstream m_ss;
 
 };
@@ -118,7 +125,6 @@ class AsyncLogger {
 	int m_max_size {0};
 	LogType m_log_type;
 	int m_no {0};
-	int m_fd {-1};
 	bool m_need_reopen {false};
 	FILE* m_file_handle {nullptr};
 	std::string m_date;
@@ -139,24 +145,31 @@ class Logger {
 	Logger();
 	~Logger();
 
-	void init(const char* file_name, const char* file_path, int max_size, int sync_inteval, LogType type = RPC_LOG);
+	void init(const char* file_name, const char* file_path, int max_size, int sync_inteval);
 	void log();
-	void push(const std::string& log_msg);
+	void pushRpcLog(const std::string& log_msg);
+	void pushAppLog(const std::string& log_msg);
 	void loopFunc();
 
 	void flush();
 
 	AsyncLogger::ptr getAsyncLogger() {
-		return m_async_logger;
+		return m_async_rpc_logger;
+	}
+
+	AsyncLogger::ptr getAsyncAppLogger() {
+		return m_async_app_logger;
 	}
 
  public:
 	std::vector<std::string> m_buffer;
+	std::vector<std::string> m_app_buffer;
 
  private:
  	Mutex m_mutex;
 	bool m_is_init {false};
-	AsyncLogger::ptr m_async_logger;
+	AsyncLogger::ptr m_async_rpc_logger;
+	AsyncLogger::ptr m_async_app_logger;
 
 };
 

@@ -124,10 +124,16 @@ TinyRPC 的协程底层使用了腾讯的开源协程库 [libco](https://github.
 [Reactor模式介绍](https://zhuanlan.zhihu.com/p/428693405)
 
 ### 4.4 Tcp 模块
---建设中，敬请期待--
+
+参考文章：
+
+[C++实现的协程异步 RPC 框架 TinyRPC（五）-- TcpServer 实现](https://zhuanlan.zhihu.com/p/523947909)
+
+
+[C++实现的协程异步 RPC 框架 TinyRPC（六）-- TcpConnection 实现](https://zhuanlan.zhihu.com/p/524517895)
+
 
 ### 4.5 TinyPb 协议
---建设中，敬请期待--
 协议更多细节见 [TinyPb协议详解](./tinypb_protocal.md).
 
 ### 4.6 Http 模块
@@ -148,7 +154,11 @@ TinyRPC 的协程底层使用了腾讯的开源协程库 [libco](https://github.
 欢迎关注我的**知乎**账号：知乎搜索 **ikerli**
 
 欢迎关注我的**个人微信**公众号, **微信公众号** 搜索 **ikerli**(无广告，放心食用):
+
 ![](./code.jpg)
+
+
+
 
 
 
