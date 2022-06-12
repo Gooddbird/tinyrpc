@@ -29,6 +29,7 @@ void CoredumpHandler(int signal_no) {
   printf("progress received invalid signal, will exit\n");
   gRpcLogger->flush();
   pthread_join(gRpcLogger->getAsyncLogger()->m_thread, NULL);
+  pthread_join(gRpcLogger->getAsyncAppLogger()->m_thread, NULL);
 
   signal(signal_no, SIG_DFL);
   raise(signal_no);
@@ -53,11 +54,13 @@ void setLogLevel(LogLevel level) {
 }
 
 
-LogEvent::LogEvent(LogLevel level, const char* file_name, int line, const char* func_name)
+LogEvent::LogEvent(LogLevel level, const char* file_name, int line, const char* func_name, LogType type, const std::string& msg_no)
   : m_level(level),
     m_file_name(file_name),
     m_line(line),
-    m_func_name(func_name) {
+    m_func_name(func_name),
+    m_type(type),
+    m_msg_no(msg_no) {
 }
 
 LogEvent::~LogEvent() {
@@ -101,7 +104,6 @@ LogLevel stringToLevel(const std::string& str) {
 
     if (str == "ERROR")
       return LogLevel::ERROR;
-
 
     return LogLevel::DEBUG;
 }
@@ -153,15 +155,21 @@ std::stringstream& LogEvent::getStringStream() {
 		<< "[" << m_cor_id << "]\t"
     << "[" << m_file_name << ":" << m_line << "]\t";
     // << "[" << m_func_name << "]\t";
-  
+  if (!m_msg_no.empty()) {
+    m_ss << "[" << m_msg_no << "]\t";
+  } 
   return m_ss;
 }
 
 void LogEvent::log() {
   if (m_level >= gRpcConfig->m_log_level) {
     m_ss << "\n";
-    printf("%s", m_ss.str().c_str());
-    gRpcLogger->push(m_ss.str());
+    // printf("%s", m_ss.str().c_str());
+    if (m_type == RPC_LOG) {
+      gRpcLogger->pushRpcLog(m_ss.str());
+    } else if (m_type == APP_LOG) {
+      gRpcLogger->pushAppLog(m_ss.str());
+    }
   }
 }
 
@@ -185,14 +193,17 @@ Logger::Logger() {
 
 Logger::~Logger() {
   flush();
-  pthread_join(m_async_logger->m_thread, NULL);
+  pthread_join(m_async_rpc_logger->m_thread, NULL);
+  pthread_join(m_async_app_logger->m_thread, NULL);
 }
 
-void Logger::init(const char* file_name, const char* file_path, int max_size, int sync_inteval, LogType type/* = RPC_LOG*/) {
+void Logger::init(const char* file_name, const char* file_path, int max_size, int sync_inteval) {
   if (!m_is_init) {
     TimerEvent::ptr event = std::make_shared<TimerEvent>(sync_inteval, true, std::bind(&Logger::loopFunc, this));
     Reactor::GetReactor()->getTimer()->addTimerEvent(event);
-    m_async_logger = std::make_shared<AsyncLogger>(file_name, file_path, max_size, type);
+    m_async_rpc_logger = std::make_shared<AsyncLogger>(file_name, file_path, max_size, RPC_LOG);
+    m_async_app_logger = std::make_shared<AsyncLogger>(file_name, file_path, max_size, APP_LOG);
+
     signal(SIGSEGV, CoredumpHandler);
     signal(SIGABRT, CoredumpHandler);
     signal(SIGTERM, CoredumpHandler);
@@ -208,24 +219,35 @@ void Logger::init(const char* file_name, const char* file_path, int max_size, in
 	
 void Logger::loopFunc() {
   std::vector<std::string> tmp;
+  std::vector<std::string> app_tmp;
   Mutex::Lock lock(m_mutex);
   tmp.swap(m_buffer);
+  app_tmp.swap(m_app_buffer);
   lock.unlock();
 
-  m_async_logger->push(tmp);
+  m_async_rpc_logger->push(tmp);
+  m_async_app_logger->push(app_tmp);
 }
 
-void Logger::push(const std::string& msg) {
-
+void Logger::pushRpcLog(const std::string& msg) {
   Mutex::Lock lock(m_mutex);
   m_buffer.push_back(msg);
   lock.unlock();
 }
 
+void Logger::pushAppLog(const std::string& msg) {
+  Mutex::Lock lock(m_mutex);
+  m_app_buffer.push_back(msg);
+  lock.unlock();
+}
+
 void Logger::flush() {
-  m_async_logger->stop();
   loopFunc();
-  m_async_logger->flush();
+  m_async_rpc_logger->stop();
+  m_async_rpc_logger->flush();
+
+  m_async_app_logger->stop();
+  m_async_app_logger->flush();
 }
 
 AsyncLogger::AsyncLogger(const char* file_name, const char* file_path, int max_size, LogType logtype)
@@ -327,11 +349,12 @@ void* AsyncLogger::excute(void* arg) {
 
 
 void AsyncLogger::push(std::vector<std::string>& buffer) {
-  Mutex::Lock lock(m_mutex);
-  m_tasks.push(buffer);
-  lock.unlock();
-  pthread_cond_signal(&m_condition);
-
+  if (!buffer.empty()) {
+    Mutex::Lock lock(m_mutex);
+    m_tasks.push(buffer);
+    lock.unlock();
+    pthread_cond_signal(&m_condition);
+  }
 }
 
 void AsyncLogger::flush() {

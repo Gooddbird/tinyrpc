@@ -49,14 +49,23 @@ void Config::readLogConfig(TiXmlElement* log_node) {
   m_log_max_size = log_max_size * 1024 * 1024;
 
 
-  node = log_node->FirstChildElement("log_level");
+  node = log_node->FirstChildElement("rpc_log_level");
   if(!node || !node->GetText()) {
-    printf("start tinyrpc server error! read config file [%s] error, cannot read [log_level] xml node\n", m_file_path.c_str());
+    printf("start tinyrpc server error! read config file [%s] error, cannot read [rpc_log_level] xml node\n", m_file_path.c_str());
     exit(0);
   }
 
   std::string log_level = std::string(node->GetText());
   m_log_level = stringToLevel(log_level);
+
+  node = log_node->FirstChildElement("app_log_level");
+  if(!node || !node->GetText()) {
+    printf("start tinyrpc server error! read config file [%s] error, cannot read [app_log_level] xml node\n", m_file_path.c_str());
+    exit(0);
+  }
+
+  log_level = std::string(node->GetText());
+  m_app_log_level = stringToLevel(log_level);
 
   node = log_node->FirstChildElement("log_sync_inteval");
   if(!node || !node->GetText()) {
