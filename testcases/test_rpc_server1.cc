@@ -28,6 +28,8 @@ class QueryServiceImpl : public QueryService {
                        ::google::protobuf::Closure* done) {
     
     DebugLog << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&get request count =" << count++;
+    AppDebugLog << "this is function query_name app log ";
+
     // DebugLog << "========================";
     // DebugLog << "this is query_name func";
     // DebugLog << "first begin to sleep 6s";

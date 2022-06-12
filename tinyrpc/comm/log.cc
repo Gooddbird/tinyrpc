@@ -54,13 +54,12 @@ void setLogLevel(LogLevel level) {
 }
 
 
-LogEvent::LogEvent(LogLevel level, const char* file_name, int line, const char* func_name, LogType type, const std::string& msg_no)
+LogEvent::LogEvent(LogLevel level, const char* file_name, int line, const char* func_name, LogType type)
   : m_level(level),
     m_file_name(file_name),
     m_line(line),
     m_func_name(func_name),
-    m_type(type),
-    m_msg_no(msg_no) {
+    m_type(type) {
 }
 
 LogEvent::~LogEvent() {
@@ -155,9 +154,11 @@ std::stringstream& LogEvent::getStringStream() {
 		<< "[" << m_cor_id << "]\t"
     << "[" << m_file_name << ":" << m_line << "]\t";
     // << "[" << m_func_name << "]\t";
-  if (!m_msg_no.empty()) {
-    m_ss << "[" << m_msg_no << "]\t";
-  } 
+  
+  std::string msgno = getCurrentMsgNO();
+  if (!msgno.empty()) {
+    m_ss << "[" << getCurrentMsgNO() << "]\t";
+  }
   return m_ss;
 }
 
