@@ -22,6 +22,8 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
     ErrorLog << "dynamic_cast error";
     return;
   }
+  Coroutine::GetCurrentCoroutine()->setMsgNo(tmp->msg_req);
+  setCurrentMsgNO(tmp->msg_req);
 
   std::string service_name;
   std::string method_name;
@@ -93,6 +95,7 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
   DebugLog << reply_pk.msg_req << "|response.name = " << response->GetDescriptor()->full_name();
 
   TinyPbRpcController rpc_controller;
+  rpc_controller.SetMsgReq(reply_pk.msg_req);
 
   std::function<void()> reply_package_func = [&reply_pk, response, request]()
   {

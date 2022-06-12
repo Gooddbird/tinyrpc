@@ -9,6 +9,10 @@ namespace tinyrpc {
 
 int getCoroutineIndex();
 
+std::string getCurrentMsgNO();
+
+void setCurrentMsgNO(const std::string& msgno);
+
 class Coroutine {
 
  public:
@@ -40,6 +44,14 @@ class Coroutine {
     return m_is_in_cofunc;
   }
 
+  std::string getMsgNo() {
+    return m_msg_no;
+  }
+
+  void setMsgNo(const std::string& msg_no) {
+    m_msg_no = msg_no;
+  }
+
  public:
   static void Yield();
 
@@ -55,6 +67,7 @@ class Coroutine {
   int m_stack_size {0};   // 协程申请堆空间的栈大小,单位: 字节
   char* m_stack_sp {nullptr};   // 
   bool m_is_in_cofunc {false};  // 是否开始执行。只要协程进入CoFunction就变为true, CoFunction执行完变为false
+  std::string m_msg_no;  // 当前协程正在处理的消息号
 
  public:
 

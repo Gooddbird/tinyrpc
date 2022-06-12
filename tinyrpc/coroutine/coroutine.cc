@@ -18,8 +18,18 @@ static thread_local int t_coroutine_count = 0;
 
 static thread_local int t_cur_coroutine_id = 0;
 
+static thread_local std::string t_msg_no = "";
+
 int getCoroutineIndex() {
   return t_cur_coroutine_id;
+}
+
+std::string getCurrentMsgNO() {
+  return t_msg_no;
+}
+
+void setCurrentMsgNO(const std::string& msgno) {
+  t_msg_no = msgno;
 }
 
 void CoFunction(Coroutine* co) {
@@ -155,6 +165,7 @@ void Coroutine::Yield() {
   }
   Coroutine* co = t_cur_coroutine;
   t_cur_coroutine = t_main_coroutine;
+  setCurrentMsgNO("");
   coctx_swap(&(co->m_coctx), &(t_main_coroutine->m_coctx));
   // DebugLog << "swap back";
 }
@@ -178,6 +189,7 @@ void Coroutine::Resume(Coroutine* co) {
     return;
   }
   t_cur_coroutine = co;
+  setCurrentMsgNO(co->getMsgNo());
   coctx_swap(&(t_main_coroutine->m_coctx), &(co->m_coctx));
   // DebugLog << "swap back";
 
