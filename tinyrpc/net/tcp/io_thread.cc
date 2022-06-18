@@ -118,4 +118,21 @@ IOThread* IOThreadPool::getIOThread() {
 }
 
 
+int IOThreadPool::getIOThreadPoolSize() {
+  return m_size;
+}
+
+void IOThreadPool::broadcastTask(std::function<void()> cb) {
+  for (auto i : m_io_threads) {
+    i->getReactor()->addTask(cb, true);
+  }
+}
+
+void IOThreadPool::addTask(int index, std::function<void()> cb) {
+  if (index >= 0 && index < m_size) {
+    m_io_threads[index]->getReactor()->addTask(cb, true);
+  }
+}
+
+
 }

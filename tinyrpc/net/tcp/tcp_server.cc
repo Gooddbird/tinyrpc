@@ -206,4 +206,8 @@ void TcpServer::registerHttpServlet(const std::string& url_path, HttpServlet::pt
 	} 
 }
 
+IOThreadPool::ptr TcpServer::getIOThreadPool() {
+	return m_io_pool;
+}
+
 }
