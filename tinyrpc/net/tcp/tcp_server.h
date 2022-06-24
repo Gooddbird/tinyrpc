@@ -77,6 +77,8 @@ class TcpServer {
 
   void registerHttpServlet(const std::string& url_path, HttpServlet::ptr servlet);
 
+  IOThreadPool::ptr getIOThreadPool();
+
  private:
   void MainAcceptCorFunc();
 

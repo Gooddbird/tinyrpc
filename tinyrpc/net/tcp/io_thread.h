@@ -3,6 +3,8 @@
 
 #include <memory>
 #include <map>
+#include <atomic>
+#include <functional>
 #include "tinyrpc/net/reactor.h"
 #include "tinyrpc/net/tcp/tcp_connection_time_wheel.h"
 #include "tinyrpc/coroutine/coroutine.h"
@@ -52,9 +54,16 @@ class IOThreadPool {
 
   IOThread* getIOThread();
 
+  int getIOThreadPoolSize();
+
+  void broadcastTask(std::function<void()> cb);
+
+  void addTask(int index, std::function<void()> cb);
+
  private:
   int m_size {0};
-  int m_index {-1};
+
+  std::atomic<int> m_index {-1};
 
   std::vector<IOThread::ptr> m_io_threads;
   

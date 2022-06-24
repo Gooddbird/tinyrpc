@@ -463,4 +463,4 @@ curl -X GET "http://192.168.245.7:19999/user?id=1100110001"
 如果测试正常，你将得到以下页面：
 
 
-![](./test_succ.png)
+![](imgs/test_succ.png)
