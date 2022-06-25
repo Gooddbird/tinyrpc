@@ -4,7 +4,6 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <mysql/mysql.h>
 
 typedef ssize_t (*read_fun_ptr_t)(int fd, void *buf, size_t count);
 

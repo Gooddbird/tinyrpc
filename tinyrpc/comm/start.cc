@@ -16,12 +16,16 @@ static int g_init_config = 0;
 
 void InitConfig(const char* file) {
   tinyrpc::SetHook(false);
+
+  #ifdef DECLARE_MYSQL_PULGIN
   int rt = mysql_library_init(0, NULL, NULL);
   if (rt != 0) {
     printf("Start TinyRPC server error, call mysql_library_init error\n");
     mysql_library_end();
     exit(0);
   }
+  #endif
+
   tinyrpc::SetHook(true);
 
   if (g_init_config == 0) {

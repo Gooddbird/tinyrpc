@@ -11,12 +11,18 @@
 #include <stdio.h>
 #include <signal.h>
 
+#ifdef DECLARE_MYSQL_PLUGIN 
+#include <mysql/mysql.h>
+#endif
+
 
 #include "tinyrpc/comm/log.h"
 #include "tinyrpc/comm/config.h"
 #include "tinyrpc/coroutine/coroutine.h"
 #include "tinyrpc/net/reactor.h"
 #include "tinyrpc/net/timer.h"
+
+
 
 
 namespace tinyrpc {
@@ -372,7 +378,9 @@ void AsyncLogger::stop() {
 }
 
 void Exit(int code) {
+  #ifdef DECLARE_MYSQL_PLUGIN
   mysql_library_end();
+  #endif
 
   printf("It's sorry to said we start TinyRPC server error, look up log file to get more deatils!\n");
   gRpcLogger->flush();

@@ -38,12 +38,16 @@ PATH_INSTALL_INC_TINYPB = $(PATH_INSTALL_INC_ROOT)/$(PATH_TINYPB)
 CXX := g++
 
 CXXFLAGS += -g -O0 -std=c++11 -Wall -Wno-deprecated -Wno-unused-but-set-variable
-
+# add lib plugin
+# CXXFLAGS += -g -O0 -std=c++11 -Wall -Wno-deprecated -Wno-unused-but-set-variable -D DECLARE_MYSQL_PLUGIN
 CXXFLAGS += -I./ -I$(PATH_TINYRPC)	-I$(PATH_COMM) -I$(PATH_COROUTINE) -I$(PATH_NET) -I$(PATH_HTTP) -I$(PATH_TCP) -I$(PATH_TINYPB)
 
 LIBS += /usr/lib/libprotobuf.a	/usr/lib/libtinyxml.a
 
 MYSQL_LIB = /usr/lib/libmysqlclient.a
+
+PLUGIN_LIB =
+# PLUGIN_LIB = $(MYSQL_LIB)
 
 COMM_OBJ := $(patsubst $(PATH_COMM)/%.cc, $(PATH_COMM)/%.o, $(wildcard $(PATH_COMM)/*.cc))
 COROUTINE_OBJ := $(patsubst $(PATH_COROUTINE)/%.cc, $(PATH_COROUTINE)/%.o, $(wildcard $(PATH_COROUTINE)/*.cc))
@@ -61,13 +65,13 @@ TEST_CASE_OUT := $(PATH_BIN)/test_rpc_server1 $(PATH_BIN)/test_rpc_server2 $(PAT
 LIB_OUT := $(PATH_LIB)/libtinyrpc.a
 
 $(PATH_BIN)/test_rpc_server1: $(LIB_OUT)
-	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_rpc_server1.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -pthread $(MYSQL_LIB)
+	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_rpc_server1.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -pthread $(PLUGIN_LIB)
 
 $(PATH_BIN)/test_rpc_server2: $(LIB_OUT)
-	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_rpc_server2.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -pthread $(MYSQL_LIB)
+	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_rpc_server2.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -pthread $(PLUGIN_LIB)
 
 $(PATH_BIN)/test_http_server: $(LIB_OUT)
-	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_http_server.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -pthread $(MYSQL_LIB)
+	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_http_server.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -pthread $(PLUGIN_LIB)
 
 $(PATH_LIB)/libtinyrpc.a : $(COMM_OBJ) $(COROUTINE_OBJ) $(PATH_COROUTINE)/coctx_swap.o $(NET_OBJ) $(HTTP_OBJ) $(TCP_OBJ) $(TINYPB_OBJ)
 	@ar crsvT $@ $^

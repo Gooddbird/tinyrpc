@@ -23,7 +23,6 @@ Config::Config(const char* file_path) : m_file_path(std::string(file_path)) {
   }
 }
 
-
 void Config::readLogConfig(TiXmlElement* log_node) {
   TiXmlElement* node = log_node->FirstChildElement("log_path");
   if(!node || !node->GetText()) {
@@ -82,6 +81,8 @@ void Config::readLogConfig(TiXmlElement* log_node) {
 }
 
 void Config::readDBConfig(TiXmlElement* node) {
+  #ifdef DECLARE_MYSQL_PLUGIN
+
   printf("read db config\n");
   if (!node) {
     printf("start tinyrpc server error! read config file [%s] error, cannot read [database] xml node\n", m_file_path.c_str());
@@ -104,6 +105,7 @@ void Config::readDBConfig(TiXmlElement* node) {
     if (port_e && port_e->GetText()) {
       port = std::atoi(port_e->GetText());
     }
+    
     MySQLOption option(IPAddress(ip, port));
 
     TiXmlElement *user_e = element->FirstChildElement("user");
@@ -132,7 +134,10 @@ void Config::readDBConfig(TiXmlElement* node) {
       option.m_passwd.c_str(), option.m_select_db.c_str(), option.m_char_set.c_str());
     std::string s(buf); 
     InfoLog << s;
+
   }
+
+  #endif
 
 }
 

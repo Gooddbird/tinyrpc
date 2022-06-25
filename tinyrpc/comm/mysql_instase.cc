@@ -1,5 +1,9 @@
+
+#ifdef DECLARE_MYSQL_PLUGIN 
 #include <mysql/mysql.h>
 #include <mysql/errmsg.h>
+#endif
+
 #include "tinyrpc/comm/mysql_instase.h"
 #include "tinyrpc/comm/config.h"
 #include "tinyrpc/comm/log.h"
@@ -8,6 +12,8 @@
 extern tinyrpc::Config::ptr gRpcConfig;
 
 namespace tinyrpc {
+
+#ifdef DECLARE_MYSQL_PLUGIN 
 
 static thread_local MySQLInstaseFactroy* t_mysql_factory = NULL;
 
@@ -228,5 +234,7 @@ std::string MySQLInstase::getMySQLErrorInfo() {
 int MySQLInstase::getMySQLErrno() {
   return mysql_errno(m_sql_handler);
 }
+
+#endif
 
 }
