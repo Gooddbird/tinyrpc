@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <mysql/mysql.h>
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <unistd.h>

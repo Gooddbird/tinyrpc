@@ -1,7 +1,10 @@
 #ifndef TINYRPC_COMM_MYSQL_INSTASE_H
 #define TINYRPC_COMM_MYSQL_INSTASE_H
 
+#ifdef DECLARE_MYSQL_PLUGIN 
 #include <mysql/mysql.h>
+#endif
+
 #include <memory>
 #include <map>
 #include "tinyrpc/net/mutex.h"
@@ -9,14 +12,6 @@
 
 namespace tinyrpc {
 
-class MySQLThreadInit {
- public:
-
-  MySQLThreadInit();
-  
-  ~MySQLThreadInit();
-
-};
 
 struct MySQLOption {
  public:
@@ -29,6 +24,16 @@ struct MySQLOption {
   std::string m_passwd;
   std::string m_select_db;
   std::string m_char_set;
+};
+
+#ifdef DECLARE_MYSQL_PLUGIN 
+class MySQLThreadInit {
+ public:
+
+  MySQLThreadInit();
+  
+  ~MySQLThreadInit();
+
 };
 
 class MySQLInstase {
@@ -89,10 +94,11 @@ class MySQLInstaseFactroy {
 
 };
 
+#endif
+
 
 
 }
-
 
 
 #endif

@@ -5,7 +5,10 @@
 #include <string>
 #include <memory>
 #include <map>
+
+#ifdef DECLARE_MYSQL_PLUGIN
 #include "tinyrpc/comm/mysql_instase.h"
+#endif
 
 namespace tinyrpc {
 
@@ -52,7 +55,9 @@ class Config {
   int m_timewheel_bucket_num {0};
   int m_timewheel_inteval {0};
 
+  #ifdef DECLARE_MYSQL_PLUGIN 
   std::map<std::string, MySQLOption> m_mysql_options;
+  #endif
 
  private:
   std::string m_file_path;

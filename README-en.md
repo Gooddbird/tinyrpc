@@ -50,28 +50,50 @@ DebugLog << "RootHttpServlet end to call RPC" << count;
 ### 2.1 必要的依赖库
 要正确编译 **TinyRPC**, 至少要先安装这几个库：
 
-### 2.1.1 protobuf
+#### 2.1.1 protobuf
 **protobuf** 是 **google** 开源的有名的序列化库。谷歌出品，必属精品！**TinyRPC** 的 **TinyPB** 协议是基于 protobuf 来 序列化/反序列化 的，因此这个库是必须的。
 其地址为：https://github.com/protocolbuffers/protobuf
 安装过程不再赘述。
 
-### 2.1.2 tinyxml
+#### 2.1.2 tinyxml
 由于 **TinyRPC** 读取配置使用了 xml 文件，因此需要安装 **tinyxml** 库来解析配置文件。
 其地址为: https://github.com/leethomason/tinyxml2
 
-### 2.1.3 libmysqlclient
+### 2.2 选装插件库
+有些库不是那么容易安装了，为了不妨碍核心功能的实现，我把这些库都作为插件来编译了。
+这些插件库不是强依赖的，因为它不属于 TinyRPC 服务的核心功能，只能算是功能上的锦上添花。为了不影响基础库的编译， TinyRPC 把这些库作为插件来加载，通过宏定义来控制编译。
+
+**需要说明的是：即使你不安装这些插件库， TinyRPC 依然能正常编译，它的核心基础功能是完全具备的。**
+
+#### 2.2.1 libmysqlclient
+TinyRPC 简单封装了下 MySQL 的调用，因为 MySQL 确实在 RPC 服务中用的比较多了。
 需要安装 **MySQL** 的 glibc 库，用于 MySQL 操作, 选择所需的版本安装即可(建议 5.7 以上)
 
 官方下载地址：https://downloads.mysql.com/archives/community/
 
-此外，安装 libmysqlclient 只是保证编译通过，但运行时如果需要连接 MYSQL 数据库，还需要在对方机器上安装 MYSQL 服务并启动才行。
-
 注意，以上几个库的头文件我都放在了 **/usr/include** 下， 库文件放在了 **/usr/lib** 下。因此在 [makefile](./makefile) 中并没有指定其头文件和库文件路径，因为其被安装在了系统默认搜索路径中，无需特殊指定。
 
+另外，额外需要修改下 [makefile](./makefile) 文件才能支持插件的编译，否则默认的编译是不会包含这些插件功能的。
 
-## 2.2 安装和卸载
+修改也很简单，如下即可：
+```makefile
+1. 添加宏定义 -D DECLARE_MYSQL_PLUGIN, 表示需要编译 MySQL 插件
 
-### 2.2.1 安装 TinyRPC
+# CXXFLAGS += -g -O0 -std=c++11 -Wall -Wno-deprecated -Wno-unused-but-set-variable
+CXXFLAGS += -g -O0 -std=c++11 -Wall -Wno-deprecated -Wno-unused-but-set-variable -D DECLARE_MYSQL_PLUGIN
+
+
+2. 添加库文件路径
+
+MYSQL_LIB = /usr/lib/libmysqlclient.a
+PLUGIN_LIB = $(MYSQL_LIB)
+
+```
+
+
+### 2.3 安装和卸载
+
+#### 2.3.1 安装 TinyRPC
 在安装了前置的几个库之后，就可以开始编译和安装 **TinyRPC** 了。安装过程十分简单，只要不出什么意外就好了。
 
 **祈祷**一下一次性成功，然后直接执行以下几个命令即可：
@@ -97,7 +119,7 @@ make install
 
 如果编译出现问题，欢迎提 [issue](https://github.com/Gooddbird/tinyrpc/issues/), 我会尽快回应。
 
-### 2.2.2 卸载 TinyRPC
+#### 2.3.2 卸载 TinyRPC
 卸载也很简单，如下即可：
 ```
 make uninstall

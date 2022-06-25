@@ -7,11 +7,16 @@
 #include "tinypb.pb.h"
 #include "coroutine_hook.h"
 #include "tinyrpc/comm/start.h"
-#include "tinyrpc/comm/mysql_instase.h"
 #include "tinyrpc/comm/start.h"
-#include <mysql/mysql.h>
 #include <sstream>
 #include <atomic>
+
+#ifdef DECLARE_MYSQL_PLUGIN
+
+#include <mysql/mysql.h>
+#include "tinyrpc/comm/mysql_instase.h"
+
+#endif
 
 // // tinyrpc::Config::ptr gRpcConfig;
 
@@ -38,6 +43,8 @@ class QueryServiceImpl : public QueryService {
 
     response->set_ret_code(0);
     response->set_res_info("OK");
+
+    #ifdef DECLARE_MYSQL_PLUGIN
 
     tinyrpc::MySQLInstase::ptr instase =  tinyrpc::MySQLInstaseFactroy::GetThreadMySQLFactory()->GetMySQLInstase("test_db_key1");
     if (!instase || !instase->isInitSuccess()) {
@@ -75,9 +82,14 @@ class QueryServiceImpl : public QueryService {
       response->set_res_info("this user not exist");
     }
     instase->freeResult(res);
-    // response->set_id(request->id());
-    // response->set_name("ikerli");
-    // }
+
+    #else
+
+    response->set_id(request->id());
+    response->set_name("ikerli");
+
+    #endif
+
     if (done) {
       done->Run();
     }
