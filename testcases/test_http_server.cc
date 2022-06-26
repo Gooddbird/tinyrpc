@@ -14,6 +14,8 @@
 const char* html = "<html><body><h1>Welcome to TinyRPC, just enjoy it!</h1><p>%s</p></body></html>";
 static std::atomic_int count{1};
 
+// static thread_local int t_index = 1;
+
 class RootHttpServlet : public tinyrpc::HttpServlet {
  public:
   RootHttpServlet() = default;

@@ -20,6 +20,8 @@ static thread_local int t_cur_coroutine_id = 0;
 
 static thread_local std::string t_msg_no = "";
 
+static thread_local bool t_enable_coroutine_swap = true;
+
 int getCoroutineIndex() {
   return t_cur_coroutine_id;
 }
@@ -47,6 +49,14 @@ void CoFunction(Coroutine* co) {
   Coroutine::Yield();
 }
 
+void Coroutine::SetCoroutineSwapFlag(bool value) {
+  t_enable_coroutine_swap = value;
+}
+
+bool Coroutine::GetCoroutineSwapFlag() {
+  return t_enable_coroutine_swap;
+}
+
 Coroutine::Coroutine() {
   m_cor_id = t_cur_coroutine_id++;
   t_coroutine_count++;
@@ -71,6 +81,7 @@ Coroutine::Coroutine(int size) : m_stack_size(size) {
   t_coroutine_count++;
   // DebugLog << "coroutine[null callback] created, id[" << m_cor_id << "]";
 }
+
 
 Coroutine::Coroutine(int size, std::function<void()> cb)
   : m_stack_size(size) {
@@ -154,6 +165,10 @@ bool Coroutine::IsMainCoroutine() {
 让出执行权,切换到主协程
 ********/
 void Coroutine::Yield() {
+  if (!t_enable_coroutine_swap) {
+    ErrorLog << "can't yield, because disable coroutine swap";
+    return;
+  }
   if (t_main_coroutine == nullptr) {
     ErrorLog << "main coroutine is nullptr";
     return;
@@ -186,6 +201,11 @@ void Coroutine::Resume(Coroutine* co) {
   }
   if (co == nullptr) {
     ErrorLog << "pending coroutine is nullptr";
+    return;
+  }
+
+  if (t_cur_coroutine == co) {
+    DebugLog << "current coroutine is pending cor, need't swap";
     return;
   }
   t_cur_coroutine = co;

@@ -204,5 +204,24 @@ public:
 private:
   pthread_rwlock_t m_lock;
 };
+
+
+class CoroutineMutex {
+ public:
+  CoroutineMutex();
+
+  ~CoroutineMutex();
+
+  void lock();
+
+  void unlock();
+ private:
+  bool m_lock {false};
+};
+
+
+void CououtineLock();
+void CououtineUnLock();
+
 }
 #endif

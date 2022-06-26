@@ -61,6 +61,10 @@ class Coroutine {
 
   static bool IsMainCoroutine();
 
+  static void SetCoroutineSwapFlag(bool value);
+
+  static bool GetCoroutineSwapFlag();
+
  private:
   int m_cor_id {0};       // 协程id
   coctx m_coctx;      // 协程寄存器上下文
