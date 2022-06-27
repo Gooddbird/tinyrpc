@@ -208,6 +208,8 @@ private:
 
 class CoroutineMutex {
  public:
+  typedef ScopedLockImpl<CoroutineMutex> Lock;
+
   CoroutineMutex();
 
   ~CoroutineMutex();

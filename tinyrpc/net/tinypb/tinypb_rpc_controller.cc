@@ -71,5 +71,21 @@ int TinyPbRpcController::Timeout() const {
   return m_timeout;
 }
 
+void TinyPbRpcController::SetMethodName(const std::string& name) {
+  m_method_name = name;
+}
+
+std::string TinyPbRpcController::GetMethodName() {
+  return m_method_name;
+}
+
+void TinyPbRpcController::SetMethodFullName(const std::string& name) {
+  m_full_name = name;
+}
+
+std::string TinyPbRpcController::GetMethodFullName() {
+  return m_full_name;
+}
+
 
 }

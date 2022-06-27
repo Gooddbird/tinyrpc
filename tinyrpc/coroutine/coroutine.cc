@@ -4,6 +4,7 @@
 #include <atomic>
 #include "tinyrpc/coroutine/coroutine.h"
 #include "tinyrpc/comm/log.h"
+#include "tinyrpc/comm/run_time.h"
 
 namespace tinyrpc {
 
@@ -20,18 +21,20 @@ static thread_local int t_cur_coroutine_id = 0;
 
 static thread_local std::string t_msg_no = "";
 
+static thread_local RunTime* t_cur_run_time = nullptr;
+
 static thread_local bool t_enable_coroutine_swap = true;
 
 int getCoroutineIndex() {
   return t_cur_coroutine_id;
 }
 
-std::string getCurrentMsgNO() {
-  return t_msg_no;
+RunTime* getCurrentRunTime() {
+  return t_cur_run_time;
 }
 
-void setCurrentMsgNO(const std::string& msgno) {
-  t_msg_no = msgno;
+void setCurrentRunTime(RunTime* v) {
+  t_cur_run_time = v;
 }
 
 void CoFunction(Coroutine* co) {
@@ -180,7 +183,7 @@ void Coroutine::Yield() {
   }
   Coroutine* co = t_cur_coroutine;
   t_cur_coroutine = t_main_coroutine;
-  setCurrentMsgNO("");
+  t_cur_run_time = nullptr;
   coctx_swap(&(co->m_coctx), &(t_main_coroutine->m_coctx));
   // DebugLog << "swap back";
 }
@@ -209,7 +212,8 @@ void Coroutine::Resume(Coroutine* co) {
     return;
   }
   t_cur_coroutine = co;
-  setCurrentMsgNO(co->getMsgNo());
+  t_cur_run_time = co->getRunTime();
+
   coctx_swap(&(t_main_coroutine->m_coctx), &(co->m_coctx));
   // DebugLog << "swap back";
 
