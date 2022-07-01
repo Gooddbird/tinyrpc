@@ -140,7 +140,7 @@ void TcpServer::start() {
 }
 
 TcpServer::~TcpServer() {
-	GetCoroutinePool()->returnCoroutine(m_accept_cor->getCorId());
+	GetCoroutinePool()->returnCoroutine(m_accept_cor);
   DebugLog << "~TcpServer";
 }
 

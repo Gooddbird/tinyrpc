@@ -59,6 +59,15 @@ class TinyPbRpcController : public google::protobuf::RpcController {
 
   int Timeout() const;
 
+  void SetMethodName(const std::string& name);
+
+  std::string GetMethodName();
+
+  void SetMethodFullName(const std::string& name);
+
+  std::string GetMethodFullName();
+
+
 
  private:
   int m_error_code {0};           // error_code, identify one specific error
@@ -70,6 +79,8 @@ class TinyPbRpcController : public google::protobuf::RpcController {
   NetAddress::ptr m_local_addr;
 
   int m_timeout {5000};           // max call rpc timeout
+  std::string m_method_name;      // method name
+  std::string m_full_name;        // full name, like server.method_name
 
 
 };

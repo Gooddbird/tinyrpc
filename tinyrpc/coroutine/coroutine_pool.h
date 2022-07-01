@@ -14,7 +14,7 @@ class CoroutinePool {
 
   Coroutine::ptr getCoroutineInstanse();
 
-  void returnCoroutine(int cor_id);
+  void returnCoroutine(Coroutine::ptr cor);
 
  private:
   int m_index {0};

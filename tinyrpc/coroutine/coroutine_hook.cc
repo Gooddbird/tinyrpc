@@ -267,7 +267,6 @@ unsigned int sleep_hook(unsigned int seconds) {
 	bool is_timeout = false;
 	auto timeout_cb = [cur_cor, &is_timeout](){
 		DebugLog << "onTime, now resume sleep cor";
-		printf("onTime, now resume sleep cor\n");
 		is_timeout = true;
 		// 设置超时标志，然后唤醒协程
 		tinyrpc::Coroutine::Resume(cur_cor);
@@ -280,7 +279,6 @@ unsigned int sleep_hook(unsigned int seconds) {
 	DebugLog << "now to yield sleep";
 	// beacuse read or wirte maybe resume this coroutine, so when this cor be resumed, must check is timeout, otherwise should yield again
 	tinyrpc::Coroutine::Yield();
-	printf("onTime, resume sleep yield back\n");
 
 	// 定时器也需要删除
 	// tinyrpc::Reactor::GetReactor()->getTimer()->delTimerEvent(event);
@@ -297,42 +295,42 @@ extern "C" {
 
 
 int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
-	if (tinyrpc::g_hook) {
-		return tinyrpc::accept_hook(sockfd, addr, addrlen);
-	} else {
+	if (!tinyrpc::g_hook || !tinyrpc::Coroutine::GetCoroutineSwapFlag()) {
 		return g_sys_accept_fun(sockfd, addr, addrlen);
+	} else {
+		return tinyrpc::accept_hook(sockfd, addr, addrlen);
 	}
 }
 
 ssize_t read(int fd, void *buf, size_t count) {
-	if (tinyrpc::g_hook) {
-		return tinyrpc::read_hook(fd, buf, count);
-	} else {
+	if (!tinyrpc::g_hook || !tinyrpc::Coroutine::GetCoroutineSwapFlag()) {
 		return g_sys_read_fun(fd, buf, count);
+	} else {
+		return tinyrpc::read_hook(fd, buf, count);
 	}
 }
 
 ssize_t write(int fd, const void *buf, size_t count) {
-	if (tinyrpc::g_hook) {
-		return tinyrpc::write_hook(fd, buf, count);
-	} else {
+	if (!tinyrpc::g_hook || !tinyrpc::Coroutine::GetCoroutineSwapFlag()) {
 		return g_sys_write_fun(fd, buf, count);
+	} else {
+		return tinyrpc::write_hook(fd, buf, count);
 	}
 }
 
 int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
-	if (tinyrpc::g_hook) {
-		return tinyrpc::connect_hook(sockfd, addr, addrlen);
-	} else {
+	if (!tinyrpc::g_hook || !tinyrpc::Coroutine::GetCoroutineSwapFlag()) {
 		return g_sys_connect_fun(sockfd, addr, addrlen);
+	} else {
+		return tinyrpc::connect_hook(sockfd, addr, addrlen);
 	}
 }
 
 unsigned int sleep(unsigned int seconds) {
-	if (tinyrpc::g_hook) {
-		return tinyrpc::sleep_hook(seconds);
-	} else {
+	if (!tinyrpc::g_hook || !tinyrpc::Coroutine::GetCoroutineSwapFlag()) {
 		return g_sys_sleep_fun(seconds);
+	} else {
+		return tinyrpc::sleep_hook(seconds);
 	}
 }
 

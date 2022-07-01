@@ -17,6 +17,8 @@ class HttpServlet : public std::enable_shared_from_this<HttpServlet> {
 
   virtual void handle(HttpRequest* req, HttpResponse* res) = 0;
 
+  virtual std::string getServletName() = 0;
+
   void handleNotFound(HttpRequest* req, HttpResponse* res);
 
   void setHttpCode(HttpResponse* res, const int code);
@@ -38,6 +40,8 @@ class NotFoundHttpServlet: public HttpServlet {
   ~NotFoundHttpServlet();
 
   void handle(HttpRequest* req, HttpResponse* res);
+
+  std::string getServletName();
 
 };
 

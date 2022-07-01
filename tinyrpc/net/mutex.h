@@ -204,5 +204,26 @@ public:
 private:
   pthread_rwlock_t m_lock;
 };
+
+
+class CoroutineMutex {
+ public:
+  typedef ScopedLockImpl<CoroutineMutex> Lock;
+
+  CoroutineMutex();
+
+  ~CoroutineMutex();
+
+  void lock();
+
+  void unlock();
+ private:
+  bool m_lock {false};
+};
+
+
+void CououtineLock();
+void CououtineUnLock();
+
 }
 #endif

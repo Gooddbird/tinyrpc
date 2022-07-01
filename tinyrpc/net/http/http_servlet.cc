@@ -52,6 +52,7 @@ void HttpServlet::setCommParam(HttpRequest* req, HttpResponse* res) {
   res->m_response_header.m_maps["Connection"]= req->m_requeset_header.m_maps["Connection"];
 }
 
+
 NotFoundHttpServlet::NotFoundHttpServlet() {
 
 }
@@ -63,5 +64,11 @@ NotFoundHttpServlet::~NotFoundHttpServlet() {
 void NotFoundHttpServlet::handle(HttpRequest* req, HttpResponse* res) {
   handleNotFound(req, res);
 }
+
+
+std::string NotFoundHttpServlet::getServletName() {
+  return "NotFoundHttpServlet";
+}
+
 
 }

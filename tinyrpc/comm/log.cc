@@ -18,6 +18,7 @@
 
 #include "tinyrpc/comm/log.h"
 #include "tinyrpc/comm/config.h"
+#include "tinyrpc/comm/run_time.h"
 #include "tinyrpc/coroutine/coroutine.h"
 #include "tinyrpc/net/reactor.h"
 #include "tinyrpc/net/timer.h"
@@ -160,10 +161,18 @@ std::stringstream& LogEvent::getStringStream() {
 		<< "[" << m_cor_id << "]\t"
     << "[" << m_file_name << ":" << m_line << "]\t";
     // << "[" << m_func_name << "]\t";
-  
-  std::string msgno = getCurrentMsgNO();
-  if (!msgno.empty()) {
-    m_ss << "[" << getCurrentMsgNO() << "]\t";
+  RunTime* runtime = getCurrentRunTime();
+  if (runtime) {
+    std::string msgno = runtime->m_msg_no;
+    if (!msgno.empty()) {
+      m_ss << "[" << msgno << "]\t";
+    }
+
+    std::string interface_name = runtime->m_interface_name;
+    if (!interface_name.empty()) {
+      m_ss << "[" << interface_name << "]\t";
+    }
+
   }
   return m_ss;
 }

@@ -7,7 +7,7 @@ namespace tinyrpc {
 void TinyPbRpcController::Reset() {}
 
 bool TinyPbRpcController::Failed() const {
-  return false;
+  return m_is_failed;
 }
 
 std::string TinyPbRpcController::ErrorText() const {
@@ -17,6 +17,7 @@ std::string TinyPbRpcController::ErrorText() const {
 void TinyPbRpcController::StartCancel() {}
 
 void TinyPbRpcController::SetFailed(const std::string& reason) {
+  m_is_failed = true;
   m_error_info = reason;
 }
 
@@ -69,6 +70,22 @@ void TinyPbRpcController::SetTimeout(const int timeout) {
 }
 int TinyPbRpcController::Timeout() const {
   return m_timeout;
+}
+
+void TinyPbRpcController::SetMethodName(const std::string& name) {
+  m_method_name = name;
+}
+
+std::string TinyPbRpcController::GetMethodName() {
+  return m_method_name;
+}
+
+void TinyPbRpcController::SetMethodFullName(const std::string& name) {
+  m_full_name = name;
+}
+
+std::string TinyPbRpcController::GetMethodFullName() {
+  return m_full_name;
 }
 
 

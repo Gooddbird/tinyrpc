@@ -23,12 +23,22 @@ class IOThread {
  	IOThread();
 
 	~IOThread();  
+
   Reactor* getReactor();
+
   TcpTimeWheel::ptr getTimeWheel();
+
   bool addClient(TcpServer* tcp_svr, int fd);
+
+  pthread_t getPthreadId();
+
+
+ public:
+  static IOThread* GetCurrentIOThread();
 
  private:
  	static void* main(void* arg);
+
 
  private:
   void MainLoopTimerFunc();
@@ -58,7 +68,11 @@ class IOThreadPool {
 
   void broadcastTask(std::function<void()> cb);
 
-  void addTask(int index, std::function<void()> cb);
+  void addTaskByIndex(int index, std::function<void()> cb);
+
+  // add a coroutine to random thread in io thread pool
+  // self = false, means random thread cann't be current thread
+  void addCoroutineRandomThread(Coroutine::ptr cor, bool self = false);
 
  private:
   int m_size {0};

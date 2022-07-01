@@ -4,14 +4,15 @@
 #include <memory>
 #include <functional>
 #include "tinyrpc/coroutine/coctx.h"
+#include "tinyrpc/comm/run_time.h"
 
 namespace tinyrpc {
 
 int getCoroutineIndex();
 
-std::string getCurrentMsgNO();
+RunTime* getCurrentRunTime();
 
-void setCurrentMsgNO(const std::string& msgno);
+void setCurrentRunTime(RunTime* v);
 
 class Coroutine {
 
@@ -48,6 +49,10 @@ class Coroutine {
     return m_msg_no;
   }
 
+  RunTime* getRunTime() {
+    return &m_run_time; 
+  }
+
   void setMsgNo(const std::string& msg_no) {
     m_msg_no = msg_no;
   }
@@ -61,6 +66,10 @@ class Coroutine {
 
   static bool IsMainCoroutine();
 
+  static void SetCoroutineSwapFlag(bool value);
+
+  static bool GetCoroutineSwapFlag();
+
  private:
   int m_cor_id {0};       // 协程id
   coctx m_coctx;      // 协程寄存器上下文
@@ -68,6 +77,8 @@ class Coroutine {
   char* m_stack_sp {nullptr};   // 
   bool m_is_in_cofunc {false};  // 是否开始执行。只要协程进入CoFunction就变为true, CoFunction执行完变为false
   std::string m_msg_no;  // 当前协程正在处理的消息号
+  RunTime m_run_time;
+
 
  public:
 
