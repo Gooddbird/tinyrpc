@@ -1,6 +1,7 @@
-#ifndef TINYRPC_NET_TINYPB_TINYPB_RPC_H
-#define TINYRPC_NET_TINYPB_TINYPB_RPC_H
+#ifndef TINYRPC_NET_TINYPB_TINYPB_RPC_CHANNEL_H
+#define TINYRPC_NET_TINYPB_TINYPB_RPC_CHANNEL_H 
 
+#include <memory>
 #include <google/protobuf/service.h>
 #include "../net_address.h"
 #include "../tcp/tcp_client.h"
@@ -10,6 +11,7 @@ namespace tinyrpc {
 class TinyPbRpcChannel : public google::protobuf::RpcChannel {
 
  public:
+  typedef std::shared_ptr<TinyPbRpcChannel> ptr;
   TinyPbRpcChannel(NetAddress::ptr addr);
   ~TinyPbRpcChannel() = default;
 

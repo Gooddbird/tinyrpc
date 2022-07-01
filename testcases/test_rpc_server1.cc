@@ -18,9 +18,6 @@
 
 #endif
 
-// // tinyrpc::Config::ptr gRpcConfig;
-
-static std::atomic_int count{0};
 
 class QueryServiceImpl : public QueryService {
  public:
@@ -32,8 +29,7 @@ class QueryServiceImpl : public QueryService {
                        ::queryNameRes* response,
                        ::google::protobuf::Closure* done) {
     
-    DebugLog << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&get request count =" << count++;
-    AppDebugLog << "this is function query_name app log ";
+    AppInfoLog << "QueryServiceImpl.query_name, req={"<< request->ShortDebugString() << "}";
 
     // DebugLog << "========================";
     // DebugLog << "this is query_name func";
@@ -46,17 +42,17 @@ class QueryServiceImpl : public QueryService {
 
     #ifdef DECLARE_MYSQL_PLUGIN
 
+    AppDebugLog << "install mysql pulgin, begin to query mysql";
     tinyrpc::MySQLInstase::ptr instase =  tinyrpc::MySQLInstaseFactroy::GetThreadMySQLFactory()->GetMySQLInstase("test_db_key1");
     if (!instase || !instase->isInitSuccess()) {
       response->set_ret_code(-1);
       response->set_res_info("faild to init mysql");
-      ErrorLog << "mysql instase init failed";
+      AppErrorLog << "mysql instase init failed";
       return;
     }
 
     int n = 1000000;
     // while(n--) {
-    DebugLog << "88888888888888888888 excute n=" << n;
     char query_sql[512];
     sprintf(query_sql, "select user_id, user_name, user_gender from user_db.t_user_information where user_id = '%s';", std::to_string(request->id()).c_str());
 
@@ -64,7 +60,7 @@ class QueryServiceImpl : public QueryService {
     if (rt != 0) {
       response->set_ret_code(-1);
       response->set_res_info(instase->getMySQLErrorInfo());
-      ErrorLog << "failed to excute sql" << std::string(query_sql);
+      AppErrorLog << "failed to excute sql" << std::string(query_sql);
       return;
     }
 
@@ -73,11 +69,11 @@ class QueryServiceImpl : public QueryService {
     MYSQL_ROW row = instase->fetchRow(res);
     if (row) {
       int i = 0;
-      DebugLog << "query success";
+      AppDebugLog << "query success";
       response->set_id(std::atoi(row[i++]));
       response->set_name(std::string(row[i++]));
     } else {
-      DebugLog << "query empty";
+      AppDebugLog << "query empty";
       response->set_ret_code(-1);
       response->set_res_info("this user not exist");
     }
@@ -85,6 +81,7 @@ class QueryServiceImpl : public QueryService {
 
     #else
 
+    AppDebugLog << "no install mysql pulgin, now direct return default value";
     response->set_id(request->id());
     response->set_name("ikerli");
 
@@ -93,6 +90,8 @@ class QueryServiceImpl : public QueryService {
     if (done) {
       done->Run();
     }
+
+    AppInfoLog << "QueryServiceImpl.query_name, req={"<< request->ShortDebugString() << "}, res={" << response->ShortDebugString() << "}";
   }
 
   void query_age(google::protobuf::RpcController* controller,
@@ -100,15 +99,18 @@ class QueryServiceImpl : public QueryService {
                        ::queryAgeRes* response,
                        ::google::protobuf::Closure* done) {
 
-    DebugLog << "========================";
-    DebugLog << "this is query_age func";
+    AppInfoLog << "QueryServiceImpl.query_age, req={"<< request->ShortDebugString() << "}";
     response->set_ret_code(0);
     response->set_res_info("OK");
     response->set_req_no(request->req_no());
     response->set_id(request->id());
     response->set_age(20);
-    DebugLog << "========================";
-    done->Run();
+
+    if (done) {
+      done->Run();
+    }
+
+    // AppInfoLog << "QueryServiceImpl.query_age, req={"<< request->ShortDebugString() << "}, res={" << response->ShortDebugString() << "}";
   }
 
 };

@@ -7,7 +7,7 @@ namespace tinyrpc {
 void TinyPbRpcController::Reset() {}
 
 bool TinyPbRpcController::Failed() const {
-  return false;
+  return m_is_failed;
 }
 
 std::string TinyPbRpcController::ErrorText() const {
@@ -17,6 +17,7 @@ std::string TinyPbRpcController::ErrorText() const {
 void TinyPbRpcController::StartCancel() {}
 
 void TinyPbRpcController::SetFailed(const std::string& reason) {
+  m_is_failed = true;
   m_error_info = reason;
 }
 

@@ -1,5 +1,7 @@
 #include <memory>
 #include <map>
+#include <time.h>
+#include <stdlib.h>
 #include "tinyrpc/net/reactor.h"
 #include "tinyrpc/net/tcp/io_thread.h"
 #include "tinyrpc/net/tcp/tcp_connection.h"
@@ -14,6 +16,9 @@ namespace tinyrpc {
 extern tinyrpc::Config::ptr gRpcConfig;
 
 static thread_local Reactor* t_reactor_ptr = nullptr;
+
+static thread_local IOThread* t_cur_io_thread = nullptr;
+
 
 IOThread::IOThread() {
   pthread_create(&m_thread, nullptr, &IOThread::main, this);
@@ -30,8 +35,16 @@ IOThread::~IOThread() {
   }
 }
 
+IOThread* IOThread::GetCurrentIOThread() {
+  return t_cur_io_thread;
+}
+
 Reactor* IOThread::getReactor() {
   return m_reactor;
+}
+
+pthread_t IOThread::getPthreadId() {
+  return m_thread;
 }
 
 TcpTimeWheel::ptr IOThread::getTimeWheel() {
@@ -41,9 +54,11 @@ TcpTimeWheel::ptr IOThread::getTimeWheel() {
 void* IOThread::main(void* arg) {
   // assert(t_reactor_ptr == nullptr);
 
-  t_reactor_ptr = new Reactor(); 
+  t_reactor_ptr = new Reactor();
   IOThread* thread = static_cast<IOThread*>(arg);
+  t_cur_io_thread = thread;
   thread->m_reactor = t_reactor_ptr;
+  thread->m_tid = gettid();
 
   thread->m_timer_event = std::make_shared<TimerEvent>(10000, true, 
     std::bind(&IOThread::MainLoopTimerFunc, thread));
@@ -128,10 +143,23 @@ void IOThreadPool::broadcastTask(std::function<void()> cb) {
   }
 }
 
-void IOThreadPool::addTask(int index, std::function<void()> cb) {
+void IOThreadPool::addTaskByIndex(int index, std::function<void()> cb) {
   if (index >= 0 && index < m_size) {
     m_io_threads[index]->getReactor()->addTask(cb, true);
   }
+}
+
+void IOThreadPool::addCoroutineRandomThread(Coroutine::ptr cor, bool self /* = false*/) {
+  srand(time(0));
+  int i = 0;
+  while (1) {
+    i = rand() % (m_size - 1);
+    if (!self && m_io_threads[i]->getPthreadId() == t_cur_io_thread->getPthreadId()) {
+      continue;
+    }
+    break;
+  }
+  m_io_threads[i]->getReactor()->addCoroutine(cor, true);
 }
 
 

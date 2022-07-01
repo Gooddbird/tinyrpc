@@ -56,8 +56,8 @@ Coroutine::ptr CoroutinePool::getCoroutineInstanse() {
 
 }
 
-void CoroutinePool::returnCoroutine(int cor_id) {
-  m_free_cors[cor_id].second = false;
+void CoroutinePool::returnCoroutine(Coroutine::ptr cor) {
+  m_free_cors[cor->getCorId()].second = false;
 }
 
 

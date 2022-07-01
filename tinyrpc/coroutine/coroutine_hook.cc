@@ -267,7 +267,6 @@ unsigned int sleep_hook(unsigned int seconds) {
 	bool is_timeout = false;
 	auto timeout_cb = [cur_cor, &is_timeout](){
 		DebugLog << "onTime, now resume sleep cor";
-		printf("onTime, now resume sleep cor\n");
 		is_timeout = true;
 		// 设置超时标志，然后唤醒协程
 		tinyrpc::Coroutine::Resume(cur_cor);
@@ -280,7 +279,6 @@ unsigned int sleep_hook(unsigned int seconds) {
 	DebugLog << "now to yield sleep";
 	// beacuse read or wirte maybe resume this coroutine, so when this cor be resumed, must check is timeout, otherwise should yield again
 	tinyrpc::Coroutine::Yield();
-	printf("onTime, resume sleep yield back\n");
 
 	// 定时器也需要删除
 	// tinyrpc::Reactor::GetReactor()->getTimer()->delTimerEvent(event);

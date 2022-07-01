@@ -65,7 +65,7 @@ void TcpConnection::setUpClient() {
 
 TcpConnection::~TcpConnection() {
   if (m_connection_type == ServerConnection) {
-    GetCoroutinePool()->returnCoroutine(m_loop_cor->getCorId());
+    GetCoroutinePool()->returnCoroutine(m_loop_cor);
   }
 
   DebugLog << "~TcpConnection, fd=" << m_fd;

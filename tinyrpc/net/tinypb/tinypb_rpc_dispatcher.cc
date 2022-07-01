@@ -25,6 +25,9 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
   Coroutine::GetCurrentCoroutine()->getRunTime()->m_msg_no = tmp->msg_req;
   setCurrentRunTime(Coroutine::GetCurrentCoroutine()->getRunTime());
 
+
+  InfoLog << "begin to dispatch client tinypb request, msgno=" << tmp->msg_req;
+
   std::string service_name;
   std::string method_name;
 
@@ -56,6 +59,8 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
     reply_pk.err_info = ss.str();
 
     conn->getCodec()->encode(conn->getOutBuffer(), dynamic_cast<AbstractData*>(&reply_pk));
+
+    InfoLog << "end dispatch client tinypb request, msgno=" << tmp->msg_req;
     return;
 
   }
