@@ -169,7 +169,7 @@ class AsyncRPCTestServlet: public tinyrpc::HttpServlet {
     QueryService_Stub stub(async_channel.get());
 
     tinyrpc::TinyPbRpcController rpc_controller;
-    rpc_controller.SetTimeout(5000);
+    rpc_controller.SetTimeout(2000);
 
     AppDebugLog << "AsyncRPCTestServlet begin to call RPC async";
     stub.query_age(&rpc_controller, &rpc_req, &rpc_res, NULL);

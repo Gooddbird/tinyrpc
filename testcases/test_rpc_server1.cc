@@ -100,6 +100,10 @@ class QueryServiceImpl : public QueryService {
                        ::google::protobuf::Closure* done) {
 
     AppInfoLog << "QueryServiceImpl.query_age, req={"<< request->ShortDebugString() << "}";
+    AppInfoLog << "QueryServiceImpl.query_age, sleep 6 s begin";
+    sleep(6);
+    AppInfoLog << "QueryServiceImpl.query_age, sleep 6 s end";
+
     response->set_ret_code(0);
     response->set_res_info("OK");
     response->set_req_no(request->req_no());
@@ -110,7 +114,7 @@ class QueryServiceImpl : public QueryService {
       done->Run();
     }
 
-    // AppInfoLog << "QueryServiceImpl.query_age, req={"<< request->ShortDebugString() << "}, res={" << response->ShortDebugString() << "}";
+    AppInfoLog << "QueryServiceImpl.query_age, req={"<< request->ShortDebugString() << "}, res={" << response->ShortDebugString() << "}";
   }
 
 };

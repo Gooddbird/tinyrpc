@@ -3,8 +3,8 @@
 
 #include <memory>
 #include <google/protobuf/service.h>
-#include "../net_address.h"
-#include "../tcp/tcp_client.h"
+#include "tinyrpc/net/net_address.h"
+#include "tinyrpc/net//tcp/tcp_client.h"
 
 namespace tinyrpc {
 
@@ -22,6 +22,7 @@ void CallMethod(const google::protobuf::MethodDescriptor* method,
     google::protobuf::Closure* done);
  
  private:
+  NetAddress::ptr m_addr;
   TcpClient::ptr m_client;
 
 };

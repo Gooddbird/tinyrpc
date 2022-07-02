@@ -14,8 +14,8 @@
 
 namespace tinyrpc {
 
-TinyPbRpcChannel::TinyPbRpcChannel(NetAddress::ptr addr) {
-  m_client = std::make_shared<TcpClient>(addr);
+TinyPbRpcChannel::TinyPbRpcChannel(NetAddress::ptr addr) : m_addr(addr) {
+
 }
 
 void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method, 
@@ -24,6 +24,7 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
     google::protobuf::Message* response, 
     google::protobuf::Closure* done) {
 
+  m_client = std::make_shared<TcpClient>(m_addr);
   TinyPbStruct pb_struct;
   TinyPbRpcController* rpc_controller = dynamic_cast<TinyPbRpcController*>(controller);
   rpc_controller->SetLocalAddr(m_client->getLocalAddr());
