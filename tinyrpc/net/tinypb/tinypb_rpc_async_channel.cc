@@ -39,6 +39,14 @@ void TinyPbRpcAsyncChannel::CallMethod(const google::protobuf::MethodDescriptor*
     google::protobuf::Message* response, 
     google::protobuf::Closure* done) {
   
+  if (GetServer()->getIOThreadPool()->getIOThreadPoolSize() <= 1) {
+    ErrorLog << "Error! must have at least 2 iothread when call TinyPbRpcAsyncChannel";
+    TinyPbRpcController* rpc_controller = dynamic_cast<TinyPbRpcController*>(controller);
+    rpc_controller->SetError(ERROR_ASYNC_RPC_CALL_SINGLE_IOTHREAD, "Error! must have at least 2 iothread when call TinyPbRpcAsyncChannel");
+    m_promise.set_value(true);
+    return;
+  }
+
   std::shared_ptr<TinyPbRpcAsyncChannel> s_ptr = shared_from_this();
   std::shared_ptr<const google::protobuf::MethodDescriptor> method_ptr;
   method_ptr.reset(method);
@@ -61,11 +69,7 @@ void TinyPbRpcAsyncChannel::CallMethod(const google::protobuf::MethodDescriptor*
     DebugLog << "excute rpc call method by this thread finish";
     s_ptr->m_promise.set_value(true);
   };
-
-  m_cor = GetCoroutinePool()->getCoroutineInstanse();
-  m_cor->setCallBack(cb);
-
-  GetServer()->getIOThreadPool()->addCoroutineRandomThread(m_cor, false);
+  m_cor = GetServer()->getIOThreadPool()->addCoroutineToRandomThread(cb, false);
 }
 
 std::future<bool> TinyPbRpcAsyncChannel::getFuture() {

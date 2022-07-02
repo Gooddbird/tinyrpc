@@ -57,7 +57,7 @@ void Timer::addTimerEvent(TimerEvent::ptr event, bool need_reset /*=true*/) {
   }
   m_pending_events.emplace(event->m_arrive_time, event);
   if (is_reset && need_reset) {
-    // DebugLog << "need reset timer";
+    DebugLog << "need reset timer";
     resetArriveTime();
   }
   // DebugLog << "add timer event succ";
@@ -114,17 +114,16 @@ void Timer::onTimer() {
   int64_t now = getNowMs();
 	auto it = m_pending_events.begin();
 	std::vector<TimerEvent::ptr> tmps;
-	std::vector<std::function<void()>> tasks;
+  std::vector<std::pair<int64_t, std::function<void()>>> tasks;
 	for (it = m_pending_events.begin(); it != m_pending_events.end(); ++it) {
 		if ((*it).first <= now && !((*it).second->m_is_cancled)) {
 			tmps.push_back((*it).second);
-			tasks.push_back((*it).second->m_task);
+      tasks.push_back(std::make_pair((*it).second->m_arrive_time, (*it).second->m_task));
 		}	else {
 			break;
 		}
 	}
 
-	m_reactor->addTask(tasks);
 	m_pending_events.erase(m_pending_events.begin(), it);
 	for (auto i = tmps.begin(); i != tmps.end(); ++i) {
 		if ((*i)->m_is_repeated) {
@@ -134,6 +133,12 @@ void Timer::onTimer() {
 	}
 
 	resetArriveTime();
+
+	// m_reactor->addTask(tasks);
+  for (auto i : tasks) {
+    // DebugLog << "excute timeevent:" << i.first;
+    i.second();
+  }
 }
 
 }

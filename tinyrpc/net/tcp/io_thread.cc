@@ -8,6 +8,7 @@
 #include "tinyrpc/net/tcp/tcp_server.h"
 #include "tinyrpc/net/tcp/tcp_connection_time_wheel.h"
 #include "tinyrpc/coroutine/coroutine.h"
+#include "tinyrpc/coroutine/coroutine_pool.h"
 #include "tinyrpc/comm/config.h"
 
 
@@ -149,17 +150,34 @@ void IOThreadPool::addTaskByIndex(int index, std::function<void()> cb) {
   }
 }
 
-void IOThreadPool::addCoroutineRandomThread(Coroutine::ptr cor, bool self /* = false*/) {
+void IOThreadPool::addCoroutineToRandomThread(Coroutine::ptr cor, bool self /* = false*/) {
   srand(time(0));
   int i = 0;
   while (1) {
-    i = rand() % (m_size - 1);
+    i = rand() % (m_size);
     if (!self && m_io_threads[i]->getPthreadId() == t_cur_io_thread->getPthreadId()) {
-      continue;
+      i++;
+      if (i == m_size) {
+        i -= 2;
+      }
     }
     break;
   }
   m_io_threads[i]->getReactor()->addCoroutine(cor, true);
+  // if (m_io_threads[m_index]->getPthreadId() == t_cur_io_thread->getPthreadId()) {
+  //   m_index++;
+  //   if (m_index == m_size || m_index == -1) {
+  //     m_index = 0;
+  //   }
+  // }
+}
+
+
+Coroutine::ptr IOThreadPool::addCoroutineToRandomThread(std::function<void()> cb, bool self/* = false*/) {
+  Coroutine::ptr cor = GetCoroutinePool()->getCoroutineInstanse();
+  cor->setCallBack(cb);
+  addCoroutineToRandomThread(cor, self);
+  return cor;
 }
 
 

@@ -265,6 +265,11 @@ void Reactor::loop() {
               ErrorLog << "socket [" << fd << "] occur other unknow event:[" << one_event.events << "], need unregister this socket";
               delEventInLoopThread(fd);
             } else {
+							// if timer event, direct excute
+							if (fd == m_timer_fd) {
+								read_cb();
+								continue;
+							}
               if (one_event.events & EPOLLIN) {
                 // DebugLog << "socket [" << fd << "] occur read event";
                 Mutex::Lock lock(m_mutex);

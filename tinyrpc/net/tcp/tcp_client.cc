@@ -116,7 +116,7 @@ int TcpClient::sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct::pb_ptr
   }
 
   while (!m_connection->getResPackageData(msg_no, res)) {
-
+    DebugLog << "redo getResPackageData";
     m_connection->input();
 
     if (m_connection->getOverTimerFlag()) {
