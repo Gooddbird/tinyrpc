@@ -14,6 +14,8 @@ void StartRpcServer();
 
 TcpServer::ptr GetServer();
 
+int GetIOThreadPoolSize();
+
 }
 
 #endif
