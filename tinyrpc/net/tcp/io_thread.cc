@@ -52,6 +52,14 @@ TcpTimeWheel::ptr IOThread::getTimeWheel() {
   return m_time_wheel;
 }
 
+void IOThread::setThreadIndex(const int index) {
+  m_index = index;
+}
+
+int IOThread::getThreadIndex() {
+  return m_index;
+}
+
 void* IOThread::main(void* arg) {
   // assert(t_reactor_ptr == nullptr);
 
@@ -123,6 +131,7 @@ IOThreadPool::IOThreadPool(int size) : m_size(size) {
   m_io_threads.resize(size);
   for (int i = 0; i < size; ++i) {
     m_io_threads[i] = std::make_shared<IOThread>();
+    m_io_threads[i]->setThreadIndex(i);
   }
 }
 

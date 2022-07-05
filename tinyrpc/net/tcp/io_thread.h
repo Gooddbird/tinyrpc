@@ -32,6 +32,10 @@ class IOThread {
 
   pthread_t getPthreadId();
 
+  void setThreadIndex(const int index);
+
+  int getThreadIndex();
+
 
  public:
   static IOThread* GetCurrentIOThread();
@@ -52,6 +56,7 @@ class IOThread {
 	pthread_t m_thread;
 	pid_t m_tid;
   TimerEvent::ptr m_timer_event;
+  int m_index {-1};
 
 };
 

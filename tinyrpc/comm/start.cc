@@ -47,5 +47,9 @@ void StartRpcServer() {
   gRpcServer->start();
 }
 
+int GetIOThreadPoolSize() {
+  return gRpcServer->getIOThreadPool()->getIOThreadPoolSize();
+}
+
 
 }

@@ -114,7 +114,6 @@ class QueryServiceImpl : public QueryService {
       done->Run();
     }
 
-    AppInfoLog << "QueryServiceImpl.query_age, req={"<< request->ShortDebugString() << "}, res={" << response->ShortDebugString() << "}";
   }
 
 };
