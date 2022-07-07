@@ -1,5 +1,7 @@
 #include <vector>
+#include <sys/mman.h>
 #include "tinyrpc/comm/config.h"
+#include "tinyrpc/comm/log.h"
 #include "tinyrpc/coroutine/coroutine_pool.h"
 #include "tinyrpc/coroutine/coroutine.h"
 
@@ -19,6 +21,13 @@ CoroutinePool* GetCoroutinePool() {
 
 
 CoroutinePool::CoroutinePool(int pool_size, int stack_size /*= 1024 * 128*/) : m_pool_size(pool_size), m_stack_size(stack_size) {
+  int total = pool_size * stack_size;
+  m_memory_pool = (char*)mmap(NULL, total, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+  if (m_memory_pool == (void*)-1) {
+    printf("Start TinyRPC failed, faild to mmap get coroutine memory size, errno=%d, err= %s\n", errno, strerror(errno));
+    Exit(0);
+  }
+  char* tmp = m_memory_pool;
   m_index = getCoroutineIndex();
 
   if (m_index == 0) {
@@ -29,7 +38,8 @@ CoroutinePool::CoroutinePool(int pool_size, int stack_size /*= 1024 * 128*/) : m
   m_free_cors.resize(pool_size + m_index);
 
   for (int i = m_index; i < pool_size + m_index; ++i) {
-    m_free_cors[i] = std::make_pair(std::make_shared<Coroutine>(stack_size), false);
+    m_free_cors[i] = std::make_pair(std::make_shared<Coroutine>(stack_size, tmp), false);
+    tmp += m_stack_size;
   }
 
 }
@@ -47,8 +57,17 @@ Coroutine::ptr CoroutinePool::getCoroutineInstanse() {
     }
   }
   int newsize = (int)(1.5 * m_pool_size);
+
+  int t = newsize * m_stack_size; 
+  char* s = (char*)mmap(NULL, t, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+  if (s == (void*)-1) {
+    ErrorLog << "Start TinyRPC failed, faild to mmap get coroutine memory size\n";
+    return nullptr;
+  }
+  char* s1 = s;
   for (int i = 0; i < newsize - m_pool_size; ++i) {
-    m_free_cors.push_back(m_free_cors[i] = std::make_pair(std::make_shared<Coroutine>(m_stack_size), false));
+    m_free_cors.push_back(m_free_cors[i] = std::make_pair(std::make_shared<Coroutine>(m_stack_size, s1), false));
+    s1 += m_stack_size;
   }
   int tmp = m_pool_size;
   m_pool_size = newsize;

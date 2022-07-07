@@ -10,6 +10,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <signal.h>
+#include <algorithm>
 
 #ifdef DECLARE_MYSQL_PLUGIN 
 #include <mysql/mysql.h>
@@ -30,6 +31,10 @@ namespace tinyrpc {
 
 extern tinyrpc::Logger::ptr gRpcLogger;
 extern tinyrpc::Config::ptr gRpcConfig;
+
+
+static std::atomic_int64_t g_rpc_log_index {0};
+static std::atomic_int64_t g_app_log_index {0};
 
 void CoredumpHandler(int signal_no) {
   ErrorLog << "progress received invalid signal, will exit";
@@ -215,6 +220,13 @@ Logger::~Logger() {
 
 void Logger::init(const char* file_name, const char* file_path, int max_size, int sync_inteval) {
   if (!m_is_init) {
+    for (int i = 0 ; i < 1000000; ++i) {
+      m_app_buffer.push_back("");
+      m_buffer.push_back("");
+    }
+    // m_app_buffer.resize(1000000);
+    // m_buffer.resize(1000000);
+
     TimerEvent::ptr event = std::make_shared<TimerEvent>(sync_inteval, true, std::bind(&Logger::loopFunc, this));
     Reactor::GetReactor()->getTimer()->addTimerEvent(event);
     m_async_rpc_logger = std::make_shared<AsyncLogger>(file_name, file_path, max_size, RPC_LOG);
@@ -236,25 +248,66 @@ void Logger::init(const char* file_name, const char* file_path, int max_size, in
 void Logger::loopFunc() {
   std::vector<std::string> tmp;
   std::vector<std::string> app_tmp;
+  for (int i = 0 ; i < 1000000; ++i) {
+    tmp.push_back("");
+    app_tmp.push_back("");
+  }
+
   Mutex::Lock lock(m_mutex);
+  int64_t old_value1 = g_rpc_log_index.exchange(0);
+  int64_t old_value2 = g_app_log_index.exchange(0);
+  if (old_value1 > 0 && old_value2 > 0) {
+    while (m_buffer[old_value1 - 1] == "" && m_app_buffer[old_value2 - 1] == "") {
+      // wait unitl all pre log has already write to m_buffer and m_app_buffer
+    }
+  }
+
   tmp.swap(m_buffer);
   app_tmp.swap(m_app_buffer);
   lock.unlock();
+
+  auto it = find(tmp.begin(), tmp.end(), "");
+  tmp.erase(it, tmp.end());
+
+  auto it2 = find(app_tmp.begin(), app_tmp.end(), "");
+  app_tmp.erase(it2, app_tmp.end());
 
   m_async_rpc_logger->push(tmp);
   m_async_app_logger->push(app_tmp);
 }
 
 void Logger::pushRpcLog(const std::string& msg) {
-  Mutex::Lock lock(m_mutex);
-  m_buffer.push_back(msg);
-  lock.unlock();
+  // Mutex::Lock lock(m_mutex);
+  // m_buffer.push_back(msg);
+  // lock.unlock();
+  // g_rpc_log_index == 0, means loopFunc has add mutex lock, ready to change buffer. so we cant't begin to write log until loopFunc release mutex lock
+  if (g_rpc_log_index == 0) {
+    Mutex::Lock lock(m_mutex);
+
+    int64_t i  = g_rpc_log_index++;
+    // printf("i=%ld\n", i);
+    m_buffer[i] = std::move(msg);
+    lock.unlock();
+  } else {
+    int64_t i  = g_rpc_log_index++;
+    // printf("i=%ld\n", i);
+    m_buffer[i] = std::move(msg);
+  }
 }
 
 void Logger::pushAppLog(const std::string& msg) {
-  Mutex::Lock lock(m_mutex);
-  m_app_buffer.push_back(msg);
-  lock.unlock();
+  // Mutex::Lock lock(m_mutex);
+  // m_app_buffer.push_back(msg);
+  // lock.unlock();
+  if (g_app_log_index == 0) {
+    Mutex::Lock lock(m_mutex);
+    int64_t i = g_app_log_index++; 
+    m_app_buffer[i] = std::move(msg);
+    lock.unlock();
+  } else {
+    int64_t i = g_app_log_index++; 
+    m_app_buffer[i] = std::move(msg);
+  }
 }
 
 void Logger::flush() {

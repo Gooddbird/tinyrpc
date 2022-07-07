@@ -129,7 +129,8 @@ int main(int argc, char* argv[]) {
 
   tinyrpc::InitConfig(argv[1]);
 
-  tinyrpc::GetServer()->registerService(std::make_shared<QueryServiceImpl>());
+  // tinyrpc::GetServer()->registerService(std::make_shared<QueryServiceImpl>());
+  REGISTER_SERVICE(QueryServiceImpl);
 
   tinyrpc::StartRpcServer();
   

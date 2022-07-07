@@ -72,8 +72,7 @@ void Config::readLogConfig(TiXmlElement* log_node) {
     exit(0);
   }
 
-  int log_sync_inteval = std::atoi(node->GetText());
-  m_log_sync_inteval = log_sync_inteval * 1000;
+  m_log_sync_inteval = std::atoi(node->GetText());
 
   gRpcLogger = std::make_shared<Logger>();
   gRpcLogger->init(m_log_prefix.c_str(), m_log_path.c_str(), m_log_max_size, m_log_sync_inteval);

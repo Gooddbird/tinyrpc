@@ -85,6 +85,17 @@ Coroutine::Coroutine(int size) : m_stack_size(size) {
   // DebugLog << "coroutine[null callback] created, id[" << m_cor_id << "]";
 }
 
+Coroutine::Coroutine(int size, char* stack_ptr) {
+  if (t_main_coroutine == nullptr) {
+    t_main_coroutine = new Coroutine();
+  }
+
+  assert(stack_ptr);
+  m_stack_size = size;
+  m_stack_sp = stack_ptr;
+  m_cor_id = t_cur_coroutine_id++;
+  t_coroutine_count++;
+}
 
 Coroutine::Coroutine(int size, std::function<void()> cb)
   : m_stack_size(size) {

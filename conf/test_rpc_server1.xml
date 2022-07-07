@@ -13,8 +13,8 @@
     <rpc_log_level>DEBUG</rpc_log_level>
     <app_log_level>DEBUG</app_log_level>
 
-    <!--inteval that put log info to async logger, s-->
-    <log_sync_inteval>1</log_sync_inteval>
+    <!--inteval that put log info to async logger, ms-->
+    <log_sync_inteval>500</log_sync_inteval>
   </log>
 
   <coroutine>
