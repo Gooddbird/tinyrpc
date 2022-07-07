@@ -29,6 +29,8 @@ class Coroutine {
 
   Coroutine(int size, std::function<void()> cb);
 
+  Coroutine(int size, char* stack_ptr);
+
   ~Coroutine();
 
   bool setCallBack(std::function<void()> cb); 

@@ -73,9 +73,9 @@ class TcpServer {
 
   NetAddress::ptr getPeerAddr();
 
-  void registerService(std::shared_ptr<google::protobuf::Service> service);
+  bool registerService(std::shared_ptr<google::protobuf::Service> service);
 
-  void registerHttpServlet(const std::string& url_path, HttpServlet::ptr servlet);
+  bool registerHttpServlet(const std::string& url_path, HttpServlet::ptr servlet);
 
   IOThreadPool::ptr getIOThreadPool();
 

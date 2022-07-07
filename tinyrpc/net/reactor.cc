@@ -224,7 +224,8 @@ void Reactor::loop() {
 			m_pending_tasks[i]();
 			// DebugLog << "end excute tasks[" << i << "]";
 		}
-		m_pending_tasks.clear();
+		std::vector<std::function<void()>> tmp;
+		m_pending_tasks.swap(tmp);
 		// DebugLog << "to epoll_wait";
 		int rt = epoll_wait(m_epfd, re_events, MAX_EVENTS, t_max_epoll_timeout);
 

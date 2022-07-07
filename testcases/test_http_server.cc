@@ -217,6 +217,35 @@ class AsyncRPCTestServlet: public tinyrpc::HttpServlet {
 };
 
 
+class QPSHttpServlet : public tinyrpc::HttpServlet {
+ public:
+  QPSHttpServlet() = default;
+  ~QPSHttpServlet() = default;
+
+  void handle(tinyrpc::HttpRequest* req, tinyrpc::HttpResponse* res) {
+    int a = count++;
+    AppDebugLog << "QPSHttpServlet get request count =" << count;
+    setHttpCode(res, tinyrpc::HTTP_OK);
+    setHttpContentType(res, "text/html;charset=utf-8");
+
+
+    std::stringstream ss;
+    ss << "QPSHttpServlet req_count = " << a <<  "Echo Success!! Your id is," << req->m_query_maps["id"];
+
+    char buf[512];
+    sprintf(buf, html, ss.str().c_str());
+    setHttpBody(res, std::string(buf));
+    AppDebugLog << ss.str();
+  }
+
+
+  std::string getServletName() {
+    return "QPSHttpServlet";
+  }
+
+};
+
+
 
 
 int main(int argc, char* argv[]) {
@@ -229,9 +258,11 @@ int main(int argc, char* argv[]) {
 
   tinyrpc::InitConfig(argv[1]);
 
-  tinyrpc::GetServer()->registerHttpServlet("/user", std::make_shared<RootHttpServlet>());
-  tinyrpc::GetServer()->registerHttpServlet("/another", std::make_shared<AnotherHttpServlet>());
-  tinyrpc::GetServer()->registerHttpServlet("/async", std::make_shared<AsyncRPCTestServlet>());
+  REGISTER_HTTP_SERVLET("/user", RootHttpServlet);
+  REGISTER_HTTP_SERVLET("/another", AnotherHttpServlet);
+  REGISTER_HTTP_SERVLET("/async", AsyncRPCTestServlet);
+  REGISTER_HTTP_SERVLET("/qps", QPSHttpServlet);
+
 
   tinyrpc::StartRpcServer();
 

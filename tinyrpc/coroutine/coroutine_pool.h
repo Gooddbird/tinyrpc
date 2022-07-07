@@ -27,6 +27,8 @@ class CoroutinePool {
   //    true -- can't be dispatched
   std::vector<std::pair<Coroutine::ptr, bool>> m_free_cors;
 
+  char* m_memory_pool {NULL};
+
 };
 
 

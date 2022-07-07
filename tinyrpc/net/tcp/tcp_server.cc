@@ -182,28 +182,34 @@ void TcpServer::addCoroutine(Coroutine::ptr cor) {
 	m_main_reactor->addCoroutine(cor);
 }
 
-void TcpServer::registerService(std::shared_ptr<google::protobuf::Service> service) {
+bool TcpServer::registerService(std::shared_ptr<google::protobuf::Service> service) {
 	if (m_protocal_type == TinyPb_Protocal) {
 		if (service) {
 			dynamic_cast<TinyPbRpcDispacther*>(m_dispatcher.get())->registerService(service);
 		} else {
-			ErrorLog << "service is nullptr";
+			ErrorLog << "register service error, service ptr is nullptr";
+			return false;
 		}
 	} else {
 		ErrorLog << "register service error. Just TinyPB protocal server need to resgister Service";
-	} 
+		return false;
+	}
+	return true;
 }
 
-void TcpServer::registerHttpServlet(const std::string& url_path, HttpServlet::ptr servlet) {
+bool TcpServer::registerHttpServlet(const std::string& url_path, HttpServlet::ptr servlet) {
 	if (m_protocal_type == Http_Protocal) {
 		if (servlet) {
 			dynamic_cast<HttpDispacther*>(m_dispatcher.get())->registerServlet(url_path, servlet);
 		} else {
-			ErrorLog << "service is nullptr";
+			ErrorLog << "register http servlet error, servlet ptr is nullptr";
+			return false;
 		}
 	} else {
-		ErrorLog << "register service error. Just Http protocal server need to resgister HttpServlet";
-	} 
+		ErrorLog << "register http servlet error. Just Http protocal server need to resgister HttpServlet";
+		return false;
+	}
+	return true;
 }
 
 IOThreadPool::ptr TcpServer::getIOThreadPool() {
