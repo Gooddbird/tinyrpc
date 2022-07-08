@@ -41,7 +41,7 @@ class Config {
   int m_log_max_size {0};
   LogLevel m_log_level {LogLevel::DEBUG};
   LogLevel m_app_log_level {LogLevel::DEBUG};
-  int m_log_sync_inteval {1000};
+  int m_log_sync_inteval {500};
 
   // coroutine params
   int m_cor_stack_size {0};

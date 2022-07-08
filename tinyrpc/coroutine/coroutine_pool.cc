@@ -21,6 +21,7 @@ CoroutinePool* GetCoroutinePool() {
 
 
 CoroutinePool::CoroutinePool(int pool_size, int stack_size /*= 1024 * 128*/) : m_pool_size(pool_size), m_stack_size(stack_size) {
+  Coroutine::GetCurrentCoroutine();
   int total = pool_size * stack_size;
   m_memory_pool = (char*)mmap(NULL, total, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
   if (m_memory_pool == (void*)-1) {
@@ -49,6 +50,12 @@ CoroutinePool::~CoroutinePool() {
 }
 
 Coroutine::ptr CoroutinePool::getCoroutineInstanse() {
+
+  // from 0 to find first free coroutine which: 1. it.second = false, 2. getIsInCoFunc() is false
+  // try our best to reuse used corroutine, and try our best not to choose unused coroutine
+  // beacuse used couroutine which used has already write bytes into physical memory, 
+  // but unused coroutine no physical memory yet. we just call mmap get virtual address, but not write yet. 
+  // so linux will alloc physical when we realy write, that casuse page fault interrupt
 
   for (int i = m_index; i < m_pool_size; ++i) {
     if (!m_free_cors[i].first->getIsInCoFunc() && !m_free_cors[i].second) {
