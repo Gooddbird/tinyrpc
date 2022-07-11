@@ -213,7 +213,7 @@ INSERT INTO t_user_information VALUE ('1100110001', 'ikerli', 1, now(), now());
 
   <server>
     <!--服务器绑定的 ip-->
-    <ip>192.168.245.7</ip>
+    <ip>127.0.0.1</ip>
     <!--服务器监听的端口-->
     <port>39999</port>
 
@@ -225,7 +225,7 @@ INSERT INTO t_user_information VALUE ('1100110001', 'ikerli', 1, now(), now());
     <!--这里需要换成自己的 MySQL 配置信息-->
     <db_key name="test_db_key1">
       <!-- <ip>127.0.0.1</ip> -->
-      <ip>192.168.245.7</ip>
+      <ip>127.0.0.1</ip>
       <port>3306</port>
       <user>root</user>
       <passwd>Ikerli20220517!!</passwd>
@@ -333,7 +333,7 @@ ps -elf | grep 'test_rpc_server1'
   </time_wheel>
 
   <server>
-    <ip>191.168.245.7</ip>
+    <ip>127.0.0.1</ip>
     <port>19998</port>
     <protocal>HTTP</protocal>
   </server>
@@ -431,7 +431,7 @@ int main(int argc, char* argv[]) {
 这里需要注意 registerHttpServlet 这里。这是将自己实现的 Servlet 注册到 RPC 服务中。这里的 "/user" 参数代表 url 路径。例如，完整的 url 就是：
 
 ```
-http://192.168.245.7:19999/user
+http://127.0.0.1:19999/user
 ```
 
 代表当访问这个 url 地址时， RPC 服务便会找到 RootHttpServlet 这个 Servlet，然后调用其 handle 方法进行处理。
@@ -448,7 +448,7 @@ nohup ./test_http_server ../conf/test_http_server.xml &
 
 测试很简单，打开浏览器，键入以下 url 直接访问即可。
 ```
-http://192.168.245.7:19999/user?id=1100110001
+http://127.0.0.1:19999/user?id=1100110001
 ```
 注意：如果浏览器跟服务不再同一台机器上，需要注意是否有防火墙等拦截。如 centos 关闭防火墙可以使用以下命令：
 ```
@@ -457,7 +457,7 @@ sudo systemctl stop firewalld.service
 
 当然，也可以直接使用 curl 工具发送 Http 协议来测试：
 ```
-curl -X GET "http://192.168.245.7:19999/user?id=1100110001"
+curl -X GET "http://127.0.0.1:19999/user?id=1100110001"
 ```
 
 如果测试正常，你将得到以下页面：

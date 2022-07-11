@@ -22,15 +22,26 @@ namespace tinyrpc {
 
 TinyPbRpcAsyncChannel::TinyPbRpcAsyncChannel(NetAddress::ptr addr) {
   m_rpc_channel = std::make_shared<TinyPbRpcChannel>(addr);
+  m_current_iothread = IOThread::GetCurrentIOThread();
+  m_current_cor = Coroutine::GetCurrentCoroutine();
 }
 
 TinyPbRpcAsyncChannel::~TinyPbRpcAsyncChannel() {
   DebugLog << "~TinyPbRpcAsyncChannel(), return coroutine";
-  GetCoroutinePool()->returnCoroutine(m_cor);
+  // printf("~TinyPbRpcAsyncChannel(), return coroutine\n");
+  GetCoroutinePool()->returnCoroutine(m_pending_cor);
 }
 
 TinyPbRpcChannel* TinyPbRpcAsyncChannel::getRpcChannel() {
   return m_rpc_channel.get();
+}
+
+void TinyPbRpcAsyncChannel::setPreCall(con_ptr controller, msg_ptr req, msg_ptr res, clo_ptr closure) {
+  m_controller = controller;
+  m_req = req;
+  m_res = res;
+  m_closure = closure;
+  m_is_pre_set = true;
 }
 
 void TinyPbRpcAsyncChannel::CallMethod(const google::protobuf::MethodDescriptor* method, 
@@ -39,42 +50,94 @@ void TinyPbRpcAsyncChannel::CallMethod(const google::protobuf::MethodDescriptor*
     google::protobuf::Message* response, 
     google::protobuf::Closure* done) {
   
+  if (!m_is_pre_set) {
+    ErrorLog << "Error! must call [setPreCall()] function before [CallMethod()]"; 
+    TinyPbRpcController* rpc_controller = dynamic_cast<TinyPbRpcController*>(controller);
+    rpc_controller->SetError(ERROR_NOT_SET_ASYNC_PRE_CALL, "Error! must call [setPreCall()] function before [CallMethod()];");
+    m_is_finished = true;
+    return;
+  }
+
   if (GetServer()->getIOThreadPool()->getIOThreadPoolSize() <= 1) {
     ErrorLog << "Error! must have at least 2 iothread when call TinyPbRpcAsyncChannel";
     TinyPbRpcController* rpc_controller = dynamic_cast<TinyPbRpcController*>(controller);
     rpc_controller->SetError(ERROR_ASYNC_RPC_CALL_SINGLE_IOTHREAD, "Error! must have at least 2 iothread when call TinyPbRpcAsyncChannel");
-    m_promise.set_value(true);
+    m_is_finished = true;
     return;
   }
 
   std::shared_ptr<TinyPbRpcAsyncChannel> s_ptr = shared_from_this();
-  std::shared_ptr<const google::protobuf::MethodDescriptor> method_ptr;
-  method_ptr.reset(method);
 
-  std::shared_ptr<google::protobuf::RpcController> controller_ptr;
-  controller_ptr.reset(controller);
-
-  std::shared_ptr<const google::protobuf::Message> req_ptr;
-  req_ptr.reset(request);
-
-  std::shared_ptr<google::protobuf::Message> res_ptr;
-  res_ptr.reset(response);
-
-  std::shared_ptr<google::protobuf::Closure> clo_ptr;
-  clo_ptr.reset(done);
-
-  auto cb = [s_ptr, method_ptr, controller_ptr, req_ptr, res_ptr, clo_ptr]() {
+  auto cb = [s_ptr, method]() mutable {
     DebugLog << "now excute rpc call method by this thread";
-    s_ptr->getRpcChannel()->CallMethod(method_ptr.get(), controller_ptr.get(), req_ptr.get(), res_ptr.get(), clo_ptr.get());
+    s_ptr->getRpcChannel()->CallMethod(method, s_ptr->getControllerPtr(), s_ptr->getRequestPtr(), s_ptr->getResponsePtr(), s_ptr->getClosurePtr());
+    // printf("channel use count=%d, %s|%d\n", s_ptr.use_count(), __FILE__, __LINE__);
+    // printf("controller use count=%d, %s|%d\n", s_ptr->m_controller.use_count(), __FILE__, __LINE__);
+    // printf("req use count=%d, %s|%d\n", s_ptr->m_req.use_count(), __FILE__, __LINE__);
+    // printf("res use count=%d, %s|%d\n", s_ptr->m_res.use_count(), __FILE__, __LINE__);
+    // printf("closure use count=%d, %s|%d\n", s_ptr->m_closure.use_count(), __FILE__, __LINE__);
+
     DebugLog << "excute rpc call method by this thread finish";
-    s_ptr->m_promise.set_value(true);
+
+    auto call_back = [s_ptr]() mutable {
+      DebugLog << "async excute rpc call method back old thread";
+      s_ptr->setFinished(true);
+      if (s_ptr->getNeedResume()) {
+        DebugLog << "async excute rpc call method back old thread, need resume";
+        Coroutine::Resume(s_ptr->getCurrentCoroutine());
+      }
+      s_ptr.reset();
+    };
+
+    s_ptr->getIOThread()->getReactor()->addTask(call_back, true);
+    s_ptr.reset();
   };
-  m_cor = GetServer()->getIOThreadPool()->addCoroutineToRandomThread(cb, false);
+  m_pending_cor = GetServer()->getIOThreadPool()->addCoroutineToRandomThread(cb, false);
+
 }
 
-std::future<bool> TinyPbRpcAsyncChannel::getFuture() {
-  return m_promise.get_future();
+// std::future<bool> TinyPbRpcAsyncChannel::getFuture() {
+//   return m_promise.get_future();
+// }
+
+void TinyPbRpcAsyncChannel::wait(int max_timeout /*=0*/) {
+  m_need_resume = true;
+  if (m_is_finished) {
+    return;
+  }
+  Coroutine::Yield();
 }
 
+void TinyPbRpcAsyncChannel::setFinished(bool value) {
+  m_is_finished = true;
+}
+
+IOThread* TinyPbRpcAsyncChannel::getIOThread() {
+  return m_current_iothread;
+}
+
+Coroutine* TinyPbRpcAsyncChannel::getCurrentCoroutine() {
+  return m_current_cor;
+}
+
+bool TinyPbRpcAsyncChannel::getNeedResume() {
+  return m_need_resume;
+}
+
+google::protobuf::RpcController* TinyPbRpcAsyncChannel::getControllerPtr() {
+  return m_controller.get();
+}
+
+google::protobuf::Message* TinyPbRpcAsyncChannel::getRequestPtr() {
+  return m_req.get();
+}
+
+google::protobuf::Message* TinyPbRpcAsyncChannel::getResponsePtr() {
+  return m_res.get();
+}
+
+google::protobuf::Closure* TinyPbRpcAsyncChannel::getClosurePtr() {
+  return m_closure.get();
+}
 
 }

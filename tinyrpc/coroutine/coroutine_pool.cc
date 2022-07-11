@@ -73,7 +73,7 @@ Coroutine::ptr CoroutinePool::getCoroutineInstanse() {
   }
   char* s1 = s;
   for (int i = 0; i < newsize - m_pool_size; ++i) {
-    m_free_cors.push_back(m_free_cors[i] = std::make_pair(std::make_shared<Coroutine>(m_stack_size, s1), false));
+    m_free_cors.push_back(std::make_pair(std::make_shared<Coroutine>(m_stack_size, s1), false));
     s1 += m_stack_size;
   }
   int tmp = m_pool_size;

@@ -3,6 +3,7 @@
 
 #include <google/protobuf/service.h>
 #include <google/protobuf/stubs/callback.h>
+#include <stdio.h>
 #include "../net_address.h"
 
 namespace tinyrpc {

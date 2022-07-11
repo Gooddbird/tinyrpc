@@ -8,6 +8,7 @@
 #include "tinyrpc/net/tinypb/tinypb_rpc_channel.h"
 #include "tinyrpc/net/tinypb/tinypb_rpc_async_channel.h"
 #include "tinyrpc/net/tinypb/tinypb_rpc_controller.h"
+#include "tinyrpc/net/tinypb/tinypb_rpc_closure.h"
 #include "tinyrpc/net/net_address.h"
 #include <atomic>
 #include <future>
@@ -160,51 +161,60 @@ class AsyncRPCTestServlet: public tinyrpc::HttpServlet {
     setHttpContentType(res, "text/html;charset=utf-8");
 
 
-    queryAgeReq rpc_req;
-    queryAgeRes rpc_res;
+    std::shared_ptr<queryAgeReq> rpc_req = std::make_shared<queryAgeReq>();
+    std::shared_ptr<queryAgeRes> rpc_res = std::make_shared<queryAgeRes>();
     AppDebugLog << "now to call QueryServer TinyRPC server to query who's id is " << req->m_query_maps["id"];
-    rpc_req.set_id(std::atoi(req->m_query_maps["id"].c_str()));
+    rpc_req->set_id(std::atoi(req->m_query_maps["id"].c_str()));
 
-    tinyrpc::TinyPbRpcAsyncChannel::ptr async_channel = std::make_shared<tinyrpc::TinyPbRpcAsyncChannel>(std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999));
-    QueryService_Stub stub(async_channel.get());
 
-    tinyrpc::TinyPbRpcController rpc_controller;
-    rpc_controller.SetTimeout(2000);
+    std::shared_ptr<tinyrpc::TinyPbRpcController> rpc_controller = std::make_shared<tinyrpc::TinyPbRpcController>();
+    rpc_controller->SetTimeout(10000);
 
     AppDebugLog << "AsyncRPCTestServlet begin to call RPC async";
-    stub.query_age(&rpc_controller, &rpc_req, &rpc_res, NULL);
-    AppDebugLog << "AsyncRPCTestServlet async end, now you can to some another thing";
-    AppDebugLog << "AsyncRPCTestServlet test to sleep 2 s when call async rpc";
-    sleep(2);
-    AppDebugLog << "AsyncRPCTestServlet test sleep 2 s when call async rpc back, now to call future.wait()";
 
-    async_channel->getFuture().wait();
-    AppDebugLog << "future.wait() back, now to check is rpc call succ";
+    tinyrpc::IPAddress::ptr addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
 
-    if (rpc_controller.ErrorCode() != 0) {
-      AppDebugLog << "failed to call QueryServer rpc server";
-      char buf[512];
-      sprintf(buf, html, "failed to call QueryServer rpc server");
-      setHttpBody(res, std::string(buf));
-      return;
-    }
+    tinyrpc::TinyPbRpcAsyncChannel::ptr async_channel = 
+      std::make_shared<tinyrpc::TinyPbRpcAsyncChannel>(addr);
 
-    if (rpc_res.ret_code() != 0) {
-      std::stringstream ss;
-      ss << "QueryServer rpc server return bad result, ret = " << rpc_res.ret_code() << ", and res_info = " << rpc_res.res_info();
-      AppDebugLog << ss.str();
-      char buf[512];
-      sprintf(buf, html, ss.str().c_str());
-      setHttpBody(res, std::string(buf));
-      return;
-    }
+    async_channel->setPreCall(rpc_controller, rpc_req, rpc_res, nullptr);
+
+    QueryService_Stub stub(async_channel.get());
+
+    stub.query_age(rpc_controller.get(), rpc_req.get(), rpc_res.get(), NULL);
+    // AppDebugLog << "AsyncRPCTestServlet async end, now you can to some another thing";
+    // AppDebugLog << "AsyncRPCTestServlet test to sleep 2 s when call async rpc";
+    // sleep(2);
+    // AppDebugLog << "AsyncRPCTestServlet test sleep 2 s when call async rpc back, now to call wait() to get result";
+
+    // async_channel->wait();
+    // AppDebugLog << "wait() back, now to check is rpc call succ";
+
+    // if (rpc_controller.ErrorCode() != 0) {
+    //   AppDebugLog << "failed to call QueryServer rpc server";
+    //   char buf[512];
+    //   sprintf(buf, html, "failed to call QueryServer rpc server");
+    //   setHttpBody(res, std::string(buf));
+    //   return;
+    // }
+
+    // if (rpc_res.ret_code() != 0) {
+    //   std::stringstream ss;
+    //   ss << "QueryServer rpc server return bad result, ret = " << rpc_res.ret_code() << ", and res_info = " << rpc_res.res_info();
+    //   AppDebugLog << ss.str();
+    //   char buf[512];
+    //   sprintf(buf, html, ss.str().c_str());
+    //   setHttpBody(res, std::string(buf));
+    //   return;
+    // }
 
     std::stringstream ss;
-    ss << "Success!! Your age is," << rpc_res.age() << " and Your id is " << rpc_res.id();
+    ss << "Success!! Your age is," << rpc_res->age() << " and Your id is " << rpc_res->id();
 
     char buf[512];
     sprintf(buf, html, ss.str().c_str());
     setHttpBody(res, std::string(buf));
+    // printf("use count=%d, %s|%d\n", async_channel.use_count(), __FILE__, __LINE__);
   }
 
   std::string getServletName() {
