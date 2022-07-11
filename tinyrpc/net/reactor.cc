@@ -221,11 +221,14 @@ void Reactor::loop() {
 		// excute tasks
 		for (size_t i = 0; i < m_pending_tasks.size(); ++i) {
 			// DebugLog << "begin to excute task[" << i << "]";
-			m_pending_tasks[i]();
+			if (m_pending_tasks[i]) {
+				m_pending_tasks[i]();
+			}
 			// DebugLog << "end excute tasks[" << i << "]";
 		}
-		std::vector<std::function<void()>> tmp;
-		m_pending_tasks.swap(tmp);
+		// std::vector<std::function<void()>> tmp;
+		// m_pending_tasks.swap(tmp);
+		m_pending_tasks.clear();
 		// DebugLog << "to epoll_wait";
 		int rt = epoll_wait(m_epfd, re_events, MAX_EVENTS, t_max_epoll_timeout);
 

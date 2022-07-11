@@ -27,6 +27,12 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
   m_client = std::make_shared<TcpClient>(m_addr);
   TinyPbStruct pb_struct;
   TinyPbRpcController* rpc_controller = dynamic_cast<TinyPbRpcController*>(controller);
+  if (!rpc_controller) {
+    ErrorLog << "call failed. falid to dynamic cast TinyPbRpcController";
+    // return;
+  }
+
+
   rpc_controller->SetLocalAddr(m_client->getLocalAddr());
   rpc_controller->SetPeerAddr(m_client->getPeerAddr());
   

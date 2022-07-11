@@ -54,7 +54,7 @@ DebugLog << "RootHttpServlet end to call RPC" << count;
 这看上去跟普通的阻塞式调用没什么区别，然而实际上在 stub.query_name 这一行是完全异步的，简单来说。线程不会阻塞在这一行，而会转而去处理其他协程，只有当数据返回就绪时，query_name 函数自动返回，继续下面的操作。
 这个过程的执行流如图所示：
 
-![](./imgs/query_name_aysnc1.drawio.png)
+![](./imgs/block_async_call.drawio.png)
 
 从图中可以看出，在调用 query_name 到 query_name 返回这段时间 T，CPU 的执行权已经完全移交给主协程了，也就说是这段时间主协程可以用来做任何事情：包括响应客户端请求、执行定时任务、陷入 epoll_wait 等待事件就绪等。对单个协程来说，它的执行流被阻塞了。但对于整个线程来说是完全没有被阻塞，它始终在执行着任务。
 
@@ -70,45 +70,61 @@ DebugLog << "RootHttpServlet end to call RPC" << count;
 2. 对于**当前协程来说，他是阻塞的**，必须等待协程再次被唤醒（**RESUME**）才能执行下面的代码。
 
 
-#### 1.3.2 future 式异步调用
-**Future 式异步调用**是另一种 RPC 调用方式，它解决了**阻塞协程式异步调用** 的一些缺点，当然也同时引入了一些限制。这种方式使用到了 C++11 的 future 特性和 promise 特性，更多内容请参考 **CPPREFRENCE**.
+#### 1.3.2 非阻塞协程式异步调用
+**非阻塞协程式异步调用**是 TinyRPC 支持的另一种 RPC 调用方式，它解决了**阻塞协程式异步调用** 的一些缺点，当然也同时引入了一些限制。这种方式有点类似于 C++11 的 future 特性, 但也不完全一样。
 
-future 式异步调用对应 TinyPbRpcAsyncChannel，一个简单调用例子如下：
+非阻塞协程式异步调用对应 TinyPbRpcAsyncChannel，一个简单调用例子如下：
 
 ```c++
-tinyrpc::TinyPbRpcAsyncChannel::ptr async_channel = std::make_shared<tinyrpc::TinyPbRpcAsyncChannel>(std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999));
-QueryService_Stub stub(async_channel.get());
+{
+  std::shared_ptr<queryAgeReq> rpc_req = std::make_shared<queryAgeReq>();
+  std::shared_ptr<queryAgeRes> rpc_res = std::make_shared<queryAgeRes>();
+  AppDebugLog << "now to call QueryServer TinyRPC server to query who's id is " << req->m_query_maps["id"];
+  rpc_req->set_id(std::atoi(req->m_query_maps["id"].c_str()));
 
-tinyrpc::TinyPbRpcController rpc_controller;
-rpc_controller.SetTimeout(2000);
 
-AppDebugLog << "AsyncRPCTestServlet begin to call RPC async";
-stub.query_age(&rpc_controller, &rpc_req, &rpc_res, NULL);
-AppDebugLog << "AsyncRPCTestServlet async end, now you can to some another thing";
+  std::shared_ptr<tinyrpc::TinyPbRpcController> rpc_controller = std::make_shared<tinyrpc::TinyPbRpcController>();
+  rpc_controller->SetTimeout(10000);
 
-AppDebugLog << "AsyncRPCTestServlet test sleep 2 s when call async rpc back, now to call future.wait()";
+  tinyrpc::IPAddress::ptr addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
 
-async_channel->getFuture().wait();
-AppDebugLog << "future.wait() back, now to check is rpc call succ";
+  tinyrpc::TinyPbRpcAsyncChannel::ptr async_channel = 
+    std::make_shared<tinyrpc::TinyPbRpcAsyncChannel>(addr);
+
+  async_channel->setPreCall(rpc_controller, rpc_req, rpc_res, nullptr);
+
+  QueryService_Stub stub(async_channel.get());
+  stub.query_age(rpc_controller.get(), rpc_req.get(), rpc_res.get(), NULL);
+}
+
 
 ```
 
 注意在这种调用方式中，query_age 会立马返回，协程可以继续执行下面的代码。但这并不代表着调用 RPC 完成，如果你需要获取调用结果，请使用:
 ```c++
-async_channel->getFuture().wait();
+async_channel->wait();
 ```
-这一行代码会一直阻塞知道 RPC 调用完成，更新 future 的值后, 并且这一行操作会阻塞线程(注意是线程不是协程)。因此，如非必要，请尽量少使用 wait().
+此时协程会阻塞直到异步RPC 调用完成，更新 future 的值后, 注意只会阻塞当前协程，而不是当前线程(其实调用 wait 后就相当于把当前协程 Yiled 了，等待 RPC 完成后自动 Resume)。
 
-这种调用方式的原理很简单，当前IO线程 A 会把这个调用任务交给另外一个 IO 线程B来完成，同时返回给调用方一个 future 对象, 调用方使用 future 对象即可获取调用结果。
+当然，wait() 是可选的。如果你不关心调用结果，完全可以不调用 wait。即相当于一个异步的任务队列。
 
-IO线程B会在适当的时候完成这个调用,实际上对于 线程B来说，它等同于在内部做了一次 **阻塞协程式异步调用**。
+这种调用方式的原理很简单，当前IO线程 A 会把这个调用任务交给另外一个 IO 线程B 来完成，同时调用方使用 wait() 函数可以阻塞的获取本次调用结果。
 
-总之，future 异步调用的优点如下：
-1. **不阻塞当前协程**(前提是不调用 future.wait() 等获取调用结果)
+IO线程 B 会在适当的时候完成这个调用, 实际上对于线程 B 来说，它等同于在内部做了一次 **阻塞协程式异步调用**，调用完成后再通知线程 A。
+
+这个调用链路如图：
+
+
+总之，非阻塞协程式异步调用的优点如下：
+1. RPC 调用不阻塞当前协程，可以继续往下执行代码(若遇到 wait 则会阻塞)。
 
 而缺点如下：
-1. 调用 future.wait()、future.get()等 会直接阻塞整个线程(当然整个线程的所有协程也被阻塞了)，不推荐这种做法。
-2. IO 线程数至少是 2 才能达到这种调用，因为需要把调用任务交给另一个线程来做。
+1. 所有 RPC 调用相关的对象，**必须是堆上的对象，而不是栈对象**， 包括 req、res、controller、async_rpc_channel。强烈推荐使用 shared_ptr，否则可能会有意想不到的问题(基本是必须使用了)。
+2. 在 RPC 调用前必须调用 TinyPbRpcAsyncChannel::setPreCall(), 提前预留资源的引用计数。实际上是第1点的补充，相当于强制要求使用 shared_ptr 了。
+3. IO 线程数至少是 2 才能达到这种调用，因为需要把调用任务交给另一个线程来做。
+
+解释一下第一点：调用相关的对象是在线程 A 中声明的，但由于是异步 RPC 调用，整个调用过程是又另外一个线程 B 执行的。因此你必须确保当线程 B 在这些 RPC 调用的时候，这些对象还存在，即没有被销毁。
+那为什么不能是栈对象？想像一下，假设你在某个函数中异步调用 RPC，如果这些对象都是栈对象，那么当函数结束时这些栈对象自动被销毁了，线程 B 此时显然会 coredump 掉。因此请在堆上申请对象。另外，推荐使用 shared_ptr 是因为 TinyPbRpcAsyncChannel 内部已经封装好细节了，当异步 RPC 完成之后会自动销毁对象，你不必担心内存泄露的问题！
 
 
 
