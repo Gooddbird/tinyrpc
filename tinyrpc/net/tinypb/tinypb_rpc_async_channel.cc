@@ -71,11 +71,6 @@ void TinyPbRpcAsyncChannel::CallMethod(const google::protobuf::MethodDescriptor*
   auto cb = [s_ptr, method]() mutable {
     DebugLog << "now excute rpc call method by this thread";
     s_ptr->getRpcChannel()->CallMethod(method, s_ptr->getControllerPtr(), s_ptr->getRequestPtr(), s_ptr->getResponsePtr(), s_ptr->getClosurePtr());
-    // printf("channel use count=%d, %s|%d\n", s_ptr.use_count(), __FILE__, __LINE__);
-    // printf("controller use count=%d, %s|%d\n", s_ptr->m_controller.use_count(), __FILE__, __LINE__);
-    // printf("req use count=%d, %s|%d\n", s_ptr->m_req.use_count(), __FILE__, __LINE__);
-    // printf("res use count=%d, %s|%d\n", s_ptr->m_res.use_count(), __FILE__, __LINE__);
-    // printf("closure use count=%d, %s|%d\n", s_ptr->m_closure.use_count(), __FILE__, __LINE__);
 
     DebugLog << "excute rpc call method by this thread finish";
 
@@ -96,11 +91,7 @@ void TinyPbRpcAsyncChannel::CallMethod(const google::protobuf::MethodDescriptor*
 
 }
 
-// std::future<bool> TinyPbRpcAsyncChannel::getFuture() {
-//   return m_promise.get_future();
-// }
-
-void TinyPbRpcAsyncChannel::wait(int max_timeout /*=0*/) {
+void TinyPbRpcAsyncChannel::wait() {
   m_need_resume = true;
   if (m_is_finished) {
     return;

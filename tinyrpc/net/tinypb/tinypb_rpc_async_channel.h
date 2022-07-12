@@ -34,11 +34,7 @@ class TinyPbRpcAsyncChannel : public google::protobuf::RpcChannel , public std::
 
   void setPreCall(con_ptr controller, msg_ptr req, msg_ptr res, clo_ptr closure);
 
-  // std::future<bool> getFuture();
-
-  // std::future<bool> getFuture();
-
-  void wait(int max_timeout = 0);
+  void wait();
 
   void setFinished(bool value);
 
@@ -47,14 +43,6 @@ class TinyPbRpcAsyncChannel : public google::protobuf::RpcChannel , public std::
   IOThread* getIOThread();
 
   Coroutine* getCurrentCoroutine();
-
-  // con_ptr getControllerPtr();
-
-  // msg_ptr getRequestPtr();
-
-  // msg_ptr getResponsePtr();
-
-  // clo_ptr getClosurePtr();
 
   google::protobuf::RpcController* getControllerPtr();
 
@@ -67,7 +55,6 @@ class TinyPbRpcAsyncChannel : public google::protobuf::RpcChannel , public std::
 
  private:
   TinyPbRpcChannel::ptr m_rpc_channel;
-  // std::promise<bool> m_promise;
   Coroutine::ptr m_pending_cor;
   Coroutine* m_current_cor {NULL};
   IOThread* m_current_iothread {NULL};
