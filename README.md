@@ -4,12 +4,55 @@
 
 
 作者：**ikerli**  **2022-05-13**
-**使用 TinyRPC, 轻松地构建高性能 RPC 服务！**
+**使用 TinyRPC, 轻松地构建高性能分布式 RPC 服务！**
 
 
 
-## 1. 简介
-### 1.1 TinyRPC 特点
+
+<!-- vscode-markdown-toc -->
+* 1. [简介](#)
+	* 1.1. [TinyRPC 特点](#TinyRPC)
+	* 1.2. [TinyRPC 支持的协议报文](#TinyRPC-1)
+	* 1.3. [TinyRPC 的 RPC 调用](#TinyRPCRPC)
+		* 1.3.1. [阻塞协程式异步调用](#-1)
+		* 1.3.2. [非阻塞协程式异步调用](#-1)
+* 2. [安装 TinyRPC](#TinyRPC-1)
+	* 2.1. [安装必要的依赖库](#-1)
+		* 2.1.1. [protobuf](#protobuf)
+		* 2.1.2. [tinyxml](#tinyxml)
+	* 2.2. [选装插件库](#-1)
+		* 2.2.1. [libmysqlclient](#libmysqlclient)
+	* 2.3. [安装和卸载](#-1)
+		* 2.3.1. [安装 TinyRPC](#TinyRPC-1)
+		* 2.3.2. [卸载 TinyRPC](#TinyRPC-1)
+* 3. [如何使用 TinyRPC](#TinyRPC-1)
+	* 3.1. [快速上手](#-1)
+	* 3.2. [标准示例](#-1)
+* 4. [模块设计](#-1)
+	* 4.1. [异步日志模块](#-1)
+	* 4.2. [协程模块](#-1)
+	* 4.3. [Reactor 模块](#Reactor)
+	* 4.4. [Tcp 模块](#Tcp)
+		* 4.4.1. [TcpServer](#TcpServer)
+		* 4.4.2. [TcpConnection](#TcpConnection)
+	* 4.5. [TinyPB 协议](#TinyPB)
+	* 4.6. [Http 模块](#Http)
+	* 4.7. [RPC 调用封装](#RPC)
+* 5. [关于作者](#-1)
+* 6. [参考资料](#-1)
+
+<!-- vscode-markdown-toc-config
+	numbering=true
+	autoSave=true
+	/vscode-markdown-toc-config -->
+<!-- /vscode-markdown-toc -->
+
+
+
+
+
+##  1. <a name=''></a>简介
+###  1.1. <a name='TinyRPC'></a>TinyRPC 特点
 **TinyRPC** 是一款基于 **C++11** 标准开发的小型**异步 RPC** 框架。TinyRPC 的核心代码应该也就几千行样子，尽量保持了简洁且较高的易读性。
 
 麻雀虽小五脏俱全，从命名上就能看出来，TinyRPC 框架主要用义是为了让读者能**快速地**、**轻量化**地搭建出具有较高性能的异步RPC 服务。至少用 TinyRPC 搭建的 RPC 服务能应付目前大多数场景了。
@@ -25,15 +68,15 @@
 
 
 
-### 1.2 TinyRPC 支持的协议报文
+###  1.2. <a name='TinyRPC-1'></a>TinyRPC 支持的协议报文
 **TinyRPC** 框架目前支持两类协议：
 1. 纯 **HTTP** 协议: TinyRPC 实现了简单的很基本的 HTTP(1.1) 协议的编、解码，完全可以使用 HTTP 协议搭建一个 RPC 服务。
 2. TinyPB 协议: 一种基于 **Protobuf** 的自定义协议，属于二进制协议。更多内容参考： [TinyPB协议详解](./tinypb_protocal.md)
 
-### 1.3 TinyRPC 的 RPC 调用
+###  1.3. <a name='TinyRPCRPC'></a>TinyRPC 的 RPC 调用
 TinyRPC 是一款异步的 RPC 框架，这就意味着服务之前的调用是非常高效的。目前来说，TinyRPC 支持两种 RPC 调用方式：**阻塞式异步调用** 和 **future 式异步调用**。
 
-#### 1.3.1 阻塞协程式异步调用
+####  1.3.1. <a name='-1'></a>阻塞协程式异步调用
 
 阻塞协程式异步调用这个名字看上去很奇怪，阻塞像是很低效的做法。然而其实他是非常高效的。他的思想是**用同步的代码，实现异步的性能。** 也就是说，**TinyRPC** 在 RPC 调用时候不需要像其他异步操作一样需要写复杂的回调函数，只需要直接调用即可。这看上去是同步的过程，实际上由于内部的协程封装实现了完全的异步。而作为外层的使用者完全不必关系这些琐碎的细节。
 
@@ -70,7 +113,7 @@ DebugLog << "RootHttpServlet end to call RPC" << count;
 2. 对于**当前协程来说，他是阻塞的**，必须等待协程再次被唤醒（**RESUME**）才能执行下面的代码。
 
 
-#### 1.3.2 非阻塞协程式异步调用
+####  1.3.2. <a name='-1'></a>非阻塞协程式异步调用
 **非阻塞协程式异步调用**是 TinyRPC 支持的另一种 RPC 调用方式，它解决了**阻塞协程式异步调用** 的一些缺点，当然也同时引入了一些限制。这种方式有点类似于 C++11 的 future 特性, 但也不完全一样。
 
 非阻塞协程式异步调用对应 TinyPbRpcAsyncChannel，一个简单调用例子如下：
@@ -129,26 +172,26 @@ IO线程 B 会在适当的时候完成这个调用, 实际上对于线程 B 来�
 
 
 
-## 2. 安装 TinyRPC
-### 2.1 安装必要的依赖库
+##  2. <a name='TinyRPC-1'></a>安装 TinyRPC
+###  2.1. <a name='-1'></a>安装必要的依赖库
 要正确编译 **TinyRPC**, 至少要先安装这几个库：
 
-#### 2.1.1 protobuf
+####  2.1.1. <a name='protobuf'></a>protobuf
 **protobuf** 是 **google** 开源的有名的序列化库。谷歌出品，必属精品！**TinyRPC** 的 **TinyPB** 协议是基于 protobuf 来 序列化/反序列化 的，因此这个库是必须的。
 其地址为：https://github.com/protocolbuffers/protobuf
 安装过程不再赘述。
 
-#### 2.1.2 tinyxml
+####  2.1.2. <a name='tinyxml'></a>tinyxml
 由于 **TinyRPC** 读取配置使用了 **xml** 文件，因此需要安装 **tinyxml** 库来解析配置文件。
 其地址为: https://github.com/leethomason/tinyxml2
 
-### 2.2 选装插件库
+###  2.2. <a name='-1'></a>选装插件库
 有些库不是那么容易安装，为了不妨碍核心功能的实现，我把这些库都作为插件来编译了。
 这些插件库不是强依赖的，因为它不属于 TinyRPC 服务的核心功能，只能算是功能上的锦上添花。为了不影响基础库的编译， TinyRPC 把这些库作为插件来加载，通过宏定义来控制编译。
 
 **需要说明的是：即使你不安装这些插件库， TinyRPC 依然能正常编译，它的核心基础功能是完全具备的。**
 
-#### 2.2.1 libmysqlclient
+####  2.2.1. <a name='libmysqlclient'></a>libmysqlclient
 TinyRPC 简单封装了下 MySQL 的调用，因为 MySQL 确实在 RPC 服务中用的比较多了。
 需要安装 **MySQL** 的 glibc 库，用于 MySQL 操作, 选择所需的版本安装即可(建议 5.7 以上)
 
@@ -174,9 +217,9 @@ PLUGIN_LIB = $(MYSQL_LIB)
 ```
 
 
-### 2.3 安装和卸载
+###  2.3. <a name='-1'></a>安装和卸载
 
-#### 2.3.1 安装 TinyRPC
+####  2.3.1. <a name='TinyRPC-1'></a>安装 TinyRPC
 在安装了前置的几个库之后，就可以开始编译和安装 **TinyRPC** 了。安装过程十分简单，只要不出什么意外就好了。
 
 **祈祷**一下一次性成功，然后直接执行以下几个命令即可：
@@ -203,7 +246,7 @@ make install
 
 如果编译出现问题，欢迎提 [issue](https://github.com/Gooddbird/tinyrpc/issues/), 我会尽快回应。
 
-#### 2.3.2 卸载 TinyRPC
+####  2.3.2. <a name='TinyRPC-1'></a>卸载 TinyRPC
 卸载也很简单，如下即可：
 ```
 make uninstall
@@ -211,22 +254,22 @@ make uninstall
 **注：如果此前已经安装过 TinyRPC, 建议先执行卸载命令后再重新 make install 安装.**
 
 
-## 3. 如何使用 TinyRPC
+##  3. <a name='TinyRPC-1'></a>如何使用 TinyRPC
 
-### 3.1 快速上手
+###  3.1. <a name='-1'></a>快速上手
 在 make 成功之后，出了生成静态库文件。此外，还会在 bin 目录下生成一些单元测试文件。TinyRPC 提供了一个简单地 RPC 服务调用示例，更多内容请参考文档：[quick_stark](./quick_rpc_test.md).
 
 
-### 3.2 标准示例
+###  3.2. <a name='-1'></a>标准示例
 
 我将提供一个标准的 TinyRPC 框架开发的 RPC 服务案例，目前准备简单实现一个分布式的服务注册中心。不过这个工程的架构算是比较规范的了，可以参考下：
 更多内容请移步项目(建设中)：[分布式服务中心 -- charon](https://github.com/Gooddbird/charon)
 
 
-## 4. 模块设计
+##  4. <a name='-1'></a>模块设计
 **TinyRPC** 框架的主要模块包括：异步日志、协程封装、Reactor封装、Tcp 封装、TinyPb协议封装、HTTP 协议封装、以及RPC封装模块等。
 
-### 4.1 异步日志模块
+###  4.1. <a name='-1'></a>异步日志模块
 设计初期，**TinyRPC** 的日志主要参考了 (**sylar**),并精简后实现了最基础的打印日志。
 
 在开发到一定程度后，发现同步日志或多或少有些影响性能，毕竟每次写入文件的磁盘IO还是比较耗时的。遂改为异步日志。TinyRPC 的异步日志实现非常简单，只是额外启动了一个线程来负责打印日志罢了。
@@ -245,7 +288,7 @@ DebugLog << "11";
 AppDebugLog << "11";
 ```
 
-### 4.2 协程模块
+###  4.2. <a name='-1'></a>协程模块
 TinyRPC 的协程底层使用了腾讯的开源协程库 [libco](https://github.com/Tencent/libco)，即协程上下文切换那一块。而协程切换的原理不过是寄存器切换罢了。
 除了协程切换之外，TinyRPC 提供了一些基本函数的 hook，如 read、write、connect 等函数。
 
@@ -258,16 +301,16 @@ TinyRPC 的协程底层使用了腾讯的开源协程库 [libco](https://github.
 [协程篇（一）-- 函数调用栈](https://zhuanlan.zhihu.com/p/462968883)
 
 
-### 4.3 Reactor 模块
+###  4.3. <a name='Reactor'></a>Reactor 模块
 可移步知乎文章：
 
 [C++实现的协程网络库tinyrpc（四）-- Reactor 实现](https://zhuanlan.zhihu.com/p/503323714)
 
 [Reactor模式介绍](https://zhuanlan.zhihu.com/p/428693405)
 
-### 4.4 Tcp 模块
+###  4.4. <a name='Tcp'></a>Tcp 模块
 
-#### 4.4.1 TcpServer
+####  4.4.1. <a name='TcpServer'></a>TcpServer
 TcpServer 的运行逻辑如下：
 
 ![](imgs/tcp_server.drawio.png)
@@ -278,7 +321,7 @@ TcpServer 的运行逻辑如下：
 
 
 
-#### 4.4.2 TcpConnection
+####  4.4.2. <a name='TcpConnection'></a>TcpConnection
 
 TcpConnection 运行逻辑如下：
 
@@ -290,19 +333,19 @@ TcpConnection 运行逻辑如下：
 [C++实现的协程异步 RPC 框架 TinyRPC（六）-- TcpConnection 实现](https://zhuanlan.zhihu.com/p/524517895)
 
 
-### 4.5 TinyPB 协议
+###  4.5. <a name='TinyPB'></a>TinyPB 协议
 TinyPB 是 TinyRPC 框架自定义得一种协议类型，它基于 google 的 protobuf 而定制的，协议更多细节见 [TinyPb协议详解](./tinypb_protocal.md).
 
-### 4.6 Http 模块
+###  4.6. <a name='Http'></a>Http 模块
 TinyRPC 的 HTTP 模块实际上有点模仿 Java 的 Servlet 概念，每来一个 HTTP 请求就会找到对应的 HttpServlet 对象，执行其提前注册好的业务逻辑函数，用于处理 Http 请求，并回执 Http 响应。
 
-### 4.7 RPC 调用封装
+###  4.7. <a name='RPC'></a>RPC 调用封装
 --建设中，敬请期待--
 
 
 
 
-## 关于作者
+##  5. <a name='-1'></a>关于作者
 **ikerli**
 Linux 后台开发、分布式系统、C++  持续学习中！
 
@@ -319,7 +362,7 @@ Linux 后台开发、分布式系统、C++  持续学习中！
 
 
 
-## 参考资料
+##  6. <a name='-1'></a>参考资料
 libco: https://github.com/Tencent/libco
 
 sylar: https://github.com/sylar-yin/sylar
