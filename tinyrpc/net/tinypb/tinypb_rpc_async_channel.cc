@@ -36,7 +36,7 @@ TinyPbRpcChannel* TinyPbRpcAsyncChannel::getRpcChannel() {
   return m_rpc_channel.get();
 }
 
-void TinyPbRpcAsyncChannel::setPreCall(con_ptr controller, msg_ptr req, msg_ptr res, clo_ptr closure) {
+void TinyPbRpcAsyncChannel::saveCallee(con_ptr controller, msg_ptr req, msg_ptr res, clo_ptr closure) {
   m_controller = controller;
   m_req = req;
   m_res = res;
@@ -51,9 +51,9 @@ void TinyPbRpcAsyncChannel::CallMethod(const google::protobuf::MethodDescriptor*
     google::protobuf::Closure* done) {
   
   if (!m_is_pre_set) {
-    ErrorLog << "Error! must call [setPreCall()] function before [CallMethod()]"; 
+    ErrorLog << "Error! must call [saveCallee()] function before [CallMethod()]"; 
     TinyPbRpcController* rpc_controller = dynamic_cast<TinyPbRpcController*>(controller);
-    rpc_controller->SetError(ERROR_NOT_SET_ASYNC_PRE_CALL, "Error! must call [setPreCall()] function before [CallMethod()];");
+    rpc_controller->SetError(ERROR_NOT_SET_ASYNC_PRE_CALL, "Error! must call [saveCallee()] function before [CallMethod()];");
     m_is_finished = true;
     return;
   }

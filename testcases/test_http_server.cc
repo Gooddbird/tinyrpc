@@ -177,7 +177,7 @@ class AsyncRPCTestServlet: public tinyrpc::HttpServlet {
     tinyrpc::TinyPbRpcAsyncChannel::ptr async_channel = 
       std::make_shared<tinyrpc::TinyPbRpcAsyncChannel>(addr);
 
-    async_channel->setPreCall(rpc_controller, rpc_req, rpc_res, nullptr);
+    async_channel->saveCallee(rpc_controller, rpc_req, rpc_res, nullptr);
 
     QueryService_Stub stub(async_channel.get());
 
