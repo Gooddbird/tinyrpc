@@ -147,6 +147,15 @@ bool FdEvent::isNonBlock() {
 
 }
 
+void FdEvent::bindCoroutine(Coroutine* cor) {
+  m_cor = cor;
+}
+
+Coroutine* FdEvent::getCoroutine() {
+  return m_cor;
+}
+
+
 FdEvent::ptr FdEventContainer::getFdEvent(int fd) {
   RWMutex::ReadLock lock(m_mutex);
   std::vector<FdEvent::ptr> tmps = m_fds;

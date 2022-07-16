@@ -6,10 +6,10 @@
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include <assert.h>
-#include "reactor.h"
-#include "../comm/log.h"
-#include "../coroutine/coroutine.h"
-#include "mutex.h"
+#include "tinyrpc/net/reactor.h"
+#include "tinyrpc/comm/log.h"
+#include "tinyrpc/coroutine/coroutine.h"
+#include "tinyrpc/net/mutex.h"
 
 namespace tinyrpc {
 
@@ -60,6 +60,10 @@ class FdEvent : public std::enable_shared_from_this<FdEvent> {
   
   bool isNonBlock();
 
+  void bindCoroutine(Coroutine* cor);
+
+  Coroutine* getCoroutine();
+
  public:
 	Mutex m_mutex;
 
@@ -71,6 +75,7 @@ class FdEvent : public std::enable_shared_from_this<FdEvent> {
   int m_listen_events {0};
 
   Reactor* m_reactor {nullptr};
+  Coroutine* m_cor {nullptr};
 
 };
 

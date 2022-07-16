@@ -37,7 +37,10 @@ void SetHook(bool value) {
 
 void toEpoll(tinyrpc::FdEvent::ptr fd_event, int events) {
 	
-	tinyrpc::Coroutine* cur_cor = tinyrpc::Coroutine::GetCurrentCoroutine() ;
+	tinyrpc::Coroutine* cur_cor = tinyrpc::Coroutine::GetCurrentCoroutine();
+	// if (!fd_event->getCoroutine()) {
+	// 	fd_event->bindCoroutine(cur_cor);
+	// }
 	if (events & tinyrpc::IOEvent::READ) {
 		DebugLog << "fd:[" << fd_event->getFd() << "], register read event to epoll";
 		fd_event->setCallBack(tinyrpc::IOEvent::READ, 
@@ -46,8 +49,7 @@ void toEpoll(tinyrpc::FdEvent::ptr fd_event, int events) {
 			}
 		);
 		fd_event->addListenEvents(tinyrpc::IOEvent::READ);
-	}
-	if (events & tinyrpc::IOEvent::WRITE) {
+	} else if (events & tinyrpc::IOEvent::WRITE) {
 		DebugLog << "fd:[" << fd_event->getFd() << "], register write event to epoll";
 		fd_event->setCallBack(tinyrpc::IOEvent::WRITE, 
 			[cur_cor]() {
@@ -95,7 +97,7 @@ ssize_t read_hook(int fd, void *buf, size_t count) {
 	DebugLog << "read func to yield";
 	tinyrpc::Coroutine::Yield();
 
-	fd_event->delListenEvents(tinyrpc::IOEvent::READ);
+	// fd_event->delListenEvents(tinyrpc::IOEvent::READ);
 	// fd_event->updateToReactor();
 
 	DebugLog << "read func yield back, now to call sys read";
@@ -134,7 +136,7 @@ int accept_hook(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	DebugLog << "accept func to yield";
 	tinyrpc::Coroutine::Yield();
 
-	fd_event->delListenEvents(tinyrpc::IOEvent::READ);
+	// fd_event->delListenEvents(tinyrpc::IOEvent::READ);
 	// fd_event->updateToReactor();
 
 	DebugLog << "accept func yield back, now to call sys accept";
@@ -173,7 +175,7 @@ ssize_t write_hook(int fd, const void *buf, size_t count) {
 	DebugLog << "write func to yield";
 	tinyrpc::Coroutine::Yield();
 
-	fd_event->delListenEvents(tinyrpc::IOEvent::WRITE);
+	// fd_event->delListenEvents(tinyrpc::IOEvent::WRITE);
 	// fd_event->updateToReactor();
 
 	DebugLog << "write func yield back, now to call sys write";
@@ -232,7 +234,7 @@ int connect_hook(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
   tinyrpc::Coroutine::Yield();
 
 	// write事件需要删除，因为连接成功后后面会重新监听该fd的写事件。
-	fd_event->delListenEvents(tinyrpc::IOEvent::WRITE); 
+	// fd_event->delListenEvents(tinyrpc::IOEvent::WRITE); 
 	// fd_event->updateToReactor();
 
 	// 定时器也需要删除

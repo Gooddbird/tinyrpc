@@ -67,8 +67,18 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
   void registerToTimeWheel();
 
+// coroutine bind function
  public:
+  // business execute coroutine function
   void MainServerLoopCorFunc();
+  
+  // read coroutine function
+  void MainServerReadCorFunc();
+
+  // write coroutine function
+  void MainServerWriteCorFunc();
+
+ public:
 
   void input();
 
@@ -114,6 +124,11 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
   std::weak_ptr<AbstractSlot<TcpConnection>> m_weak_slot;
 
+
+  Coroutine::ptr m_read_cor;
+  Coroutine::ptr m_write_cor;
+  bool m_is_need_resume_execute {true};
+  bool m_is_need_resume_write {true};
 
 };
 

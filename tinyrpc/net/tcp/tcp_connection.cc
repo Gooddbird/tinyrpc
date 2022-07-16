@@ -28,9 +28,15 @@ TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_
   m_loop_cor = GetCoroutinePool()->getCoroutineInstanse();
   m_loop_cor->setCallBack(std::bind(&TcpConnection::MainServerLoopCorFunc, this));
 
+  m_read_cor = GetCoroutinePool()->getCoroutineInstanse();
+  m_read_cor->setCallBack(std::bind(&TcpConnection::MainServerReadCorFunc, this));
+
+  m_write_cor = GetCoroutinePool()->getCoroutineInstanse();
+  m_write_cor->setCallBack(std::bind(&TcpConnection::MainServerWriteCorFunc, this));
+
+  m_reactor->addCoroutine(m_read_cor);
   DebugLog << "succ create tcp connection";
-  m_reactor->addCoroutine(m_loop_cor);
-  
+
 }
 
 TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reactor, int fd, int buff_size, NetAddress::ptr peer_addr)
@@ -66,6 +72,8 @@ void TcpConnection::setUpClient() {
 TcpConnection::~TcpConnection() {
   if (m_connection_type == ServerConnection) {
     GetCoroutinePool()->returnCoroutine(m_loop_cor);
+    GetCoroutinePool()->returnCoroutine(m_read_cor);
+    GetCoroutinePool()->returnCoroutine(m_write_cor);
   }
 
   DebugLog << "~TcpConnection, fd=" << m_fd;
@@ -80,15 +88,23 @@ void TcpConnection::initBuffer(int size) {
 }
 
 void TcpConnection::MainServerLoopCorFunc() {
-
   while (!m_stop) {
-    input();
-
     execute();
+  }
+}
 
+// read coroutine function
+void TcpConnection::MainServerReadCorFunc() {
+  while(!m_stop) {
+    input();
+  }
+}
+
+// write coroutine function
+void TcpConnection::MainServerWriteCorFunc() {
+  while(!m_stop) {
     output();
   }
-  InfoLog << "this connection has already end loop";
 }
 
 void TcpConnection::input() {
@@ -153,12 +169,15 @@ void TcpConnection::input() {
   }
   InfoLog << "recv [" << count << "] bytes data from [" << m_peer_addr->toString() << "], fd [" << m_fd << "]";
   if (m_connection_type == ServerConnection) {
-    TcpTimeWheel::TcpConnectionSlot::ptr tmp = m_weak_slot.lock();
-    if (tmp) {
-      m_io_thread->getTimeWheel()->fresh(tmp);
-    }
+      TcpTimeWheel::TcpConnectionSlot::ptr tmp = m_weak_slot.lock();
+      if (tmp) {
+        m_io_thread->getTimeWheel()->fresh(tmp);
+      }
+      if (m_is_need_resume_execute) {
+        m_is_need_resume_execute = false;
+        m_reactor->addCoroutine(m_loop_cor);
+      }
   }
-
 }
 
 void TcpConnection::execute() {
@@ -193,6 +212,11 @@ void TcpConnection::execute() {
     }
 
   }
+  if (m_connection_type == ServerConnection && m_is_need_resume_write) {
+    m_is_need_resume_write = false;
+    m_reactor->addCoroutine(m_write_cor);
+  }
+  m_is_need_resume_execute = true;
 
 }
 
@@ -236,6 +260,7 @@ void TcpConnection::output() {
     }
 
   }
+  m_is_need_resume_write = true;
 }
 
 

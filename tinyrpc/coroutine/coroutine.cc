@@ -176,7 +176,7 @@ bool Coroutine::IsMainCoroutine() {
 }
 
 /********
-让出执行权,切换到主协程
+from target coroutine to execute main coroutine
 ********/
 void Coroutine::Yield() {
   if (!t_enable_coroutine_swap) {
@@ -200,7 +200,7 @@ void Coroutine::Yield() {
 }
 
 /********
-取得执行权,从主协程切换到目标协程
+from main coroutine to execute target coroutine
 ********/
 void Coroutine::Resume(Coroutine* co) {
 
