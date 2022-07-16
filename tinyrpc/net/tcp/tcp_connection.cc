@@ -89,21 +89,31 @@ void TcpConnection::initBuffer(int size) {
 
 void TcpConnection::MainServerLoopCorFunc() {
   while (!m_stop) {
+
     execute();
+
+    Coroutine::Yield();
   }
 }
 
 // read coroutine function
 void TcpConnection::MainServerReadCorFunc() {
   while(!m_stop) {
+
     input();
+
+    Coroutine::Yield();
+
   }
 }
 
 // write coroutine function
 void TcpConnection::MainServerWriteCorFunc() {
   while(!m_stop) {
+
     output();
+
+    Coroutine::Yield();
   }
 }
 
