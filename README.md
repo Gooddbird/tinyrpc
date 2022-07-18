@@ -74,13 +74,13 @@
 2. TinyPB 协议: 一种基于 **Protobuf** 的自定义协议，属于二进制协议。更多内容参考： [TinyPB协议详解](./tinypb_protocal.md)
 
 ###  1.3. <a name='TinyRPCRPC'></a>TinyRPC 的 RPC 调用
-TinyRPC 是一款异步的 RPC 框架，这就意味着服务之前的调用是非常高效的。目前来说，TinyRPC 支持两种 RPC 调用方式：**阻塞式异步调用** 和 **future 式异步调用**。
+TinyRPC 是一款异步的 RPC 框架，这就意味着服务之前的调用是非常高效的。目前来说，TinyRPC 支持两种RPC 调用方式：**阻塞协程式异步调用** 和 **非阻塞协程式异步调用**。
 
 ####  1.3.1. <a name='-1'></a>阻塞协程式异步调用
 
 阻塞协程式异步调用这个名字看上去很奇怪，阻塞像是很低效的做法。然而其实他是非常高效的。他的思想是**用同步的代码，实现异步的性能。** 也就是说，**TinyRPC** 在 RPC 调用时候不需要像其他异步操作一样需要写复杂的回调函数，只需要直接调用即可。这看上去是同步的过程，实际上由于内部的协程封装实现了完全的异步。而作为外层的使用者完全不必关系这些琐碎的细节。
 
-阻塞协程式异步调用对应与 TinyPbRpcChannel 类，一个简单的调用例子如下：
+阻塞协程式异步调用对应 TinyPbRpcChannel 类，一个简单的调用例子如下：
 
 ```c++
 tinyrpc::TinyPbRpcChannel channel(std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999));
@@ -134,7 +134,7 @@ DebugLog << "RootHttpServlet end to call RPC" << count;
   tinyrpc::TinyPbRpcAsyncChannel::ptr async_channel = 
     std::make_shared<tinyrpc::TinyPbRpcAsyncChannel>(addr);
 
-  async_channel->setPreCall(rpc_controller, rpc_req, rpc_res, nullptr);
+  async_channel->saveCallee(rpc_controller, rpc_req, rpc_res, nullptr);
 
   QueryService_Stub stub(async_channel.get());
   stub.query_age(rpc_controller.get(), rpc_req.get(), rpc_res.get(), NULL);
@@ -164,7 +164,7 @@ IO线程 B 会在适当的时候完成这个调用, 实际上对于线程 B 来�
 
 而缺点如下：
 1. 所有 RPC 调用相关的对象，**必须是堆上的对象，而不是栈对象**， 包括 req、res、controller、async_rpc_channel。强烈推荐使用 shared_ptr，否则可能会有意想不到的问题(基本是必须使用了)。
-2. 在 RPC 调用前必须调用 TinyPbRpcAsyncChannel::setPreCall(), 提前预留资源的引用计数。实际上是第1点的补充，相当于强制要求使用 shared_ptr 了。
+2. 在 RPC 调用前必须调用 TinyPbRpcAsyncChannel::saveCallee(), 提前预留资源的引用计数。实际上是第1点的补充，相当于强制要求使用 shared_ptr 了。
 3. IO 线程数至少是 2 才能达到这种调用，因为需要把调用任务交给另一个线程来做。
 
 解释一下第一点：调用相关的对象是在线程 A 中声明的，但由于是异步 RPC 调用，整个调用过程是又另外一个线程 B 执行的。因此你必须确保当线程 B 在这些 RPC 调用的时候，这些对象还存在，即没有被销毁。
