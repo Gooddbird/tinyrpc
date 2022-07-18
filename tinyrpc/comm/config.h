@@ -16,7 +16,8 @@ enum LogLevel {
 	DEBUG = 1,
 	INFO = 2,
 	WARN = 3,
-	ERROR = 4
+	ERROR = 4,
+  NONE = 5    // don't print log
 };
 
 class Config {

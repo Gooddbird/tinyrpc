@@ -278,7 +278,9 @@ unsigned int sleep_hook(unsigned int seconds) {
 
 	DebugLog << "now to yield sleep";
 	// beacuse read or wirte maybe resume this coroutine, so when this cor be resumed, must check is timeout, otherwise should yield again
-	tinyrpc::Coroutine::Yield();
+	while (!is_timeout) {
+		tinyrpc::Coroutine::Yield();
+	}
 
 	// 定时器也需要删除
 	// tinyrpc::Reactor::GetReactor()->getTimer()->delTimerEvent(event);
