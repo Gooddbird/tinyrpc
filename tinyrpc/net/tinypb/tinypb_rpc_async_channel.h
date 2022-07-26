@@ -32,7 +32,9 @@ class TinyPbRpcAsyncChannel : public google::protobuf::RpcChannel , public std::
 
   TinyPbRpcChannel* getRpcChannel();
 
-  void setPreCall(con_ptr controller, msg_ptr req, msg_ptr res, clo_ptr closure);
+  // must call saveCallee before CallMethod
+  // in order to save shared_ptr count of req res controller
+  void saveCallee(con_ptr controller, msg_ptr req, msg_ptr res, clo_ptr closure);
 
   void wait();
 
