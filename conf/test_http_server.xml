@@ -9,7 +9,7 @@
     <!--identify max size of single log file, MB-->
     <log_max_file_size>5</log_max_file_size>
 
-    <!--log level: DEBUG < INFO < WARN < ERROR-->
+    <!--log level: DEBUG < INFO < WARN < ERROR < NONE(don't print log)-->
     <rpc_log_level>DEBUG</rpc_log_level>
     <app_log_level>DEBUG</app_log_level>
 
@@ -32,7 +32,7 @@
   <max_connect_timeout>75</max_connect_timeout>
 
   <!--count of io threads, at least 1-->
-  <iothread_num>16</iothread_num>
+  <iothread_num>8</iothread_num>
 
   <time_wheel>
     <bucket_num>3</bucket_num>

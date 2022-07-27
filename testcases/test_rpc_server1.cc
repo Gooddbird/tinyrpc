@@ -87,11 +87,12 @@ class QueryServiceImpl : public QueryService {
 
     #endif
 
+    AppInfoLog << "QueryServiceImpl.query_name, req={"<< request->ShortDebugString() << "}, res={" << response->ShortDebugString() << "}";
+
     if (done) {
       done->Run();
     }
 
-    AppInfoLog << "QueryServiceImpl.query_name, req={"<< request->ShortDebugString() << "}, res={" << response->ShortDebugString() << "}";
   }
 
   void query_age(google::protobuf::RpcController* controller,
@@ -100,19 +101,22 @@ class QueryServiceImpl : public QueryService {
                        ::google::protobuf::Closure* done) {
 
     AppInfoLog << "QueryServiceImpl.query_age, req={"<< request->ShortDebugString() << "}";
-    AppInfoLog << "QueryServiceImpl.query_age, sleep 6 s begin";
-    sleep(6);
-    AppInfoLog << "QueryServiceImpl.query_age, sleep 6 s end";
+    // AppInfoLog << "QueryServiceImpl.query_age, sleep 6 s begin";
+    // sleep(6);
+    // AppInfoLog << "QueryServiceImpl.query_age, sleep 6 s end";
 
     response->set_ret_code(0);
     response->set_res_info("OK");
     response->set_req_no(request->req_no());
     response->set_id(request->id());
-    response->set_age(20);
+    response->set_age(100100111);
 
     if (done) {
       done->Run();
     }
+    // printf("response = %s\n", response->ShortDebugString().c_str());
+
+    AppInfoLog << "QueryServiceImpl.query_age, res={"<< response->ShortDebugString() << "}";
 
   }
 

@@ -66,6 +66,13 @@ void setLogLevel(LogLevel level) {
 }
 
 
+bool OpenLog() {
+  #ifdef DECLARE_OPEN_TINYRPC_LOG 
+    return true;  
+  #endif
+    return false;
+}
+
 LogEvent::LogEvent(LogLevel level, const char* file_name, int line, const char* func_name, LogType type)
   : m_level(level),
     m_file_name(file_name),
@@ -96,6 +103,8 @@ std::string levelToString(LogLevel level) {
     case ERROR:
       re = "ERROR";
       return re;
+    case NONE:
+      re = "NONE";
 
     default:
       return re;
@@ -115,6 +124,9 @@ LogLevel stringToLevel(const std::string& str) {
 
     if (str == "ERROR")
       return LogLevel::ERROR;
+
+    if (str == "NONE")
+      return LogLevel::NONE;
 
     return LogLevel::DEBUG;
 }

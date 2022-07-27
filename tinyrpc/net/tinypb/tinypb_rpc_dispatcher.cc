@@ -105,29 +105,26 @@ void TinyPbRpcDispacther::dispatch(AbstractData* data, TcpConnection* conn) {
   rpc_controller.SetMethodName(method_name);
   rpc_controller.SetMethodFullName(tmp->service_full_name);
 
-  std::function<void()> reply_package_func = [&reply_pk, response, request]()
-  {
-    // DebugLog << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<";
-    InfoLog << "Call [" << reply_pk.service_full_name << "] succ, now send reply package";
-
-    if (!(response->SerializeToString(&(reply_pk.pb_data)))) {
-      reply_pk.pb_data = "";
-      ErrorLog << reply_pk.msg_req << "|reply error! encode reply package error";
-      reply_pk.err_code = ERROR_FAILED_SERIALIZE;
-      reply_pk.err_info = "failed to serilize relpy data";
-    } else {
-      InfoLog << "============================================================";
-      InfoLog << reply_pk.msg_req << "|Set server response data:" << response->ShortDebugString();
-      InfoLog << "============================================================";
-    }
-
-    delete request;
-    delete response;
-
-  };
+  std::function<void()> reply_package_func = [](){};
 
   TinyPbRpcClosure closure(reply_package_func);
   service->CallMethod(method, &rpc_controller, request, response, &closure);
+
+  InfoLog << "Call [" << reply_pk.service_full_name << "] succ, now send reply package";
+
+  if (!(response->SerializeToString(&(reply_pk.pb_data)))) {
+    reply_pk.pb_data = "";
+    ErrorLog << reply_pk.msg_req << "|reply error! encode reply package error";
+    reply_pk.err_code = ERROR_FAILED_SERIALIZE;
+    reply_pk.err_info = "failed to serilize relpy data";
+  } else {
+    InfoLog << "============================================================";
+    InfoLog << reply_pk.msg_req << "|Set server response data:" << response->ShortDebugString();
+    InfoLog << "============================================================";
+  }
+
+  delete request;
+  delete response;
 
   conn->getCodec()->encode(conn->getOutBuffer(), dynamic_cast<AbstractData*>(&reply_pk));
 

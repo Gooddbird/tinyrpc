@@ -39,8 +39,9 @@ CXX := g++
 
 CXXFLAGS += -g -O0 -std=c++11 -Wall -Wno-deprecated -Wno-unused-but-set-variable
 # add lib plugin
-# CXXFLAGS += -g -O0 -std=c++11 -Wall -Wno-deprecated -Wno-unused-but-set-variable -D DECLARE_MYSQL_PLUGIN
-CXXFLAGS += -I./ -I$(PATH_TINYRPC)	-I$(PATH_COMM) -I$(PATH_COROUTINE) -I$(PATH_NET) -I$(PATH_HTTP) -I$(PATH_TCP) -I$(PATH_TINYPB)
+# CXXFLAGS += -g -O0 -std=c++11 -Wall -Wno-deprecated -Wno-unused-but-set-variable -D DECLARE_OPEN_TINYRPC_LOG -D DECLARE_MYSQL_PLUGIN
+CXXFLAGS += -I./ -I$(PATH_TINYRPC)	-I$(PATH_COMM) -I$(PATH_COROUTINE) -I$(PATH_NET) -I$(PATH_HTTP) -I$(PATH_TCP) -I$(PATH_TINYPB) -D DECLARE_OPEN_TINYRPC_LOG
+# CXXFLAGS += -I./ -I$(PATH_TINYRPC)	-I$(PATH_COMM) -I$(PATH_COROUTINE) -I$(PATH_NET) -I$(PATH_HTTP) -I$(PATH_TCP) -I$(PATH_TINYPB)
 
 LIBS += /usr/lib/libprotobuf.a	/usr/lib/libtinyxml.a
 
@@ -58,7 +59,7 @@ TINYPB_OBJ := $(patsubst $(PATH_TINYPB)/%.cc, $(PATH_TINYPB)/%.o, $(wildcard $(P
 
 COR_CTX_SWAP := coctx_swap.o
 
-ALL_TESTS : $(PATH_BIN)/test_rpc_server1 $(PATH_BIN)/test_rpc_server2 $(PATH_BIN)/test_http_server\
+ALL_TESTS : $(PATH_BIN)/test_rpc_server1 $(PATH_BIN)/test_rpc_server2 $(PATH_BIN)/test_http_server $(PATH_BIN)/test_coroutine\
 
 TEST_CASE_OUT := $(PATH_BIN)/test_rpc_server1 $(PATH_BIN)/test_rpc_server2 $(PATH_BIN)/test_http_server\
 
@@ -72,6 +73,9 @@ $(PATH_BIN)/test_rpc_server2: $(LIB_OUT)
 
 $(PATH_BIN)/test_http_server: $(LIB_OUT)
 	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_http_server.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -pthread $(PLUGIN_LIB)
+
+$(PATH_BIN)/test_coroutine: $(LIB_OUT)
+	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_coroutine.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -pthread $(PLUGIN_LIB)
 
 $(PATH_LIB)/libtinyrpc.a : $(COMM_OBJ) $(COROUTINE_OBJ) $(PATH_COROUTINE)/coctx_swap.o $(NET_OBJ) $(HTTP_OBJ) $(TCP_OBJ) $(TINYPB_OBJ)
 	@ar crsvT $@ $^
