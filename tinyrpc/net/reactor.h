@@ -7,7 +7,8 @@
 #include <atomic>
 #include <map>
 #include <functional>
-#include "../coroutine/coroutine.h"
+#include <queue>
+#include "tinyrpc/coroutine/coroutine.h"
 #include "fd_event.h"
 #include "mutex.h"
 
@@ -85,6 +86,20 @@ class Reactor {
 
   Timer* m_timer {nullptr};
 
+};
+
+
+class CoroutineTaskQueue {
+ public:
+  static CoroutineTaskQueue* GetCoroutineTaskQueue();
+
+  void push(Coroutine* cor);
+
+  Coroutine* pop();
+
+ private:
+  std::queue<Coroutine*> m_task;
+  Mutex m_mutex;                    // mutex
 };
 
 

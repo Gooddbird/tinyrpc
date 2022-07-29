@@ -7,8 +7,8 @@
 #include <sys/epoll.h>
 #include <assert.h>
 #include "reactor.h"
-#include "../comm/log.h"
-#include "../coroutine/coroutine.h"
+#include "tinyrpc/comm/log.h"
+#include "tinyrpc/coroutine/coroutine.h"
 #include "mutex.h"
 
 namespace tinyrpc {
@@ -60,6 +60,12 @@ class FdEvent : public std::enable_shared_from_this<FdEvent> {
   
   bool isNonBlock();
 
+  void setCoroutine(Coroutine* cor);
+
+  Coroutine* getCoroutine();
+
+  void clearCoroutine();
+
  public:
 	Mutex m_mutex;
 
@@ -71,6 +77,8 @@ class FdEvent : public std::enable_shared_from_this<FdEvent> {
   int m_listen_events {0};
 
   Reactor* m_reactor {nullptr};
+
+  Coroutine* m_coroutine {nullptr};
 
 };
 

@@ -40,20 +40,22 @@ void toEpoll(tinyrpc::FdEvent::ptr fd_event, int events) {
 	tinyrpc::Coroutine* cur_cor = tinyrpc::Coroutine::GetCurrentCoroutine() ;
 	if (events & tinyrpc::IOEvent::READ) {
 		DebugLog << "fd:[" << fd_event->getFd() << "], register read event to epoll";
-		fd_event->setCallBack(tinyrpc::IOEvent::READ, 
-			[cur_cor, fd_event]() {
-				tinyrpc::Coroutine::Resume(cur_cor);
-			}
-		);
+		// fd_event->setCallBack(tinyrpc::IOEvent::READ, 
+		// 	[cur_cor, fd_event]() {
+		// 		tinyrpc::Coroutine::Resume(cur_cor);
+		// 	}
+		// );
+		fd_event->setCoroutine(cur_cor);
 		fd_event->addListenEvents(tinyrpc::IOEvent::READ);
 	}
 	if (events & tinyrpc::IOEvent::WRITE) {
 		DebugLog << "fd:[" << fd_event->getFd() << "], register write event to epoll";
-		fd_event->setCallBack(tinyrpc::IOEvent::WRITE, 
-			[cur_cor]() {
-				tinyrpc::Coroutine::Resume(cur_cor);
-			}
-		);
+		// fd_event->setCallBack(tinyrpc::IOEvent::WRITE, 
+		// 	[cur_cor]() {
+		// 		tinyrpc::Coroutine::Resume(cur_cor);
+		// 	}
+		// );
+		fd_event->setCoroutine(cur_cor);
 		fd_event->addListenEvents(tinyrpc::IOEvent::WRITE);
 	}
 	// fd_event->updateToReactor();
@@ -96,6 +98,7 @@ ssize_t read_hook(int fd, void *buf, size_t count) {
 	tinyrpc::Coroutine::Yield();
 
 	fd_event->delListenEvents(tinyrpc::IOEvent::READ);
+	fd_event->clearCoroutine();
 	// fd_event->updateToReactor();
 
 	DebugLog << "read func yield back, now to call sys read";
@@ -174,6 +177,7 @@ ssize_t write_hook(int fd, const void *buf, size_t count) {
 	tinyrpc::Coroutine::Yield();
 
 	fd_event->delListenEvents(tinyrpc::IOEvent::WRITE);
+	fd_event->clearCoroutine();
 	// fd_event->updateToReactor();
 
 	DebugLog << "write func yield back, now to call sys write";
@@ -233,6 +237,7 @@ int connect_hook(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 
 	// write事件需要删除，因为连接成功后后面会重新监听该fd的写事件。
 	fd_event->delListenEvents(tinyrpc::IOEvent::WRITE); 
+	fd_event->clearCoroutine();
 	// fd_event->updateToReactor();
 
 	// 定时器也需要删除

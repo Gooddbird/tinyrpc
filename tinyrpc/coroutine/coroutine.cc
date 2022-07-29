@@ -8,22 +8,19 @@
 
 namespace tinyrpc {
 
-// 主协程,主协程的栈就是当前线程的栈
-// 每个线程都有一个主协程
+// main coroutine, every io thread have a main_coroutine
 static thread_local Coroutine* t_main_coroutine = nullptr;
 
-// 线程当前正在执行的协程
+// current thread is runing which coroutine
 static thread_local Coroutine* t_cur_coroutine = nullptr;
-
-static thread_local int t_coroutine_count = 0;
-
-static thread_local int t_cur_coroutine_id = 0;
-
-static thread_local std::string t_msg_no = "";
 
 static thread_local RunTime* t_cur_run_time = nullptr;
 
 static thread_local bool t_enable_coroutine_swap = true;
+
+static std::atomic_int t_coroutine_count {1};
+
+static std::atomic_int t_cur_coroutine_id {0};
 
 int getCoroutineIndex() {
   return t_cur_coroutine_id;
@@ -61,7 +58,8 @@ bool Coroutine::GetCoroutineSwapFlag() {
 }
 
 Coroutine::Coroutine() {
-  m_cor_id = t_cur_coroutine_id++;
+  // main coroutine'id is 0
+  m_cor_id = 0;
   t_coroutine_count++;
   memset(&m_coctx, 0, sizeof(m_coctx));
 }
