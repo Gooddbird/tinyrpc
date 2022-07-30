@@ -25,12 +25,7 @@ TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_
   m_fd_event->setReactor(m_reactor);
   initBuffer(buff_size); 
 
-  m_loop_cor = GetCoroutinePool()->getCoroutineInstanse();
-  m_loop_cor->setCallBack(std::bind(&TcpConnection::MainServerLoopCorFunc, this));
-
-  DebugLog << "succ create tcp connection";
-  m_reactor->addCoroutine(m_loop_cor);
-  
+  DebugLog << "succ create tcp connection[Connected]";
 }
 
 TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reactor, int fd, int buff_size, NetAddress::ptr peer_addr)
@@ -49,13 +44,21 @@ TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reac
 
 }
 
+void TcpConnection::setUpServer() {
+  m_loop_cor = GetCoroutinePool()->getCoroutineInstanse();
+  m_loop_cor->setCallBack(std::bind(&TcpConnection::MainServerLoopCorFunc, this));
+
+  m_reactor->addCoroutine(m_loop_cor);
+}
+
+
 void TcpConnection::registerToTimeWheel() {
   auto cb = [] (TcpConnection::ptr conn) {
     conn->shutdownConnection();
   };
   TcpTimeWheel::TcpConnectionSlot::ptr tmp = std::make_shared<AbstractSlot<TcpConnection>>(shared_from_this(), cb);
   m_weak_slot = tmp;
-  m_io_thread->getTimeWheel()->fresh(tmp);
+  m_tcp_svr->freshTcpConnection(tmp);
 
 }
 
@@ -155,7 +158,7 @@ void TcpConnection::input() {
   if (m_connection_type == ServerConnection) {
     TcpTimeWheel::TcpConnectionSlot::ptr tmp = m_weak_slot.lock();
     if (tmp) {
-      m_io_thread->getTimeWheel()->fresh(tmp);
+      m_tcp_svr->freshTcpConnection(tmp);
     }
   }
 

@@ -18,9 +18,9 @@ static thread_local RunTime* t_cur_run_time = nullptr;
 
 static thread_local bool t_enable_coroutine_swap = true;
 
-static std::atomic_int t_coroutine_count {1};
+static std::atomic_int t_coroutine_count {0};
 
-static std::atomic_int t_cur_coroutine_id {0};
+static std::atomic_int t_cur_coroutine_id {1};
 
 int getCoroutineIndex() {
   return t_cur_coroutine_id;
@@ -164,6 +164,14 @@ Coroutine* Coroutine::GetCurrentCoroutine() {
     t_cur_coroutine = t_main_coroutine;
   }
   return t_cur_coroutine;
+}
+
+Coroutine* Coroutine::GetMainCoroutine() {
+  if (t_main_coroutine) {
+    return t_main_coroutine;
+  }
+  t_main_coroutine = new Coroutine();
+  return t_main_coroutine;
 }
 
 bool Coroutine::IsMainCoroutine() {

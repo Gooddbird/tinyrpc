@@ -318,15 +318,6 @@ void Reactor::loop() {
 				}
 				
 			}
-			
-			// DebugLog << "task";
-			// excute tasks
-			// for (size_t i = 0; i < m_pending_tasks.size(); ++i) {
-			// 	// DebugLog << "begin to excute task[" << i << "]";
-			// 	m_pending_tasks[i]();
-			//   // DebugLog << "end excute tasks[" << i << "]";
-			// }
-      // m_pending_tasks.clear();
 
 			std::map<int, epoll_event> tmp_add;
 			std::vector<int> tmp_del;

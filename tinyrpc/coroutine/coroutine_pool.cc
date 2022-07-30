@@ -21,7 +21,8 @@ CoroutinePool* GetCoroutinePool() {
 
 
 CoroutinePool::CoroutinePool(int pool_size, int stack_size /*= 1024 * 128*/) : m_pool_size(pool_size), m_stack_size(stack_size) {
-  Coroutine::GetCurrentCoroutine();
+  // set main coroutine first
+  Coroutine::GetMainCoroutine();
   int total = pool_size * stack_size;
   m_memory_pool = (char*)mmap(NULL, total, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
   if (m_memory_pool == (void*)-1) {
@@ -29,16 +30,10 @@ CoroutinePool::CoroutinePool(int pool_size, int stack_size /*= 1024 * 128*/) : m
     Exit(0);
   }
   char* tmp = m_memory_pool;
-  m_index = getCoroutineIndex();
 
-  if (m_index == 0) {
-    // skip main coroutine
-    m_index = 1;
-  }
+  m_free_cors.resize(pool_size);
 
-  m_free_cors.resize(pool_size + m_index);
-
-  for (int i = m_index; i < pool_size + m_index; ++i) {
+  for (int i = 0; i < pool_size; ++i) {
     m_free_cors[i] = std::make_pair(std::make_shared<Coroutine>(stack_size, tmp), false);
     tmp += m_stack_size;
   }
@@ -57,7 +52,7 @@ Coroutine::ptr CoroutinePool::getCoroutineInstanse() {
   // but unused coroutine no physical memory yet. we just call mmap get virtual address, but not write yet. 
   // so linux will alloc physical when we realy write, that casuse page fault interrupt
 
-  for (int i = m_index; i < m_pool_size; ++i) {
+  for (int i = 0; i < m_pool_size; ++i) {
     if (!m_free_cors[i].first->getIsInCoFunc() && !m_free_cors[i].second) {
       m_free_cors[i].second = true;
       return m_free_cors[i].first;

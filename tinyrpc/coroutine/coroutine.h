@@ -66,6 +66,8 @@ class Coroutine {
 
   static Coroutine* GetCurrentCoroutine();
 
+  static Coroutine* GetMainCoroutine();
+
   static bool IsMainCoroutine();
 
   static void SetCoroutineSwapFlag(bool value);

@@ -112,6 +112,7 @@ int TcpAcceptor::toAccept() {
 
 
 TcpServer::TcpServer(NetAddress::ptr addr, ProtocalType type /*= TinyPb_Protocal*/) : m_addr(addr) {
+
   m_io_pool = std::make_shared<IOThreadPool>(gRpcConfig->m_iothread_num);
 	if (type == Http_Protocal) {
 		m_dispatcher = std::make_shared<HttpDispacther>();
@@ -122,7 +123,14 @@ TcpServer::TcpServer(NetAddress::ptr addr, ProtocalType type /*= TinyPb_Protocal
 		m_codec = std::make_shared<TinyPbCodeC>();
 		m_protocal_type = TinyPb_Protocal;
 	}
+
 	m_main_reactor = tinyrpc::Reactor::GetReactor();
+
+	m_time_wheel = std::make_shared<TcpTimeWheel>(m_main_reactor, gRpcConfig->m_timewheel_bucket_num, gRpcConfig->m_timewheel_inteval);
+
+	m_clear_clent_timer_event = std::make_shared<TimerEvent>(10000, true, std::bind(&TcpServer::ClearClientTimerFunc, this));
+	m_main_reactor->getTimer()->addTimerEvent(m_clear_clent_timer_event);
+
 	InfoLog << "TcpServer setup on [" << m_addr->toString() << "]";
 }
 
@@ -160,9 +168,13 @@ void TcpServer::MainAcceptCorFunc() {
       continue;
     }
     IOThread *io_thread = m_io_pool->getIOThread();
-    auto cb = [this, io_thread, fd]() {
-      io_thread->addClient(this, fd);
+		TcpConnection::ptr conn = addClient(io_thread, fd);
+
+    auto cb = [io_thread, conn]() mutable {
+      io_thread->addClient(conn.get());
+			conn.reset();
     };
+
     io_thread->getReactor()->addTask(cb);
     m_tcp_counts++;
     DebugLog << "current tcp connection count is [" << m_tcp_counts << "]";
@@ -213,6 +225,61 @@ bool TcpServer::registerHttpServlet(const std::string& url_path, HttpServlet::pt
 
 IOThreadPool::ptr TcpServer::getIOThreadPool() {
 	return m_io_pool;
+}
+
+
+TcpConnection::ptr TcpServer::addClient(IOThread* io_thread, int fd) {
+  auto it = m_clients.find(fd);
+  if (it != m_clients.end()) {
+    // TcpConnection::ptr s_conn = it->second;
+    // if (s_conn && s_conn.use_count() > 0 && s_conn->getState() != Closed) {
+    //   ErrorLog << "insert error, this fd of TcpConection exist and state not Closed";
+    //   return false;
+    // }
+    // src Tcpconnection can delete
+    // s_conn.reset();
+		it->second.reset();
+    // set new Tcpconnection	
+		it->second = std::make_shared<TcpConnection>(this, io_thread, fd, 128, getPeerAddr());
+		return it->second;
+
+  } else {
+    TcpConnection::ptr conn = std::make_shared<TcpConnection>(this, io_thread, fd, 128, getPeerAddr()); 
+    m_clients.insert(std::make_pair(fd, conn));
+		return conn;
+  }
+}
+
+TcpTimeWheel::ptr TcpServer::getTimeWheel() {
+  return m_time_wheel;
+}
+
+void TcpServer::freshTcpConnection(TcpTimeWheel::TcpConnectionSlot::ptr slot) {
+	auto cb = [slot, this]() mutable {
+		this->getTimeWheel()->fresh(slot);	
+		slot.reset();
+	};
+	m_main_reactor->addTask(cb);
+}
+
+
+void TcpServer::ClearClientTimerFunc() {
+  // DebugLog << "this IOThread loop timer excute";
+  
+  // delete Closed TcpConnection per loop
+  // for free memory
+	// DebugLog << "m_clients.size=" << m_clients.size();
+  for (auto &i : m_clients) {
+    // TcpConnection::ptr s_conn = i.second;
+		// DebugLog << "state = " << s_conn->getState();
+    if (i.second && i.second.use_count() > 0 && i.second->getState() == Closed) {
+      // need to delete TcpConnection
+      DebugLog << "TcpConection [fd:" << i.first << "] will delete";
+      (i.second).reset();
+      // s_conn.reset();
+    }
+	
+  }
 }
 
 }

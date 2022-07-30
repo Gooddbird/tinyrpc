@@ -17,7 +17,6 @@ class CoroutinePool {
   void returnCoroutine(Coroutine::ptr cor);
 
  private:
-  int m_index {0};
   int m_pool_size {0};
   int m_stack_size {0};
 
