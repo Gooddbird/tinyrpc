@@ -5,6 +5,7 @@
 #include <map>
 #include <atomic>
 #include <functional>
+#include <semaphore.h>
 #include "tinyrpc/net/reactor.h"
 #include "tinyrpc/net/tcp/tcp_connection_time_wheel.h"
 #include "tinyrpc/coroutine/coroutine.h"
@@ -46,6 +47,8 @@ class IOThread {
 	pid_t m_tid {-1};
   TimerEvent::ptr m_timer_event {nullptr};
   int m_index {-1};
+
+  sem_t m_semaphore;
 
 };
 

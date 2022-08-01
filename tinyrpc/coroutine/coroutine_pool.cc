@@ -20,9 +20,10 @@ CoroutinePool* GetCoroutinePool() {
 }
 
 
-CoroutinePool::CoroutinePool(int pool_size, int stack_size /*= 1024 * 128*/) : m_pool_size(pool_size), m_stack_size(stack_size) {
+CoroutinePool::CoroutinePool(int pool_size, int stack_size /*= 1024 * 128 B*/) : m_pool_size(pool_size), m_stack_size(stack_size) {
   // set main coroutine first
-  Coroutine::GetMainCoroutine();
+  Coroutine::GetCurrentCoroutine();
+  
   int total = pool_size * stack_size;
   m_memory_pool = (char*)mmap(NULL, total, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
   if (m_memory_pool == (void*)-1) {
@@ -31,10 +32,8 @@ CoroutinePool::CoroutinePool(int pool_size, int stack_size /*= 1024 * 128*/) : m
   }
   char* tmp = m_memory_pool;
 
-  m_free_cors.resize(pool_size);
-
   for (int i = 0; i < pool_size; ++i) {
-    m_free_cors[i] = std::make_pair(std::make_shared<Coroutine>(stack_size, tmp), false);
+    m_free_cors.push_back(std::make_pair(std::make_shared<Coroutine>(stack_size, tmp), false));
     tmp += m_stack_size;
   }
 
@@ -58,8 +57,9 @@ Coroutine::ptr CoroutinePool::getCoroutineInstanse() {
       return m_free_cors[i].first;
     }
   }
-  int newsize = (int)(1.5 * m_pool_size);
+  int newsize = m_pool_size;
 
+  printf("we re map some memory ---------------\n");
   int t = newsize * m_stack_size; 
   char* s = (char*)mmap(NULL, t, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
   if (s == (void*)-1) {
@@ -67,14 +67,13 @@ Coroutine::ptr CoroutinePool::getCoroutineInstanse() {
     return nullptr;
   }
   char* s1 = s;
-  for (int i = 0; i < newsize - m_pool_size; ++i) {
+  for (int i = 0; i < newsize; ++i) {
     m_free_cors.push_back(std::make_pair(std::make_shared<Coroutine>(m_stack_size, s1), false));
     s1 += m_stack_size;
   }
   int tmp = m_pool_size;
-  m_pool_size = newsize;
+  m_pool_size += newsize;
   return m_free_cors[tmp].first;
-
 }
 
 void CoroutinePool::returnCoroutine(Coroutine::ptr cor) {

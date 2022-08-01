@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <signal.h>
 #include <algorithm>
+#include <semaphore.h>
 
 #ifdef DECLARE_MYSQL_PLUGIN 
 #include <mysql/mysql.h>
@@ -333,8 +334,14 @@ void Logger::flush() {
 
 AsyncLogger::AsyncLogger(const char* file_name, const char* file_path, int max_size, LogType logtype)
   : m_file_name(file_name), m_file_path(file_path), m_max_size(max_size), m_log_type(logtype) {
+  int rt = sem_init(&m_semaphore, 0, 0);
+  assert(rt == 0);
 
-  pthread_create(&m_thread, nullptr, &AsyncLogger::excute, this);
+  rt = pthread_create(&m_thread, nullptr, &AsyncLogger::excute, this);
+  assert(rt == 0);
+  rt = sem_wait(&m_semaphore);
+  assert(rt == 0);
+
 }
 
 AsyncLogger::~AsyncLogger() {
@@ -343,7 +350,11 @@ AsyncLogger::~AsyncLogger() {
 
 void* AsyncLogger::excute(void* arg) {
   AsyncLogger* ptr = reinterpret_cast<AsyncLogger*>(arg);
-  pthread_cond_init(&ptr->m_condition, NULL);
+  int rt = pthread_cond_init(&ptr->m_condition, NULL);
+  assert(rt == 0);
+
+  rt = sem_post(&ptr->m_semaphore);
+  assert(rt == 0);
 
   while (1) {
     Mutex::Lock lock(ptr->m_mutex);

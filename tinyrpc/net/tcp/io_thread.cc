@@ -2,6 +2,7 @@
 #include <map>
 #include <time.h>
 #include <stdlib.h>
+#include <semaphore.h>
 #include "tinyrpc/net/reactor.h"
 #include "tinyrpc/net/tcp/io_thread.h"
 #include "tinyrpc/net/tcp/tcp_connection.h"
@@ -22,7 +23,17 @@ static thread_local IOThread* t_cur_io_thread = nullptr;
 
 
 IOThread::IOThread() {
+  int rt = sem_init(&m_semaphore, 0, 0);
+  assert(rt==0);
   pthread_create(&m_thread, nullptr, &IOThread::main, this);
+
+  DebugLog << "semaphore begin to wait until new thread frinish IOThread::main() to init";
+  // wait until new thread finish IOThread::main() func to init 
+  rt = sem_wait(&m_semaphore);
+  assert(rt == 0);
+  DebugLog << "semaphore wait end, finish create io thread";
+
+  sem_destroy(&m_semaphore);
 }
 
 IOThread::~IOThread() {
@@ -60,12 +71,17 @@ void* IOThread::main(void* arg) {
   // assert(t_reactor_ptr == nullptr);
 
   t_reactor_ptr = new Reactor();
+  assert(t_reactor_ptr != NULL);
+
   IOThread* thread = static_cast<IOThread*>(arg);
   t_cur_io_thread = thread;
   thread->m_reactor = t_reactor_ptr;
   thread->m_tid = gettid();
 
   Coroutine::GetCurrentCoroutine();
+
+  DebugLog << "finish iothread init, now post semaphore";
+  sem_post(&thread->m_semaphore);
 
   t_reactor_ptr->loop();
 

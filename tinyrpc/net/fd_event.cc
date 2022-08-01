@@ -162,23 +162,19 @@ Coroutine* FdEvent::getCoroutine() {
 
 
 FdEvent::ptr FdEventContainer::getFdEvent(int fd) {
+
   RWMutex::ReadLock lock(m_mutex);
-  std::vector<FdEvent::ptr> tmps = m_fds;
-  lock.unlock();
-  if (fd < static_cast<int>(tmps.size())) {
-    return tmps[fd];
+  if (fd < static_cast<int>(m_fds.size())) {
+    tinyrpc::FdEvent::ptr re = m_fds[fd]; 
+    lock.unlock();
+    return re;
   }
 
-  int n = (int)(tmps.size() * 1.5);
-  n = (n > fd ? n : fd);
-
-  for (int i = tmps.size(); i < n; ++i) {
-    FdEvent::ptr p = std::make_shared<FdEvent>(i);
-    tmps.push_back(p);
+  int n = (int)(fd * 1.5);
+  for (int i = m_fds.size(); i < n; ++i) {
+    m_fds.push_back(std::make_shared<FdEvent>(i));
   }
-  tinyrpc::FdEvent::ptr re = tmps[fd]; 
-  RWMutex::WriteLock lock2(m_mutex);
-  m_fds.swap(tmps);
+  tinyrpc::FdEvent::ptr re = m_fds[fd]; 
   lock.unlock();
   return re;
 
@@ -186,15 +182,14 @@ FdEvent::ptr FdEventContainer::getFdEvent(int fd) {
 
 FdEventContainer::FdEventContainer(int size) {
   for(int i = 0; i < size; ++i) {
-    FdEvent::ptr p = std::make_shared<FdEvent>(i);
-    m_fds.push_back(p);
+    m_fds.push_back(std::make_shared<FdEvent>(i));
   }
 
 }
 
 FdEventContainer* FdEventContainer::GetFdContainer() {
   if (g_FdContainer == nullptr) {
-    g_FdContainer = new FdEventContainer(128); 
+    g_FdContainer = new FdEventContainer(1000); 
   }
   return g_FdContainer;
 }

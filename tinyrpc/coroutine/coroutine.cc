@@ -45,7 +45,7 @@ void CoFunction(Coroutine* co) {
     co->setIsInCoFunc(false);
   }
 
-  // 执行完协程回调函数返回后,说明协程生命周期结束,此时需恢复到主协程
+  // here coroutine's callback function finished, that means coroutine's life is over. we should yiled main couroutine
   Coroutine::Yield();
 }
 

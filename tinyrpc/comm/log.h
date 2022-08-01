@@ -12,6 +12,7 @@
 #include <memory>
 #include <vector>
 #include <queue>
+#include <semaphore.h>
 #include "tinyrpc/net/mutex.h"
 #include "tinyrpc/comm/config.h"
 
@@ -149,6 +150,7 @@ class AsyncLogger {
 
  public:
   pthread_t m_thread;
+	sem_t m_semaphore;
 
 };
 
