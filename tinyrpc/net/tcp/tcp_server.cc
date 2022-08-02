@@ -125,6 +125,7 @@ TcpServer::TcpServer(NetAddress::ptr addr, ProtocalType type /*= TinyPb_Protocal
 	}
 
 	m_main_reactor = tinyrpc::Reactor::GetReactor();
+	m_main_reactor->setReactorType(MainReactor);
 
 	m_time_wheel = std::make_shared<TcpTimeWheel>(m_main_reactor, gRpcConfig->m_timewheel_bucket_num, gRpcConfig->m_timewheel_inteval);
 
@@ -137,9 +138,7 @@ TcpServer::TcpServer(NetAddress::ptr addr, ProtocalType type /*= TinyPb_Protocal
 void TcpServer::start() {
 
 	m_acceptor.reset(new TcpAcceptor(m_addr));
-
-	m_accept_cor = GetCoroutinePool()->getCoroutineInstanse();
-	m_accept_cor->setCallBack(std::bind(&TcpServer::MainAcceptCorFunc, this));
+	m_accept_cor = std::make_shared<Coroutine>(128 * 1024, std::bind(&TcpServer::MainAcceptCorFunc, this));
 	InfoLog << "resume accept coroutine";
 	tinyrpc::Coroutine::Resume(m_accept_cor.get());
 	m_main_reactor->loop();

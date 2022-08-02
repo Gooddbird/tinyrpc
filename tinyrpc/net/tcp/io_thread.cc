@@ -76,6 +76,7 @@ void* IOThread::main(void* arg) {
   IOThread* thread = static_cast<IOThread*>(arg);
   t_cur_io_thread = thread;
   thread->m_reactor = t_reactor_ptr;
+  thread->m_reactor->setReactorType(SubReactor);
   thread->m_tid = gettid();
 
   Coroutine::GetCurrentCoroutine();

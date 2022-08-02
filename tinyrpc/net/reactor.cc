@@ -224,18 +224,22 @@ void Reactor::loop() {
 
     if (first_coroutine) {
       tinyrpc::Coroutine::Resume(first_coroutine);
-      first_coroutine = nullptr;
+      first_coroutine = NULL;
     }
 
-    Coroutine* cor = nullptr;
-    while(1) {
-      cor = CoroutineTaskQueue::GetCoroutineTaskQueue()->pop();
-      if (cor) {
-        tinyrpc::Coroutine::Resume(cor); 
-      } else {
-        break;
+    // main reactor need't to resume coroutine in global CoroutineTaskQueue, only io thread do this work
+    if (m_reactor_type != MainReactor) {
+      Coroutine* cor = NULL;
+      while(1) {
+        cor = CoroutineTaskQueue::GetCoroutineTaskQueue()->pop();
+        if (cor) {
+          tinyrpc::Coroutine::Resume(cor); 
+        } else {
+          break;
+        }
       }
     }
+
 
 		// DebugLog << "task";
 		// excute tasks
@@ -285,11 +289,21 @@ void Reactor::loop() {
 
               // if register coroutine, pengding coroutine to common coroutine_tasks
               if (ptr->getCoroutine()) {
+                // the first one coroutine when epoll_wait back, just directly resume by this thread, not add to global CoroutineTaskQueue
+                // because every operate CoroutineTaskQueue should add mutex lock
                 if (!first_coroutine) {
                   first_coroutine = ptr->getCoroutine();
                   continue;
                 }
-                CoroutineTaskQueue::GetCoroutineTaskQueue()->push(ptr->getCoroutine());
+                if (m_reactor_type == SubReactor) {
+                  CoroutineTaskQueue::GetCoroutineTaskQueue()->push(ptr->getCoroutine());
+                } else {
+                  // main reactor, just resume this coroutine. it is accept coroutine. and Main Reactor only have this coroutine
+                  tinyrpc::Coroutine::Resume(ptr->getCoroutine());
+                  if (first_coroutine) {
+                    first_coroutine = NULL;
+                  }
+                }
 
               } else {
                 std::function<void()> read_cb;
@@ -399,6 +413,10 @@ Timer* Reactor::getTimer() {
 
 pid_t Reactor::getTid() {
   return m_tid;
+}
+
+void Reactor::setReactorType(ReactorType type) {
+  m_reactor_type = type;
 }
 
 

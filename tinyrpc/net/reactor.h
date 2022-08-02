@@ -14,6 +14,11 @@
 
 namespace tinyrpc {
 
+enum ReactorType {
+  MainReactor = 1,    // main rewactor, only set this by main thread.
+  SubReactor = 2      // child reactor, every io thread is this type
+};
+
 class FdEvent;
 class Timer;
 
@@ -48,6 +53,8 @@ class Reactor {
   Timer* getTimer();
 
   pid_t getTid();
+
+  void setReactorType(ReactorType type);
  
  public:
   static Reactor* GetReactor();
@@ -85,6 +92,8 @@ class Reactor {
   std::vector<std::function<void()>> m_pending_tasks;
 
   Timer* m_timer {nullptr};
+
+  ReactorType m_reactor_type {SubReactor};
 
 };
 

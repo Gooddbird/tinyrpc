@@ -9,12 +9,12 @@
 namespace tinyrpc {
 
 // main coroutine, every io thread have a main_coroutine
-static thread_local Coroutine* t_main_coroutine = nullptr;
+static thread_local Coroutine* t_main_coroutine = NULL;
 
 // current thread is runing which coroutine
-static thread_local Coroutine* t_cur_coroutine = nullptr;
+static thread_local Coroutine* t_cur_coroutine = NULL;
 
-static thread_local RunTime* t_cur_run_time = nullptr;
+static thread_local RunTime* t_cur_run_time = NULL;
 
 static thread_local bool t_enable_coroutine_swap = true;
 
@@ -103,7 +103,7 @@ Coroutine::Coroutine(int size, std::function<void()> cb)
   }
   // assert(t_main_coroutine != nullptr);
 
-  m_stack_sp =  reinterpret_cast<char*>(malloc(m_stack_size));
+  m_stack_sp = reinterpret_cast<char*>(malloc(m_stack_size));
   if (!m_stack_sp) {
     ErrorLog << "start server error. malloc stack return nullptr";
     Exit(0);
@@ -200,7 +200,7 @@ void Coroutine::Yield() {
   }
   Coroutine* co = t_cur_coroutine;
   t_cur_coroutine = t_main_coroutine;
-  t_cur_run_time = nullptr;
+  t_cur_run_time = NULL;
   coctx_swap(&(co->m_coctx), &(t_main_coroutine->m_coctx));
   // DebugLog << "swap back";
 }
