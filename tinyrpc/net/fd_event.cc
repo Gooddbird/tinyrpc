@@ -163,19 +163,21 @@ Coroutine* FdEvent::getCoroutine() {
 
 FdEvent::ptr FdEventContainer::getFdEvent(int fd) {
 
-  RWMutex::ReadLock lock(m_mutex);
+  RWMutex::ReadLock rlock(m_mutex);
   if (fd < static_cast<int>(m_fds.size())) {
     tinyrpc::FdEvent::ptr re = m_fds[fd]; 
-    lock.unlock();
+    rlock.unlock();
     return re;
   }
+  rlock.unlock();
 
+  RWMutex::WriteLock wlock(m_mutex);
   int n = (int)(fd * 1.5);
   for (int i = m_fds.size(); i < n; ++i) {
     m_fds.push_back(std::make_shared<FdEvent>(i));
   }
   tinyrpc::FdEvent::ptr re = m_fds[fd]; 
-  lock.unlock();
+  wlock.unlock();
   return re;
 
 }

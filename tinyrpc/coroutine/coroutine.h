@@ -59,6 +59,14 @@ class Coroutine {
     m_msg_no = msg_no;
   }
 
+  void setIndex(int index) {
+    m_index = index;
+  }
+
+  int getIndex() {
+    return m_index;
+  }
+
  public:
   static void Yield();
 
@@ -82,6 +90,8 @@ class Coroutine {
   bool m_is_in_cofunc {false};  // 是否开始执行。只要协程进入CoFunction就变为true, CoFunction执行完变为false
   std::string m_msg_no;  // 当前协程正在处理的消息号
   RunTime m_run_time;
+
+  int m_index {-1};
 
 
  public:

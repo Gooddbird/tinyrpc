@@ -24,7 +24,7 @@ extern tinyrpc::Config::ptr gRpcConfig;
 
 #define DebugLog \
 	if (tinyrpc::OpenLog() && tinyrpc::LogLevel::DEBUG >= tinyrpc::gRpcConfig->m_log_level) \
-		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::DEBUG, __FILE__, __LINE__, __func__, tinyrpc::LogType::RPC_LOG))).getStringStream() \
+		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::DEBUG, __FILE__, __LINE__, __func__, tinyrpc::LogType::RPC_LOG))).getStringStream()
 
 #define InfoLog \
 	if (tinyrpc::OpenLog() && tinyrpc::LogLevel::INFO >= tinyrpc::gRpcConfig->m_log_level) \
@@ -169,6 +169,8 @@ class Logger {
 
 	void flush();
 
+	void start();
+
 	AsyncLogger::ptr getAsyncLogger() {
 		return m_async_rpc_logger;
 	}
@@ -186,6 +188,8 @@ class Logger {
 	bool m_is_init {false};
 	AsyncLogger::ptr m_async_rpc_logger;
 	AsyncLogger::ptr m_async_app_logger;
+
+	int m_sync_inteval {0};
 
 };
 

@@ -233,6 +233,7 @@ Logger::~Logger() {
 
 void Logger::init(const char* file_name, const char* file_path, int max_size, int sync_inteval) {
   if (!m_is_init) {
+    m_sync_inteval = sync_inteval;
     for (int i = 0 ; i < 1000000; ++i) {
       m_app_buffer.push_back("");
       m_buffer.push_back("");
@@ -240,8 +241,6 @@ void Logger::init(const char* file_name, const char* file_path, int max_size, in
     // m_app_buffer.resize(1000000);
     // m_buffer.resize(1000000);
 
-    TimerEvent::ptr event = std::make_shared<TimerEvent>(sync_inteval, true, std::bind(&Logger::loopFunc, this));
-    Reactor::GetReactor()->getTimer()->addTimerEvent(event);
     m_async_rpc_logger = std::make_shared<AsyncLogger>(file_name, file_path, max_size, RPC_LOG);
     m_async_app_logger = std::make_shared<AsyncLogger>(file_name, file_path, max_size, APP_LOG);
 
@@ -256,6 +255,11 @@ void Logger::init(const char* file_name, const char* file_path, int max_size, in
     signal(SIGPIPE, SIG_IGN);
     m_is_init = true;
   }
+}
+
+void Logger::start() {
+  TimerEvent::ptr event = std::make_shared<TimerEvent>(m_sync_inteval, true, std::bind(&Logger::loopFunc, this));
+  Reactor::GetReactor()->getTimer()->addTimerEvent(event);
 }
 	
 void Logger::loopFunc() {
@@ -359,7 +363,7 @@ void* AsyncLogger::excute(void* arg) {
   while (1) {
     Mutex::Lock lock(ptr->m_mutex);
 
-    while (ptr->m_tasks.empty()) {
+    while (ptr->m_tasks.empty() && !ptr->m_stop) {
       pthread_cond_wait(&(ptr->m_condition), ptr->m_mutex.getMutex());
     }
     std::vector<std::string> tmp;
@@ -459,6 +463,7 @@ void AsyncLogger::flush() {
 void AsyncLogger::stop() {
   if (!m_stop) {
     m_stop = true;
+    pthread_cond_signal(&m_condition);
   }
 }
 

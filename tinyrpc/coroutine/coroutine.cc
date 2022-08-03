@@ -62,11 +62,12 @@ Coroutine::Coroutine() {
   m_cor_id = 0;
   t_coroutine_count++;
   memset(&m_coctx, 0, sizeof(m_coctx));
+  t_cur_coroutine = this;
 }
 
 Coroutine::Coroutine(int size) : m_stack_size(size) {
 
-  if (t_main_coroutine == nullptr) {
+  if (!t_main_coroutine) {
     t_main_coroutine = new Coroutine();
   }
   // assert(t_main_coroutine != nullptr);
@@ -84,7 +85,7 @@ Coroutine::Coroutine(int size) : m_stack_size(size) {
 }
 
 Coroutine::Coroutine(int size, char* stack_ptr) {
-  if (t_main_coroutine == nullptr) {
+  if (!t_main_coroutine) {
     t_main_coroutine = new Coroutine();
   }
 
@@ -98,7 +99,7 @@ Coroutine::Coroutine(int size, char* stack_ptr) {
 Coroutine::Coroutine(int size, std::function<void()> cb)
   : m_stack_size(size) {
 
-  if (t_main_coroutine == nullptr) {
+  if (!t_main_coroutine) {
     t_main_coroutine = new Coroutine();
   }
   // assert(t_main_coroutine != nullptr);
@@ -215,11 +216,11 @@ void Coroutine::Resume(Coroutine* co) {
     return;
   }
 
-  if (t_main_coroutine == nullptr) {
+  if (!t_main_coroutine) {
     ErrorLog << "main coroutine is nullptr";
     return;
   }
-  if (co == nullptr) {
+  if (!co) {
     ErrorLog << "pending coroutine is nullptr";
     return;
   }
@@ -228,6 +229,7 @@ void Coroutine::Resume(Coroutine* co) {
     DebugLog << "current coroutine is pending cor, need't swap";
     return;
   }
+
   t_cur_coroutine = co;
   t_cur_run_time = co->getRunTime();
 
