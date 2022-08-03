@@ -4,13 +4,14 @@
 #include "tinyrpc/comm/log.h"
 #include "tinyrpc/coroutine/coroutine_pool.h"
 #include "tinyrpc/coroutine/coroutine.h"
+#include "tinyrpc/net/mutex.h"
 
 
 namespace tinyrpc {
 
 extern tinyrpc::Config::ptr gRpcConfig;
 
-static thread_local CoroutinePool* t_coroutine_container_ptr = nullptr; 
+static CoroutinePool* t_coroutine_container_ptr = nullptr; 
 
 CoroutinePool* GetCoroutinePool() {
   if (!t_coroutine_container_ptr) {
@@ -54,12 +55,16 @@ Coroutine::ptr CoroutinePool::getCoroutineInstanse() {
   // but unused coroutine no physical memory yet. we just call mmap get virtual address, but not write yet. 
   // so linux will alloc physical when we realy write, that casuse page fault interrupt
 
+  RWMutex::ReadLock rlock(m_mutex);
   for (int i = 0; i < m_pool_size; ++i) {
     if (!m_free_cors[i].first->getIsInCoFunc() && !m_free_cors[i].second) {
       m_free_cors[i].second = true;
-      return m_free_cors[i].first;
+      Coroutine::ptr cor = m_free_cors[i].first;
+      rlock.unlock();
+      return cor;
     }
   }
+  rlock.unlock();
   int newsize = m_pool_size;
 
   int t = newsize * m_stack_size; 
@@ -70,16 +75,21 @@ Coroutine::ptr CoroutinePool::getCoroutineInstanse() {
     return nullptr;
   }
   char* s1 = s;
+  int tmp = m_pool_size;
+  
+  RWMutex::WriteLock wlock(m_mutex);
   for (int i = m_pool_size; i < newsize + m_pool_size; ++i) {
     Coroutine::ptr cor = std::make_shared<Coroutine>(m_stack_size, s1);
     cor->setIndex(i);
     m_free_cors.push_back(std::make_pair(cor, false));
     s1 += m_stack_size;
   }
-  int tmp = m_pool_size;
-  m_pool_size += newsize;
   m_free_cors[tmp].second = true;
-  return m_free_cors[tmp].first;
+  Coroutine::ptr cor = m_free_cors[tmp].first;
+  wlock.unlock();
+
+  m_pool_size += newsize;
+  return cor;
 }
 
 void CoroutinePool::returnCoroutine(Coroutine::ptr cor) {

@@ -40,14 +40,14 @@ TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reac
   m_fd_event->setReactor(m_reactor);
   initBuffer(buff_size); 
 
+  m_loop_cor = GetCoroutinePool()->getCoroutineInstanse();
+
   DebugLog << "succ create tcp connection[NotConnected]";
 
 }
 
 void TcpConnection::setUpServer() {
-  m_loop_cor = GetCoroutinePool()->getCoroutineInstanse();
   m_loop_cor->setCallBack(std::bind(&TcpConnection::MainServerLoopCorFunc, this));
-
   m_reactor->addCoroutine(m_loop_cor);
 }
 

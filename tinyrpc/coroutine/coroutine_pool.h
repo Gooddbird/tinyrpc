@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "tinyrpc/coroutine/coroutine.h"
+#include "tinyrpc/net/mutex.h"
 
 namespace tinyrpc {
 
@@ -28,6 +29,7 @@ class CoroutinePool {
 
   char* m_memory_pool {NULL};
 
+  RWMutex m_mutex;
 };
 
 
