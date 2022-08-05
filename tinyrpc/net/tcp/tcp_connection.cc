@@ -24,6 +24,7 @@ TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_
   m_fd_event = FdEventContainer::GetFdContainer()->getFdEvent(fd);
   m_fd_event->setReactor(m_reactor);
   initBuffer(buff_size); 
+  m_loop_cor = GetCoroutinePool()->getCoroutineInstanse();
 
   DebugLog << "succ create tcp connection[Connected]";
 }
@@ -40,7 +41,6 @@ TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reac
   m_fd_event->setReactor(m_reactor);
   initBuffer(buff_size); 
 
-  m_loop_cor = GetCoroutinePool()->getCoroutineInstanse();
 
   DebugLog << "succ create tcp connection[NotConnected]";
 
