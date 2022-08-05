@@ -139,7 +139,9 @@ void TcpServer::start() {
 
 	m_acceptor.reset(new TcpAcceptor(m_addr));
   m_acceptor->init();
-	m_accept_cor = std::make_shared<Coroutine>(128 * 1024, std::bind(&TcpServer::MainAcceptCorFunc, this));
+	m_accept_cor = GetCoroutinePool()->getCoroutineInstanse();
+	m_accept_cor->setCallBack(std::bind(&TcpServer::MainAcceptCorFunc, this));
+
 	InfoLog << "resume accept coroutine";
 	tinyrpc::Coroutine::Resume(m_accept_cor.get());
 	m_main_reactor->loop();

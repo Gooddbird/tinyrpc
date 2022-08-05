@@ -34,12 +34,14 @@ CoroutinePool::CoroutinePool(int pool_size, int stack_size /*= 1024 * 128 B*/) :
   }
   char* tmp = m_memory_pool;
 
+  RWMutex::WriteLock wlock(m_mutex);
   for (int i = 0; i < pool_size; ++i) {
     Coroutine::ptr cor = std::make_shared<Coroutine>(stack_size, tmp);
     cor->setIndex(i);
     m_free_cors.push_back(std::make_pair(cor, false));
     tmp += m_stack_size;
   }
+  wlock.unlock();
 
 }
 
