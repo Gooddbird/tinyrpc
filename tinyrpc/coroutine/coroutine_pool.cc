@@ -67,36 +67,43 @@ Coroutine::ptr CoroutinePool::getCoroutineInstanse() {
     }
   }
   rlock.unlock();
-  int newsize = m_pool_size;
+  // int newsize = m_pool_size;
 
-  int t = newsize * m_stack_size; 
-  char* s = (char*)mmap(NULL, t, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-  printf("we re map some memory of %d byte --------------- \n", t);
+  // int t = newsize * m_stack_size; 
+  // char* s = (char*)mmap(NULL, t, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+  // printf("we re map some memory of %d byte --------------- \n", t);
+  // if (s == (void*)-1) {
+  //   ErrorLog << "Start TinyRPC failed, faild to mmap get coroutine memory size\n";
+  //   return nullptr;
+  // }
+  // char* s1 = s;
+  // int tmp = m_pool_size;
+  
+  // RWMutex::WriteLock wlock(m_mutex);
+  // for (int i = m_pool_size; i < newsize + m_pool_size; ++i) {
+  //   Coroutine::ptr cor = std::make_shared<Coroutine>(m_stack_size, s1);
+  //   cor->setIndex(i);
+  //   m_free_cors.push_back(std::make_pair(cor, false));
+  //   s1 += m_stack_size;
+  // }
+  // m_free_cors[tmp].second = true;
+  // Coroutine::ptr cor = m_free_cors[tmp].first;
+  // wlock.unlock();
+
+  // m_pool_size += newsize;
+  char* s = (char*)mmap(NULL, m_stack_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
   if (s == (void*)-1) {
-    ErrorLog << "Start TinyRPC failed, faild to mmap get coroutine memory size\n";
+    ErrorLog << "failed to mmap coroutine stack size";
     return nullptr;
   }
-  char* s1 = s;
-  int tmp = m_pool_size;
-  
-  RWMutex::WriteLock wlock(m_mutex);
-  for (int i = m_pool_size; i < newsize + m_pool_size; ++i) {
-    Coroutine::ptr cor = std::make_shared<Coroutine>(m_stack_size, s1);
-    cor->setIndex(i);
-    m_free_cors.push_back(std::make_pair(cor, false));
-    s1 += m_stack_size;
-  }
-  m_free_cors[tmp].second = true;
-  Coroutine::ptr cor = m_free_cors[tmp].first;
-  wlock.unlock();
-
-  m_pool_size += newsize;
+  Coroutine::ptr cor = std::make_shared<Coroutine>(m_stack_size, s);
   return cor;
+
 }
 
 void CoroutinePool::returnCoroutine(Coroutine::ptr cor) {
   int i = cor->getIndex();
-  if (i < m_pool_size) {
+  if (i >= 0 && i < m_pool_size) {
     m_free_cors[i].second = false;
   }
 }
