@@ -25,6 +25,7 @@ TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_
   m_fd_event->setReactor(m_reactor);
   initBuffer(buff_size); 
   m_loop_cor = GetCoroutinePool()->getCoroutineInstanse();
+  m_loop_cor->setCallBack(std::bind(&TcpConnection::MainServerLoopCorFunc, this));
 
   DebugLog << "succ create tcp connection[Connected]";
 }
@@ -47,7 +48,6 @@ TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reac
 }
 
 void TcpConnection::setUpServer() {
-  m_loop_cor->setCallBack(std::bind(&TcpConnection::MainServerLoopCorFunc, this));
   m_reactor->addCoroutine(m_loop_cor);
 }
 
@@ -129,7 +129,7 @@ void TcpConnection::input() {
     }
     if (rt <= 0) {
       DebugLog << "rt <= 0";
-      ErrorLog << "read empty while occur read event, because of peer close, sys error=" << strerror(errno) << ", now to clear tcp connection";
+      ErrorLog << "read empty while occur read event, because of peer close, fd= " << m_fd << ", sys error=" << strerror(errno) << ", now to clear tcp connection";
       clearClient();
       // this cor can destroy
       close_flag = true;
@@ -310,6 +310,10 @@ void TcpConnection::setOverTimeFlag(bool value) {
 
 bool TcpConnection::getOverTimerFlag() {
   return m_is_over_time;
+}
+
+Coroutine::ptr TcpConnection::getCoroutine() {
+  return m_loop_cor;
 }
 
 

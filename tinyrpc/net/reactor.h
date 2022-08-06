@@ -102,12 +102,12 @@ class CoroutineTaskQueue {
  public:
   static CoroutineTaskQueue* GetCoroutineTaskQueue();
 
-  void push(Coroutine* cor);
+  void push(FdEvent* fd);
 
-  Coroutine* pop();
+  FdEvent* pop();
 
  private:
-  std::queue<Coroutine*> m_task;
+  std::queue<FdEvent*> m_task;
   Mutex m_mutex;                    // mutex
 };
 

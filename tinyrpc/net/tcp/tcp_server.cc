@@ -170,12 +170,12 @@ void TcpServer::MainAcceptCorFunc() {
     IOThread *io_thread = m_io_pool->getIOThread();
 		TcpConnection::ptr conn = addClient(io_thread, fd);
 
-    auto cb = [io_thread, conn]() mutable {
-      io_thread->addClient(conn.get());
-			conn.reset();
-    };
+    // auto cb = [io_thread, conn]() mutable {
+    //   io_thread->addClient(conn.get());
+		// 	conn.reset();
+    // };
 
-    io_thread->getReactor()->addTask(cb);
+    io_thread->getReactor()->addCoroutine(conn->getCoroutine());
     m_tcp_counts++;
     DebugLog << "current tcp connection count is [" << m_tcp_counts << "]";
   }
@@ -231,13 +231,6 @@ IOThreadPool::ptr TcpServer::getIOThreadPool() {
 TcpConnection::ptr TcpServer::addClient(IOThread* io_thread, int fd) {
   auto it = m_clients.find(fd);
   if (it != m_clients.end()) {
-    // TcpConnection::ptr s_conn = it->second;
-    // if (s_conn && s_conn.use_count() > 0 && s_conn->getState() != Closed) {
-    //   ErrorLog << "insert error, this fd of TcpConection exist and state not Closed";
-    //   return false;
-    // }
-    // src Tcpconnection can delete
-    // s_conn.reset();
 		it->second.reset();
     // set new Tcpconnection	
 		it->second = std::make_shared<TcpConnection>(this, io_thread, fd, 128, getPeerAddr());

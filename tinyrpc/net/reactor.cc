@@ -229,11 +229,13 @@ void Reactor::loop() {
 
     // main reactor need't to resume coroutine in global CoroutineTaskQueue, only io thread do this work
     if (m_reactor_type != MainReactor) {
-      Coroutine* cor = NULL;
+      FdEvent* ptr = NULL;
+      // ptr->setReactor(NULL);
       while(1) {
-        cor = CoroutineTaskQueue::GetCoroutineTaskQueue()->pop();
-        if (cor) {
-          tinyrpc::Coroutine::Resume(cor); 
+        ptr = CoroutineTaskQueue::GetCoroutineTaskQueue()->pop();
+        if (ptr) {
+          ptr->setReactor(this);
+          tinyrpc::Coroutine::Resume(ptr->getCoroutine()); 
         } else {
           break;
         }
@@ -286,7 +288,6 @@ void Reactor::loop() {
               ErrorLog << "socket [" << fd << "] occur other unknow event:[" << one_event.events << "], need unregister this socket";
               delEventInLoopThread(fd);
             } else {
-
               // if register coroutine, pengding coroutine to common coroutine_tasks
               if (ptr->getCoroutine()) {
                 // the first one coroutine when epoll_wait back, just directly resume by this thread, not add to global CoroutineTaskQueue
@@ -296,7 +297,9 @@ void Reactor::loop() {
                   continue;
                 }
                 if (m_reactor_type == SubReactor) {
-                  CoroutineTaskQueue::GetCoroutineTaskQueue()->push(ptr->getCoroutine());
+                  delEventInLoopThread(fd);
+                  ptr->setReactor(NULL);
+                  CoroutineTaskQueue::GetCoroutineTaskQueue()->push(ptr);
                 } else {
                   // main reactor, just resume this coroutine. it is accept coroutine. and Main Reactor only have this coroutine
                   tinyrpc::Coroutine::Resume(ptr->getCoroutine());
@@ -429,14 +432,14 @@ CoroutineTaskQueue* CoroutineTaskQueue::GetCoroutineTaskQueue() {
 
 }
 
-void CoroutineTaskQueue::push(Coroutine* cor) {
+void CoroutineTaskQueue::push(FdEvent* cor) {
   Mutex::Lock lock(m_mutex);
   m_task.push(cor);
   lock.unlock();
 }
 
-Coroutine* CoroutineTaskQueue::pop() {
-  Coroutine* re = nullptr;
+FdEvent* CoroutineTaskQueue::pop() {
+  FdEvent* re = nullptr;
   Mutex::Lock lock(m_mutex);
   if (m_task.size() >= 1) {
     re = m_task.front();

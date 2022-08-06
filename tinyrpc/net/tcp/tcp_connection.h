@@ -69,6 +69,8 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
   void registerToTimeWheel();
 
+  Coroutine::ptr getCoroutine();
+
  public:
   void MainServerLoopCorFunc();
 
