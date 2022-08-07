@@ -39,7 +39,9 @@ void* thread2_func(void*) {
 int main(int argc, char* argv[]) {
 
   std::cout << "main begin" << std::endl;
-  cor = std::make_shared<tinyrpc::Coroutine>(128*1024, fun1);
+  int stack_size = 128 * 1024;
+  char* sp = reinterpret_cast<char*>(malloc(stack_size));
+  cor = std::make_shared<tinyrpc::Coroutine>(stack_size, sp, fun1);
 
   thread1_func(NULL);
 

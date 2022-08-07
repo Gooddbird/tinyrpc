@@ -63,58 +63,34 @@ Coroutine::Coroutine() {
   t_coroutine_count++;
   memset(&m_coctx, 0, sizeof(m_coctx));
   t_cur_coroutine = this;
+  DebugLog << "coroutine[" << m_cor_id << "] die";
 }
 
-Coroutine::Coroutine(int size) : m_stack_size(size) {
-
-  if (!t_main_coroutine) {
-    t_main_coroutine = new Coroutine();
-  }
-  // assert(t_main_coroutine != nullptr);
-
-  m_stack_sp =  reinterpret_cast<char*>(malloc(m_stack_size));
-  if (!m_stack_sp) {
-    ErrorLog << "start server error. malloc stack return nullptr";
-    Exit(0);
-  }
-  // assert(m_stack_sp != nullptr);
-
-  m_cor_id = t_cur_coroutine_id++;
-  t_coroutine_count++;
-  // DebugLog << "coroutine[null callback] created, id[" << m_cor_id << "]";
-}
-
-Coroutine::Coroutine(int size, char* stack_ptr) {
-  if (!t_main_coroutine) {
-    t_main_coroutine = new Coroutine();
-  }
-
+Coroutine::Coroutine(int size, char* stack_ptr) : m_stack_size(size), m_stack_sp(stack_ptr) {
   assert(stack_ptr);
-  m_stack_size = size;
-  m_stack_sp = stack_ptr;
-  m_cor_id = t_cur_coroutine_id++;
-  t_coroutine_count++;
-}
-
-Coroutine::Coroutine(int size, std::function<void()> cb)
-  : m_stack_size(size) {
 
   if (!t_main_coroutine) {
     t_main_coroutine = new Coroutine();
   }
-  // assert(t_main_coroutine != nullptr);
 
-  m_stack_sp = reinterpret_cast<char*>(malloc(m_stack_size));
-  if (!m_stack_sp) {
-    ErrorLog << "start server error. malloc stack return nullptr";
-    Exit(0);
+  m_cor_id = t_cur_coroutine_id++;
+  t_coroutine_count++;
+  DebugLog << "coroutine[" << m_cor_id << "] die";
+}
+
+Coroutine::Coroutine(int size, char* stack_ptr, std::function<void()> cb)
+  : m_stack_size(size), m_stack_sp(stack_ptr) {
+
+  assert(m_stack_sp);
+  
+  if (!t_main_coroutine) {
+    t_main_coroutine = new Coroutine();
   }
-  // assert(m_stack_sp != nullptr);
 
   setCallBack(cb);
   m_cor_id = t_cur_coroutine_id++;
   t_coroutine_count++;
-  // DebugLog << "coroutine created, id[" << m_cor_id << "]";
+  DebugLog << "coroutine[" << m_cor_id << "] die";
 }
 
 bool Coroutine::setCallBack(std::function<void()> cb) {
@@ -151,11 +127,6 @@ bool Coroutine::setCallBack(std::function<void()> cb) {
 
 Coroutine::~Coroutine() {
   t_coroutine_count--;
-
-  if (m_stack_sp != nullptr) {
-    free(m_stack_sp);
-    m_stack_sp = nullptr;
-  }
   DebugLog << "coroutine[" << m_cor_id << "] die";
 }
 
@@ -183,7 +154,7 @@ bool Coroutine::IsMainCoroutine() {
 }
 
 /********
-让出执行权,切换到主协程
+form target coroutine back to main coroutine
 ********/
 void Coroutine::Yield() {
   if (!t_enable_coroutine_swap) {
@@ -207,7 +178,7 @@ void Coroutine::Yield() {
 }
 
 /********
-取得执行权,从主协程切换到目标协程
+form main coroutine switch to target coroutine
 ********/
 void Coroutine::Resume(Coroutine* co) {
 

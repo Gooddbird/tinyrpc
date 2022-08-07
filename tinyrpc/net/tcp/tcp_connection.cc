@@ -42,7 +42,6 @@ TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reac
   m_fd_event->setReactor(m_reactor);
   initBuffer(buff_size); 
 
-
   DebugLog << "succ create tcp connection[NotConnected]";
 
 }
@@ -130,11 +129,9 @@ void TcpConnection::input() {
     if (rt <= 0) {
       DebugLog << "rt <= 0";
       ErrorLog << "read empty while occur read event, because of peer close, fd= " << m_fd << ", sys error=" << strerror(errno) << ", now to clear tcp connection";
-      clearClient();
       // this cor can destroy
       close_flag = true;
       break;
-      read_all = true;
     } else {
       if (rt == read_count) {
         DebugLog << "read_count == rt";
@@ -148,9 +145,17 @@ void TcpConnection::input() {
       }
     }
   }
-  if (close_flag || m_is_over_time) {
+  if (close_flag) {
+    clearClient();
+    DebugLog << "peer close, now yield current coroutine, wait main thread clear this TcpConnection";
+    Coroutine::Yield();
+    // return;
+  }
+
+  if (m_is_over_time) {
     return;
   }
+
   if (!read_all) {
     ErrorLog << "not read all data in socket buffer";
   }
