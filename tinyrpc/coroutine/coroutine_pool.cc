@@ -68,11 +68,14 @@ Coroutine::ptr CoroutinePool::getCoroutineInstanse() {
   }
   rlock.unlock();
 
-  char* s = (char*)mmap(NULL, m_stack_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+  // char* s = reinterpret_cast<char*>(malloc(m_stack_size));
+  char* s =  reinterpret_cast<char*>(mmap(NULL, m_stack_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0));
   if (s == (void*)-1) {
     ErrorLog << "failed to mmap coroutine stack size";
+    printf("falied malloc some memory\n");
     return nullptr;
   }
+  printf("malloc some memory\n");
   Coroutine::ptr cor = std::make_shared<Coroutine>(m_stack_size, s);
   return cor;
 
@@ -83,10 +86,13 @@ void CoroutinePool::returnCoroutine(Coroutine::ptr cor) {
   if (i >= 0 && i < m_pool_size) {
     m_free_cors[i].second = false;
   } else {
-    char* sp = cor->getStackPtr();
-    if (sp) {
-      munmap(sp, cor->getStackSize());
-    }
+    // char* sp = cor->getStackPtr();
+    // if (sp) {
+    //   free(sp);
+    //   printf("free some memory\n");
+    //   sp = NULL;
+    // }
+    munmap(cor->getStackPtr(), m_stack_size);
   }
 }
 

@@ -263,68 +263,30 @@ void Logger::start() {
 }
 	
 void Logger::loopFunc() {
-  std::vector<std::string> tmp;
   std::vector<std::string> app_tmp;
-  for (int i = 0 ; i < 1000000; ++i) {
-    tmp.push_back("");
-    app_tmp.push_back("");
-  }
-
-  Mutex::Lock lock(m_mutex);
-  int64_t old_value1 = g_rpc_log_index.exchange(0);
-  int64_t old_value2 = g_app_log_index.exchange(0);
-  if (old_value1 > 0 && old_value2 > 0) {
-    while (m_buffer[old_value1 - 1] == "" && m_app_buffer[old_value2 - 1] == "") {
-      // wait unitl all pre log has already write to m_buffer and m_app_buffer
-    }
-  }
-
-  tmp.swap(m_buffer);
+  Mutex::Lock lock1(m_app_buff_mutex);
   app_tmp.swap(m_app_buffer);
-  lock.unlock();
-
-  auto it = find(tmp.begin(), tmp.end(), "");
-  tmp.erase(it, tmp.end());
-
-  auto it2 = find(app_tmp.begin(), app_tmp.end(), "");
-  app_tmp.erase(it2, app_tmp.end());
+  lock1.unlock();
+  
+  std::vector<std::string> tmp;
+  Mutex::Lock lock2(m_buff_mutex);
+  tmp.swap(m_buffer);
+  lock2.unlock();
 
   m_async_rpc_logger->push(tmp);
   m_async_app_logger->push(app_tmp);
 }
 
 void Logger::pushRpcLog(const std::string& msg) {
-  // Mutex::Lock lock(m_mutex);
-  // m_buffer.push_back(msg);
-  // lock.unlock();
-  // g_rpc_log_index == 0, means loopFunc has add mutex lock, ready to change buffer. so we cant't begin to write log until loopFunc release mutex lock
-  if (g_rpc_log_index == 0) {
-    Mutex::Lock lock(m_mutex);
-
-    int64_t i  = g_rpc_log_index++;
-    // printf("i=%ld\n", i);
-    m_buffer[i] = std::move(msg);
-    lock.unlock();
-  } else {
-    int64_t i  = g_rpc_log_index++;
-    // printf("i=%ld\n", i);
-    m_buffer[i] = std::move(msg);
-  }
+  Mutex::Lock lock(m_buff_mutex);
+  m_buffer.push_back(std::move(msg));
+  lock.unlock();
 }
 
 void Logger::pushAppLog(const std::string& msg) {
-  // Mutex::Lock lock(m_mutex);
-  // m_app_buffer.push_back(msg);
-  // lock.unlock();
-  if (g_app_log_index == 0) {
-    Mutex::Lock lock(m_mutex);
-    int64_t i = g_app_log_index++; 
-    m_app_buffer[i] = std::move(msg);
-    lock.unlock();
-  } else {
-    int64_t i = g_app_log_index++; 
-    m_app_buffer[i] = std::move(msg);
-  }
+  Mutex::Lock lock(m_app_buff_mutex);
+  m_app_buffer.push_back(std::move(msg));
+  lock.unlock();
 }
 
 void Logger::flush() {
@@ -425,9 +387,11 @@ void* AsyncLogger::excute(void* arg) {
     }
 
     for(auto i : tmp) {
-      fwrite(i.c_str(), 1, i.length(), ptr->m_file_handle);
-      // printf("succ write rt %d bytes ,[%s] to file[%s]", rt, i.c_str(), full_file_name.c_str());
+      if (!i.empty()) {
+        fwrite(i.c_str(), 1, i.length(), ptr->m_file_handle);
+      }
     }
+    tmp.clear();
     fflush(ptr->m_file_handle);
     if (is_stop) {
       break;

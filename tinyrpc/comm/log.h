@@ -184,7 +184,8 @@ class Logger {
 	std::vector<std::string> m_app_buffer;
 
  private:
- 	Mutex m_mutex;
+ 	Mutex m_app_buff_mutex;
+ 	Mutex m_buff_mutex;
 	bool m_is_init {false};
 	AsyncLogger::ptr m_async_rpc_logger;
 	AsyncLogger::ptr m_async_app_logger;
