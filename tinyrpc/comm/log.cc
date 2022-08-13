@@ -196,14 +196,11 @@ std::stringstream& LogEvent::getStringStream() {
 }
 
 void LogEvent::log() {
-  if (m_level >= gRpcConfig->m_log_level) {
-    m_ss << "\n";
-    // printf("%s", m_ss.str().c_str());
-    if (m_type == RPC_LOG) {
-      gRpcLogger->pushRpcLog(m_ss.str());
-    } else if (m_type == APP_LOG) {
-      gRpcLogger->pushAppLog(m_ss.str());
-    }
+  m_ss << "\n";
+  if (m_level >= gRpcConfig->m_log_level && m_type == RPC_LOG) {
+    gRpcLogger->pushRpcLog(m_ss.str());
+  } else if (m_level >= gRpcConfig->m_app_log_level && m_type == APP_LOG) {
+    gRpcLogger->pushAppLog(m_ss.str());
   }
 }
 

@@ -179,11 +179,34 @@ IO线程 B 会在适当的时候完成这个调用, 实际上对于线程 B 来�
 ####  2.1.1. <a name='protobuf'></a>protobuf
 **protobuf** 是 **google** 开源的有名的序列化库。谷歌出品，必属精品！**TinyRPC** 的 **TinyPB** 协议是基于 protobuf 来 序列化/反序列化 的，因此这个库是必须的。
 其地址为：https://github.com/protocolbuffers/protobuf
-安装过程不再赘述。
+安装过程不再赘述, **注意将头文件和库文件 copy 到对应的系统路径下。**
 
 ####  2.1.2. <a name='tinyxml'></a>tinyxml
 由于 **TinyRPC** 读取配置使用了 **xml** 文件，因此需要安装 **tinyxml** 库来解析配置文件。
-其地址为: https://github.com/leethomason/tinyxml2
+
+下载地址：https://sourceforge.net/projects/tinyxml/
+
+要生成 libtinyxml.a 静态库，需要简单修改 makefile 如下:
+```
+# 84 行修改为如下
+OUTPUT := libtinyxml.a 
+
+# 194, 105 行修改如下
+${OUTPUT}: ${OBJS}
+	${AR} $@ ${LDFLAGS} ${OBJS} ${LIBS} ${EXTRA_LIBS}
+```
+安装过程如下：
+```
+cd tinyxml
+make -j4
+
+# copy 库文件到系统库文件搜索路径下
+cp libtinyxml.a /usr/lib/
+
+# copy 头文件到系统头文件搜索路径下 
+mkdir /usr/include/tinyxml
+cp *.h /usr/include/tinyxml
+```
 
 ###  2.2. <a name='-1'></a>选装插件库
 有些库不是那么容易安装，为了不妨碍核心功能的实现，我把这些库都作为插件来编译了。
@@ -254,16 +277,73 @@ make uninstall
 **注：如果此前已经安装过 TinyRPC, 建议先执行卸载命令后再重新 make install 安装.**
 
 
-##  3. <a name='TinyRPC-1'></a>如何使用 TinyRPC
+##  3. <a name='TinyRPC-1'></a>快速上手
+### 搭建基于 TinyPB 协议的 RPC 服务
+#### 实现 Protobuf 文件接口
+#### 准备配置文件
+**TinyRPC** 读取标准的 **xml** 配置文件完成一些服务初始化设置，这个配置文件模板如下，一般只需要按需调整参数即可：
+```xml
+<?xml version="0.0" encoding="UTF-8" ?>
+<root>
+  <!--log config-->
+  <log>
+    <!--identify path of log file-->
+    <log_path>./</log_path>
+    <log_prefix>http_server</log_prefix>
 
-###  3.1. <a name='-1'></a>快速上手
-在 make 成功之后，出了生成静态库文件。此外，还会在 bin 目录下生成一些单元测试文件。TinyRPC 提供了一个简单地 RPC 服务调用示例，更多内容请参考文档：[quick_stark](./quick_rpc_test.md).
+    <!--identify max size of single log file, MB-->
+    <log_max_file_size>4</log_max_file_size>
 
+    <!--log level: DEBUG < INFO < WARN < ERROR-->
+    <log_level>DEBUG</log_level>
 
-###  3.2. <a name='-1'></a>标准示例
+    <!--inteval that put log info to async logger, s-->
+    <log_sync_inteval>0</log_sync_inteval>
+  </log>
 
-我将提供一个标准的 TinyRPC 框架开发的 RPC 服务案例，目前准备简单实现一个分布式的服务注册中心。不过这个工程的架构算是比较规范的了，可以参考下：
-更多内容请移步项目(建设中)：[分布式服务中心 -- charon](https://github.com/Gooddbird/charon)
+  <coroutine>
+    <!--coroutine stack size (KB)-->
+    <coroutine_stack_size>127</coroutine_stack_size>
+
+    <!--default coroutine pool size-->
+    <coroutine_pool_size>4999</coroutine_pool_size>
+
+  </coroutine>
+
+  <msg_req_len>19</msg_req_len>
+
+  <!--max time when call connect, s-->
+  <max_connect_timeout>74</max_connect_timeout>
+
+  <!--count of io threads, at least 0-->
+  <iothread_num>1</iothread_num>
+
+  <time_wheel>
+    <bucket_num>5</bucket_num>
+
+    <!--inteval that destroy bad TcpConnection, s-->
+    <inteval>9</inteval>
+  </time_wheel>
+
+	<!--这里是服务启动时监听的 ip 和端口信息-->
+  <server>
+    <ip>127.0.0.1</ip>
+    <port>19998</port>
+
+    <!--使用 HTTP 协议-->
+    <protocal>HTTP</protocal>
+  </server>
+
+</root>
+```
+
+###  3.1. <a name='-1'></a> 搭建基于 HTTP 协议的 RPC 服务
+#### 准备配置文件
+#### 实现 Servlet 接口
+**TinyRPC** 提供类似 JAVA 的 **Servlet** 接口来实现 HTTP 服务。你只需要简单的继承 HttpServlet 类即可使用：
+```
+
+```
 
 
 ##  4. <a name='-1'></a>模块设计

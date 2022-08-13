@@ -155,7 +155,7 @@ class AsyncRPCTestServlet: public tinyrpc::HttpServlet {
   ~AsyncRPCTestServlet() = default;
 
   void handle(tinyrpc::HttpRequest* req, tinyrpc::HttpResponse* res) {
-    AppDebugLog << "AnotherHttpServlet get request count =" << count++;
+    AppInfoLog << "AnotherHttpServlet get request count =" << count++;
     AppDebugLog << "AnotherHttpServlet success recive http request, now to get http response";
     setHttpCode(res, tinyrpc::HTTP_OK);
     setHttpContentType(res, "text/html;charset=utf-8");
@@ -177,20 +177,24 @@ class AsyncRPCTestServlet: public tinyrpc::HttpServlet {
     tinyrpc::TinyPbRpcAsyncChannel::ptr async_channel = 
       std::make_shared<tinyrpc::TinyPbRpcAsyncChannel>(addr);
 
-    async_channel->saveCallee(rpc_controller, rpc_req, rpc_res, nullptr);
+    auto cb = [rpc_res]() {
+      printf("call succ, res = %s\n", rpc_res->ShortDebugString().c_str());
+    };
+    std::shared_ptr<tinyrpc::TinyPbRpcClosure> closure = std::make_shared<tinyrpc::TinyPbRpcClosure>(cb); 
+    async_channel->saveCallee(rpc_controller, rpc_req, rpc_res, closure);
 
     QueryService_Stub stub(async_channel.get());
 
     stub.query_age(rpc_controller.get(), rpc_req.get(), rpc_res.get(), NULL);
-    // AppDebugLog << "AsyncRPCTestServlet async end, now you can to some another thing";
-    // AppDebugLog << "AsyncRPCTestServlet test to sleep 2 s when call async rpc";
+    AppDebugLog << "AsyncRPCTestServlet async end, now you can to some another thing";
+    AppDebugLog << "AsyncRPCTestServlet test to sleep 2 s when call async rpc";
     // sleep(2);
     // AppDebugLog << "AsyncRPCTestServlet test sleep 2 s when call async rpc back, now to call wait() to get result";
 
     // async_channel->wait();
     // AppDebugLog << "wait() back, now to check is rpc call succ";
 
-    // if (rpc_controller.ErrorCode() != 0) {
+    // if (rpc_controller->ErrorCode() != 0) {
     //   AppDebugLog << "failed to call QueryServer rpc server";
     //   char buf[512];
     //   sprintf(buf, html, "failed to call QueryServer rpc server");
@@ -198,9 +202,9 @@ class AsyncRPCTestServlet: public tinyrpc::HttpServlet {
     //   return;
     // }
 
-    // if (rpc_res.ret_code() != 0) {
+    // if (rpc_res->ret_code() != 0) {
     //   std::stringstream ss;
-    //   ss << "QueryServer rpc server return bad result, ret = " << rpc_res.ret_code() << ", and res_info = " << rpc_res.res_info();
+    //   ss << "QueryServer rpc server return bad result, ret = " << rpc_res->ret_code() << ", and res_info = " << rpc_res->res_info();
     //   AppDebugLog << ss.str();
     //   char buf[512];
     //   sprintf(buf, html, ss.str().c_str());
