@@ -25,23 +25,15 @@ CoroutinePool::CoroutinePool(int pool_size, int stack_size /*= 1024 * 128 B*/) :
   // set main coroutine first
   Coroutine::GetCurrentCoroutine();
   
-  int total = pool_size * stack_size;
-  m_memory_pool = (char*)mmap(NULL, total, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-  printf("we map some memory of %d byte --------------- \n", total);
-  if (m_memory_pool == (void*)-1) {
-    printf("Start TinyRPC failed, faild to mmap get coroutine memory size, errno=%d, err= %s\n", errno, strerror(errno));
-    Exit(0);
-  }
-  char* tmp = m_memory_pool;
+  m_memory_pool.push_back(std::make_shared<Memory>(stack_size, pool_size));
 
-  RWMutex::WriteLock wlock(m_mutex);
+  Memory::ptr tmp = m_memory_pool[0];
+
   for (int i = 0; i < pool_size; ++i) {
-    Coroutine::ptr cor = std::make_shared<Coroutine>(stack_size, tmp);
+    Coroutine::ptr cor = std::make_shared<Coroutine>(stack_size, tmp->getBlock());
     cor->setIndex(i);
     m_free_cors.push_back(std::make_pair(cor, false));
-    tmp += m_stack_size;
   }
-  wlock.unlock();
 
 }
 
@@ -57,28 +49,25 @@ Coroutine::ptr CoroutinePool::getCoroutineInstanse() {
   // but unused coroutine no physical memory yet. we just call mmap get virtual address, but not write yet. 
   // so linux will alloc physical when we realy write, that casuse page fault interrupt
 
-  RWMutex::ReadLock rlock(m_mutex);
+  Mutex::Lock lock(m_mutex);
   for (int i = 0; i < m_pool_size; ++i) {
     if (!m_free_cors[i].first->getIsInCoFunc() && !m_free_cors[i].second) {
       m_free_cors[i].second = true;
       Coroutine::ptr cor = m_free_cors[i].first;
-      rlock.unlock();
+      lock.unlock();
       return cor;
     }
   }
-  rlock.unlock();
 
-  // char* s = reinterpret_cast<char*>(malloc(m_stack_size));
-  char* s =  reinterpret_cast<char*>(mmap(NULL, m_stack_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0));
-  if (s == (void*)-1) {
-    ErrorLog << "failed to mmap coroutine stack size";
-    printf("falied malloc some memory\n");
-    return nullptr;
+  for (size_t i = 1; i < m_memory_pool.size(); ++i) {
+    char* tmp = m_memory_pool[i]->getBlock();
+    if(tmp) {
+      Coroutine::ptr cor = std::make_shared<Coroutine>(m_stack_size, tmp);
+      return cor;
+    }    
   }
-  printf("malloc some memory\n");
-  Coroutine::ptr cor = std::make_shared<Coroutine>(m_stack_size, s);
-  return cor;
-
+  m_memory_pool.push_back(std::make_shared<Memory>(m_stack_size, m_pool_size));
+  return std::make_shared<Coroutine>(m_stack_size, m_memory_pool[m_memory_pool.size() - 1]->getBlock());
 }
 
 void CoroutinePool::returnCoroutine(Coroutine::ptr cor) {
@@ -86,13 +75,11 @@ void CoroutinePool::returnCoroutine(Coroutine::ptr cor) {
   if (i >= 0 && i < m_pool_size) {
     m_free_cors[i].second = false;
   } else {
-    // char* sp = cor->getStackPtr();
-    // if (sp) {
-    //   free(sp);
-    //   printf("free some memory\n");
-    //   sp = NULL;
-    // }
-    munmap(cor->getStackPtr(), m_stack_size);
+    for (size_t i = 1; i < m_memory_pool.size(); ++i) {
+      if (m_memory_pool[i]->hasBlock(cor->getStackPtr())) {
+        m_memory_pool[i]->backBlock(cor->getStackPtr());
+      }
+    }
   }
 }
 

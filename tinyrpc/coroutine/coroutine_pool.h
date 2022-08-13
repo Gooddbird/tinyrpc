@@ -4,6 +4,7 @@
 #include <vector>
 #include "tinyrpc/coroutine/coroutine.h"
 #include "tinyrpc/net/mutex.h"
+#include "tinyrpc/coroutine/memory.h"
 
 namespace tinyrpc {
 
@@ -27,9 +28,9 @@ class CoroutinePool {
   //    true -- can't be dispatched
   std::vector<std::pair<Coroutine::ptr, bool>> m_free_cors;
 
-  char* m_memory_pool {NULL};
+  Mutex m_mutex;
 
-  RWMutex m_mutex;
+  std::vector<Memory::ptr> m_memory_pool;
 };
 
 
