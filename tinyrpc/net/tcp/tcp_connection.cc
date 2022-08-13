@@ -148,6 +148,7 @@ void TcpConnection::input() {
   if (close_flag) {
     clearClient();
     DebugLog << "peer close, now yield current coroutine, wait main thread clear this TcpConnection";
+    Coroutine::GetCurrentCoroutine()->setCanResume(false);
     Coroutine::Yield();
     // return;
   }
@@ -170,7 +171,7 @@ void TcpConnection::input() {
 }
 
 void TcpConnection::execute() {
-  DebugLog << "begin to do execute";
+  // DebugLog << "begin to do execute";
 
   // it only server do this
   while(m_read_buffer->readAble() > 0) {
@@ -184,14 +185,14 @@ void TcpConnection::execute() {
     m_codec->decode(m_read_buffer.get(), data.get());
     // DebugLog << "parse service_name=" << pb_struct.service_full_name;
     if (!data->decode_succ) {
-      DebugLog << "it parse request error";
+      ErrorLog << "it parse request error of fd " << m_fd;
       break;
     }
-    DebugLog << "it parse request success";
+    // DebugLog << "it parse request success";
     if (m_connection_type == ServerConnection) {
-      DebugLog << "to dispatch this package";
+      // DebugLog << "to dispatch this package";
       m_tcp_svr->getDispatcher()->dispatch(data.get(), this);
-      DebugLog << "contine parse next package";
+      // DebugLog << "contine parse next package";
     } else if (m_connection_type == ClientConnection) {
       // TODO:
       std::shared_ptr<TinyPbStruct> tmp = std::dynamic_pointer_cast<TinyPbStruct>(data);

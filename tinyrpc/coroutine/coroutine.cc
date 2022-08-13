@@ -63,7 +63,7 @@ Coroutine::Coroutine() {
   t_coroutine_count++;
   memset(&m_coctx, 0, sizeof(m_coctx));
   t_cur_coroutine = this;
-  DebugLog << "coroutine[" << m_cor_id << "] die";
+  DebugLog << "coroutine[" << m_cor_id << "] create";
 }
 
 Coroutine::Coroutine(int size, char* stack_ptr) : m_stack_size(size), m_stack_sp(stack_ptr) {
@@ -75,7 +75,7 @@ Coroutine::Coroutine(int size, char* stack_ptr) : m_stack_size(size), m_stack_sp
 
   m_cor_id = t_cur_coroutine_id++;
   t_coroutine_count++;
-  DebugLog << "coroutine[" << m_cor_id << "] die";
+  DebugLog << "coroutine[" << m_cor_id << "] create";
 }
 
 Coroutine::Coroutine(int size, char* stack_ptr, std::function<void()> cb)
@@ -90,7 +90,7 @@ Coroutine::Coroutine(int size, char* stack_ptr, std::function<void()> cb)
   setCallBack(cb);
   m_cor_id = t_cur_coroutine_id++;
   t_coroutine_count++;
-  DebugLog << "coroutine[" << m_cor_id << "] die";
+  DebugLog << "coroutine[" << m_cor_id << "] create";
 }
 
 bool Coroutine::setCallBack(std::function<void()> cb) {
@@ -120,6 +120,8 @@ bool Coroutine::setCallBack(std::function<void()> cb) {
   m_coctx.regs[kRBP] = top;
   m_coctx.regs[kRETAddr] = reinterpret_cast<char*>(CoFunction); 
   m_coctx.regs[kRDI] = reinterpret_cast<char*>(this);
+
+  m_can_resume = true;
 
   return true;
 
@@ -181,7 +183,6 @@ void Coroutine::Yield() {
 form main coroutine switch to target coroutine
 ********/
 void Coroutine::Resume(Coroutine* co) {
-
   if (t_cur_coroutine != t_main_coroutine) {
     ErrorLog << "swap error, current coroutine must be main coroutine";
     return;
@@ -191,8 +192,8 @@ void Coroutine::Resume(Coroutine* co) {
     ErrorLog << "main coroutine is nullptr";
     return;
   }
-  if (!co) {
-    ErrorLog << "pending coroutine is nullptr";
+  if (!co || !co->m_can_resume) {
+    ErrorLog << "pending coroutine is nullptr or can_resume is false";
     return;
   }
 

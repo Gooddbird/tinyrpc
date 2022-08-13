@@ -1,27 +1,25 @@
-#ifndef TINYRPC_COCTX_H
-#define TINYRPC_COCTX_H
+#ifndef TINYRPC_COROUTINE_COCTX_H
+#define TINYRPC_COROUTINE_COCTX_H 
 
 namespace tinyrpc{
 
 enum {
-  kRBP = 6,   // 栈底指针
-  kRDI = 7,   // rdi,第一个参数
-  kRSI = 8,   // rsi,第二个参数
-  kRETAddr = 9,   // 赋值给rip寄存器,即下一条执行指令的地址
-  kRSP = 13,   // 栈顶指针
+  kRBP = 6,   // rbp, bottom of stack
+  kRDI = 7,   // rdi, first para when call function
+  kRSI = 8,   // rsi, second para when call function
+  kRETAddr = 9,   // the next excute cmd address, it will be assigned to rip
+  kRSP = 13,   // rsp, top of stack
 };
 
 
 struct coctx {
-  void* regs[14];     // 寄存器数组
+  void* regs[14];
 };
 
 extern "C" {
-// 直接调用汇编 coctx_swap 函数
-
-// 切换协程上下文
-// 保存当前所有寄存器到第一个coctx上, 将新协程的coctx里面的值取出来赋值给寄存器
+// save current register's state to fitst coctx, and from second coctx take out register's state to assign register
 extern void coctx_swap(coctx *, coctx *) asm("coctx_swap");
+
 };
 
 }

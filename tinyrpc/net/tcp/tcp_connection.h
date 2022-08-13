@@ -15,6 +15,7 @@
 #include "tinyrpc/net/tcp/tcp_connection_time_wheel.h"
 #include "tinyrpc/net/tcp/abstract_slot.h"
 #include "tinyrpc/net/net_address.h"
+#include "tinyrpc/net/mutex.h"
 
 namespace tinyrpc {
 
@@ -117,7 +118,6 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
   std::map<std::string, std::shared_ptr<TinyPbStruct>> m_reply_datas;
 
   std::weak_ptr<AbstractSlot<TcpConnection>> m_weak_slot;
-
 
 };
 

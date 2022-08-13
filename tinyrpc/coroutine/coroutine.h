@@ -73,6 +73,10 @@ class Coroutine {
     return m_stack_size;
   }
 
+  void setCanResume(bool v) {
+    m_can_resume = v;
+  }
+
  public:
   static void Yield();
 
@@ -96,6 +100,8 @@ class Coroutine {
   bool m_is_in_cofunc {false};  // true when call CoFunction, false when CoFunction finished
   std::string m_msg_no;
   RunTime m_run_time;
+
+  bool m_can_resume {true};
 
   int m_index {-1};             // index in coroutine pool
 

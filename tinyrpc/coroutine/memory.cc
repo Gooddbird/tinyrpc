@@ -12,7 +12,6 @@ Memory::Memory(int block_size, int block_count) : m_block_size(block_size), m_bl
   m_start = (char*)malloc(m_size);
   assert(m_start != (void*)-1);
   InfoLog << "succ mmap " << m_size << " bytes memory";
-  printf("succ mmap %d bytes memory\n", m_size);
   m_end = m_start + m_size;
   m_blocks.resize(m_block_count);
   for (size_t i = 0; i < m_blocks.size(); ++i) {
