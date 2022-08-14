@@ -10,46 +10,52 @@
 
 
 <!-- vscode-markdown-toc -->
-* 1. [简介](#)
+* 1. [概述](#)
 	* 1.1. [TinyRPC 特点](#TinyRPC)
 	* 1.2. [TinyRPC 支持的协议报文](#TinyRPC-1)
 	* 1.3. [TinyRPC 的 RPC 调用](#TinyRPCRPC)
 		* 1.3.1. [阻塞协程式异步调用](#-1)
 		* 1.3.2. [非阻塞协程式异步调用](#-1)
-* 2. [安装 TinyRPC](#TinyRPC-1)
-	* 2.1. [安装必要的依赖库](#-1)
-		* 2.1.1. [protobuf](#protobuf)
-		* 2.1.2. [tinyxml](#tinyxml)
-	* 2.2. [选装插件库](#-1)
-		* 2.2.1. [libmysqlclient](#libmysqlclient)
-	* 2.3. [安装和卸载](#-1)
-		* 2.3.1. [安装 TinyRPC](#TinyRPC-1)
-		* 2.3.2. [卸载 TinyRPC](#TinyRPC-1)
-* 3. [快速上手](#-1)
-	* 3.1. [搭建基于 TinyPB 协议的 RPC 服务](#TinyPBRPC)
-		* 3.1.1. [实现 Protobuf 文件接口](#Protobuf)
-		* 3.1.2. [准备配置文件](#-1)
-		* 3.1.3. [实现业务接口](#-1)
-		* 3.1.4. [启动 RPC 服务](#RPC)
-	* 3.2. [ 搭建基于 HTTP 协议的 RPC 服务](#HTTPRPC)
-		* 3.2.1. [准备配置文件](#-1)
-		* 3.2.2. [实现 Servlet 接口](#Servlet)
-		* 3.2.3. [启动 RPC 服务](#RPC-1)
-	* 3.3. [RPC 服务调用](#RPC-1)
-		* 3.3.1. [阻塞协程式异步调用](#-1)
-		* 3.3.2. [非阻塞协程式异步调用](#-1)
-* 4. [概要设计](#-1)
-	* 4.1. [异步日志模块](#-1)
-	* 4.2. [协程模块](#-1)
-	* 4.3. [Reactor 模块](#Reactor)
-	* 4.4. [Tcp 模块](#Tcp)
-		* 4.4.1. [TcpServer](#TcpServer)
-		* 4.4.2. [TcpConnection](#TcpConnection)
-	* 4.5. [TinyPB 协议](#TinyPB)
-	* 4.6. [Http 模块](#Http)
-	* 4.7. [RPC 调用封装](#RPC-1)
-* 5. [关于作者](#-1)
-* 6. [参考资料](#-1)
+* 2. [性能测试](#-1)
+	* 2.1. [HTTP echo 测试 QPS](#HTTPechoQPS)
+* 3. [安装 TinyRPC](#TinyRPC-1)
+	* 3.1. [安装必要的依赖库](#-1)
+		* 3.1.1. [protobuf](#protobuf)
+		* 3.1.2. [tinyxml](#tinyxml)
+	* 3.2. [选装插件库](#-1)
+		* 3.2.1. [libmysqlclient](#libmysqlclient)
+	* 3.3. [安装和卸载](#-1)
+		* 3.3.1. [安装 TinyRPC](#TinyRPC-1)
+		* 3.3.2. [卸载 TinyRPC](#TinyRPC-1)
+* 4. [快速上手](#-1)
+	* 4.1. [搭建基于 TinyPB 协议的 RPC 服务](#TinyPBRPC)
+		* 4.1.1. [实现 Protobuf 文件接口](#Protobuf)
+		* 4.1.2. [准备配置文件](#-1)
+		* 4.1.3. [实现业务接口](#-1)
+		* 4.1.4. [启动 RPC 服务](#RPC)
+	* 4.2. [ 搭建基于 HTTP 协议的 RPC 服务](#HTTPRPC)
+		* 4.2.1. [准备配置文件](#-1)
+		* 4.2.2. [实现 Servlet 接口](#Servlet)
+		* 4.2.3. [启动 RPC 服务](#RPC-1)
+	* 4.3. [RPC 服务调用](#RPC-1)
+		* 4.3.1. [阻塞协程式异步调用](#-1)
+		* 4.3.2. [非阻塞协程式异步调用](#-1)
+* 5. [概要设计](#-1)
+	* 5.1. [异步日志模块](#-1)
+	* 5.2. [协程模块](#-1)
+	* 5.3. [Reactor 模块](#Reactor)
+	* 5.4. [Tcp 模块](#Tcp)
+		* 5.4.1. [TcpServer](#TcpServer)
+		* 5.4.2. [TcpConnection](#TcpConnection)
+	* 5.5. [TinyPB 协议](#TinyPB)
+		* 5.5.1. [TinyPB 协议报文格式分解](#TinyPB-1)
+	* 5.6. [Http 模块](#Http)
+	* 5.7. [RPC 调用封装](#RPC-1)
+* 6. [错误码](#-1)
+	* 6.1. [错误码判断规范](#-1)
+	* 6.2. [错误码释义文档](#-1)
+* 7. [关于作者](#-1)
+* 8. [参考资料](#-1)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -156,9 +162,9 @@ DebugLog << "RootHttpServlet end to call RPC" << count;
 ```c++
 async_channel->wait();
 ```
-此时协程会阻塞直到异步RPC 调用完成，更新 future 的值后, 注意只会阻塞当前协程，而不是当前线程(其实调用 wait 后就相当于把当前协程 Yiled 了，等待 RPC 完成后自动 Resume)。
+此时协程会阻塞直到异步RPC 调用完成，注意只会阻塞当前协程，而不是当前线程(其实调用 wait 后就相当于把当前协程 Yiled 了，等待 RPC 完成后自动 Resume)。
 
-当然，wait() 是可选的。如果你不关心调用结果，完全可以不调用 wait。即相当于一个异步的任务队列。
+当然，wait() 是可选的。如果你不关心调用结果，完全可以不调用 wait。即相当于一个**异步的任务队列**。
 
 这种调用方式的原理很简单，当前IO线程 A 会把这个调用任务交给另外一个 IO 线程B 来完成，同时调用方使用 wait() 函数可以阻塞的获取本次调用结果。
 
@@ -180,9 +186,9 @@ IO线程 B 会在适当的时候完成这个调用, 实际上对于线程 B 来�
 那为什么不能是栈对象？想像一下，假设你在某个函数中异步调用 RPC，如果这些对象都是栈对象，那么当函数结束时这些栈对象自动被销毁了，线程 B 此时显然会 coredump 掉。因此请在堆上申请对象。另外，推荐使用 shared_ptr 是因为 TinyPbRpcAsyncChannel 内部已经封装好细节了，当异步 RPC 完成之后会自动销毁对象，你不必担心内存泄露的问题！
 
 
-## 性能测试
+##  2. <a name='-1'></a>性能测试
 TinyRPC 底层使用的是 Reactor 架构，同时又结合了多线程，其性能是能得到保障的。进行几个简单的性能测试结果如下：
-### HTTP echo 测试 QPS
+###  2.1. <a name='HTTPechoQPS'></a>HTTP echo 测试 QPS
 测试机配置信息：Centos**虚拟机**，内存**6G**，CPU为**4核**
 
 测试工具：**wrk**: https://github.com/wg/wrk.git
@@ -198,10 +204,10 @@ wrk -c 1000 -t 8 -d 30 --latency 'http://127.0.0.1:19999/qps?id=1'
 测试结果：
 |  **QPS** | **WRK 并发连接 1000** | **WRK 并发连接 2000** | **WRK 并发连接 5000** | **WRK 并发连接 10000** |
 |  ----  | ----  | ---- | ---- | ---- |
-| IO线程为 **1** | **27000 QPS** | **26000 QPS** | **20000 QPS** |**20000 QPS** |
-| IO线程为 **4** | **135000 QPS** | **120000 QPS**| **100000 QPS**| **100000 QPS** |
-| IO线程为 **8** |  | | | |
-| IO线程为 **16** |  | | | |
+| IO线程数为 **1** | **27000 QPS** | **26000 QPS** | **20000 QPS** |**20000 QPS** |
+| IO线程数为 **4** | **140000 QPS** | **130000 QPS** | **123000 QPS**| **118000 QPS** |
+| IO线程数为 **8** | **135000 QPS** | **120000 QPS**| **100000 QPS**| **100000 QPS** |
+| IO线程数为 **16** | **125000 QPS** | **127000 QPS** |**123000 QPS** | **118000 QPS** |
 
 ```
 // IO 线程为 4, 并发连接 1000 的测试结果
@@ -222,26 +228,20 @@ Requests/sec: 134442.12
 Transfer/sec:     26.67MB
 ```
 
+由以上测试结果，**TinyRPC 框架的 QPS 可达到 14W 左右**。
 
 
-
-
-
-
-
-
-
-##  2. <a name='TinyRPC-1'></a>安装 TinyRPC
-###  2.1. <a name='-1'></a>安装必要的依赖库
+##  3. <a name='TinyRPC-1'></a>安装 TinyRPC
+###  3.1. <a name='-1'></a>安装必要的依赖库
 要正确编译 **TinyRPC**, 至少要先安装这几个库：
 
-####  2.1.1. <a name='protobuf'></a>protobuf
+####  3.1.1. <a name='protobuf'></a>protobuf
 **protobuf** 是 **google** 开源的有名的序列化库。谷歌出品，必属精品！**TinyRPC** 的 **TinyPB** 协议是基于 protobuf 来 序列化/反序列化 的，因此这个库是必须的。
 其地址为：https://github.com/protocolbuffers/protobuf
 
 推荐安装版本 3.19.4 及以上。安装过程不再赘述, **注意将头文件和库文件 copy 到对应的系统路径下。**
 
-####  2.1.2. <a name='tinyxml'></a>tinyxml
+####  3.1.2. <a name='tinyxml'></a>tinyxml
 由于 **TinyRPC** 读取配置使用了 **xml** 文件，因此需要安装 **tinyxml** 库来解析配置文件。
 
 下载地址：https://sourceforge.net/projects/tinyxml/
@@ -268,13 +268,13 @@ mkdir /usr/include/tinyxml
 cp *.h /usr/include/tinyxml
 ```
 
-###  2.2. <a name='-1'></a>选装插件库
+###  3.2. <a name='-1'></a>选装插件库
 有些库不是那么容易安装，为了不妨碍核心功能的实现，我把这些库都作为插件来编译了。
 这些插件库不是强依赖的，因为它不属于 TinyRPC 服务的核心功能，只能算是功能上的锦上添花。为了不影响基础库的编译， TinyRPC 把这些库作为插件来加载，通过宏定义来控制编译。
 
 **需要说明的是：即使你不安装这些插件库， TinyRPC 依然能正常编译，它的核心基础功能是完全具备的。**
 
-####  2.2.1. <a name='libmysqlclient'></a>libmysqlclient
+####  3.2.1. <a name='libmysqlclient'></a>libmysqlclient
 TinyRPC 简单封装了下 MySQL 的调用，因为 MySQL 确实在 RPC 服务中用的比较多了。
 需要安装 **MySQL** 的 glibc 库，用于 MySQL 操作, 选择所需的版本安装即可(建议 5.7 以上)
 
@@ -300,9 +300,9 @@ PLUGIN_LIB = $(MYSQL_LIB)
 ```
 
 
-###  2.3. <a name='-1'></a>安装和卸载
+###  3.3. <a name='-1'></a>安装和卸载
 
-####  2.3.1. <a name='TinyRPC-1'></a>安装 TinyRPC
+####  3.3.1. <a name='TinyRPC-1'></a>安装 TinyRPC
 在安装了前置的几个库之后，就可以开始编译和安装 **TinyRPC** 了。安装过程十分简单，只要不出什么意外就好了。
 
 **祈祷**一下一次性成功，然后直接执行以下几个命令即可：
@@ -329,7 +329,7 @@ make install
 
 如果编译出现问题，欢迎提 [issue](https://github.com/Gooddbird/tinyrpc/issues/), 我会尽快回应。
 
-####  2.3.2. <a name='TinyRPC-1'></a>卸载 TinyRPC
+####  3.3.2. <a name='TinyRPC-1'></a>卸载 TinyRPC
 卸载也很简单，如下即可：
 ```
 make uninstall
@@ -337,9 +337,9 @@ make uninstall
 **注：如果此前已经安装过 TinyRPC, 建议先执行卸载命令后再重新 make install 安装.**
 
 
-##  3. <a name='-1'></a>快速上手
-###  3.1. <a name='TinyPBRPC'></a>搭建基于 TinyPB 协议的 RPC 服务
-####  3.1.1. <a name='Protobuf'></a>实现 Protobuf 文件接口
+##  4. <a name='-1'></a>快速上手
+###  4.1. <a name='TinyPBRPC'></a>搭建基于 TinyPB 协议的 RPC 服务
+####  4.1.1. <a name='Protobuf'></a>实现 Protobuf 文件接口
 TinyPB 协议基于 Protobuf 来序列化的，在搭建基于 TinyPB 协议的 RPC 服务之前，需要先定义接口文档。具体的 Protobuf 文档需要根据业务的实际功能来编写，这里给出一个例子如下:
 ```.c++
 // test_tinypb_server.proto
@@ -382,7 +382,7 @@ service QueryService {
 protoc --cpp_out=protoc --cpp_out=./ test_tinypb_server.proto
 ```
 
-####  3.1.2. <a name='-1'></a>准备配置文件
+####  4.1.2. <a name='-1'></a>准备配置文件
 **TinyRPC** 读取标准的 **xml** 配置文件完成一些服务初始化设置，这个配置文件模板如下，一般只需要按需调整参数即可：
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -437,7 +437,7 @@ protoc --cpp_out=protoc --cpp_out=./ test_tinypb_server.proto
 </root>
 ```
 
-####  3.1.3. <a name='-1'></a>实现业务接口
+####  4.1.3. <a name='-1'></a>实现业务接口
 protobuf 文件提供的只是接口说明，而实际的业务逻辑需要自己实现。只需要继承 QueryService 并重写方法即可，例如：
 ```c++
 // test_tinypb_server.cc
@@ -470,7 +470,7 @@ class QueryServiceImpl : public QueryService {
 };
 ```
 
-####  3.1.4. <a name='RPC'></a>启动 RPC 服务
+####  4.1.4. <a name='RPC'></a>启动 RPC 服务
 TinyRPC 服务启动非常简单，只需寥寥几行代码即可：
 ```c++
 int main(int argc, char* argv[]) {
@@ -507,8 +507,8 @@ netstat -tln | grep 39999
 至此，基于 TinyPB 协议的 RPC 服务已经启动成功，后续我们将调用这个服务。
 
 
-###  3.2. <a name='HTTPRPC'></a> 搭建基于 HTTP 协议的 RPC 服务
-####  3.2.1. <a name='-1'></a>准备配置文件
+###  4.2. <a name='HTTPRPC'></a> 搭建基于 HTTP 协议的 RPC 服务
+####  4.2.1. <a name='-1'></a>准备配置文件
 同上，准备一个配置文件 **test_http_server.xml**:
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -565,7 +565,7 @@ netstat -tln | grep 39999
 
 ```
 
-####  3.2.2. <a name='Servlet'></a>实现 Servlet 接口
+####  4.2.2. <a name='Servlet'></a>实现 Servlet 接口
 **TinyRPC** 提供类似 JAVA 的 **Servlet** 接口来实现 HTTP 服务。你只需要简单的继承 HttpServlet 类并实现 handle 方法即可，如一个 HTTP 的 echo 如下：
 ```c++
 // test_http_server.cc
@@ -593,7 +593,7 @@ class QPSHttpServlet : public tinyrpc::HttpServlet {
 };
 ```
 
-####  3.2.3. <a name='RPC-1'></a>启动 RPC 服务
+####  4.2.3. <a name='RPC-1'></a>启动 RPC 服务
 将 Servlet 注册到路径下，启动 RPC 服务即可。注意这个注册路径相对于项目的根路径而言：
 ```c++
 // test_http_server.cc
@@ -623,10 +623,10 @@ nohup ./test_http_server ../conf/test_http_server.xml &
 <html><body><h1>Welcome to TinyRPC, just enjoy it!</h1><p>QPSHttpServlet Echo Success!! Your id is,1</p></body></html>
 ```
 
-###  3.3. <a name='RPC-1'></a>RPC 服务调用
+###  4.3. <a name='RPC-1'></a>RPC 服务调用
 这一节将使用 test_http_server 服务调用 test_rpc_server，前面说过，TinyRPC 支出两种 RPC 调用方式：**阻塞协程式异步调用** 和 **非阻塞协程式异步调用**
 
-####  3.3.1. <a name='-1'></a>阻塞协程式异步调用
+####  4.3.1. <a name='-1'></a>阻塞协程式异步调用
 这种调用方式适用于我们依赖 RPC 调用结果的场景，必须等待 RPC 调用返回后才能进行下一步业务处理。BlockHttpServlet 即属于这种调用方式：
 ```c++
 class BlockCallHttpServlet : public tinyrpc::HttpServlet {
@@ -701,7 +701,7 @@ REGISTER_HTTP_SERVLET("/block", BlockCallHttpServlet);
 <html><body><h1>Welcome to TinyRPC, just enjoy it!</h1><p>Success!! Your age is,100100111 and Your id is 1</p></body></html>
 ```
 
-####  3.3.2. <a name='-1'></a>非阻塞协程式异步调用
+####  4.3.2. <a name='-1'></a>非阻塞协程式异步调用
 这种调用方式适用于我们不依赖 RPC 调用结果的场景，即我们可以继续业务处理，而不关心何时 RPC 调用成功。NonBlockHttpServlet 即属于这种调用方式：
 ```c++
 class NonBlockCallHttpServlet: public tinyrpc::HttpServlet {
@@ -792,10 +792,10 @@ REGISTER_HTTP_SERVLET("/nonblock", NonBlockCallHttpServlet);
 
 
 
-##  4. <a name='-1'></a>概要设计
+##  5. <a name='-1'></a>概要设计
 **TinyRPC** 框架的主要模块包括：异步日志、协程封装、Reactor封装、Tcp 封装、TinyPb协议封装、HTTP 协议封装、以及 RPC封装模块等。
 
-###  4.1. <a name='-1'></a>异步日志模块
+###  5.1. <a name='-1'></a>异步日志模块
 设计初期，**TinyRPC** 的日志主要参考了 (**sylar**),并精简后实现了最基础的打印日志。
 
 在开发到一定程度后，发现同步日志或多或少有些影响性能，毕竟每次写入文件的磁盘IO还是比较耗时的。遂改为异步日志。TinyRPC 的异步日志实现非常简单，只是额外启动了一个线程来负责打印日志罢了。
@@ -814,8 +814,10 @@ DebugLog << "11";
 AppDebugLog << "11";
 ```
 
-###  4.2. <a name='-1'></a>协程模块
-TinyRPC 的协程底层使用了腾讯的开源协程库 [libco](https://github.com/Tencent/libco)，即协程上下文切换那一块。而协程切换的原理不过是寄存器切换罢了。
+###  5.2. <a name='-1'></a>协程模块
+
+#### 协程封装
+TinyRPC 的协程底层切换使用了腾讯的开源协程库 [libco](https://github.com/Tencent/libco)，即协程上下文切换那一块，而协程切换的本质不过是寄存器切换罢了。
 除了协程切换之外，TinyRPC 提供了一些基本函数的 hook，如 read、write、connect 等函数。
 
 更多协程的介绍请移步我的知乎文章：
@@ -826,17 +828,34 @@ TinyRPC 的协程底层使用了腾讯的开源协程库 [libco](https://github.
 
 [协程篇（一）-- 函数调用栈](https://zhuanlan.zhihu.com/p/462968883)
 
+#### m:n 线程:协程模型
+最初设计中 TinyRPC 框架是 **1:n** 线程:协程模型的，即一个线程对于 n 个协程。每个线程有单独的协程池，线程只会 Resume 属于它自己协程池里面的协程，各个 IO 线程之前的协程互相不干扰。
 
-###  4.3. <a name='Reactor'></a>Reactor 模块
+然而 **1:n** 模型可能会增加请求的时延。例如当某个 IO 线程在处理请求时，耗费了太多的时间，导致此 IO 线程的其他请求得不到及时处理，只能阻塞等待。
+
+因此 TinyRPC 框架使用 **m:n 线程:协程**模型进行了重构。所谓 **m:n** 即 m 个线程共同调度 n 个协程。由于 m 个线程共用一个协程池，因此协程池里的就绪任务总会尽快的被 **Resume**。
+
+一般来说，每一个客户端连接对象 **TcpConnection**, 对应一个协程。对客户端连接的 **读数据、业务处理、写数据**这三步，其实都在这个协程中完成的。对于 **m:n 协程模型** 来说，一个 **TcpConnection**对象所持有的协程，可能会来回被多个不同的**IO线程**调度。
+
+举个例子，协程 A 可能先由 IO线程1 Resume，然后协程 A Yield后，下一次又被 IO线程2 Resume 唤醒。
+
+因此，在实现业务逻辑的时候，要特别谨慎使用**线程局部变量(thread_local)**。因为对当前协程来说，可能执行此协程的线程都已经变了，那对于的线程局部变量当然也会改变。
+
+当然，**一个协程任一时刻只会被一个线程来调度，不会存在多个 IO 线程同时 Resume 同一个协程的情况**。这一点由 TinyRPC 框架保证。
+
+
+不过，m:n 模型也引入了更强的**线程竞争条件**，所以对协程池加**互斥锁**是必须的。
+
+###  5.3. <a name='Reactor'></a>Reactor 模块
 可移步知乎文章：
 
 [C++实现的协程网络库tinyrpc（四）-- Reactor 实现](https://zhuanlan.zhihu.com/p/503323714)
 
 [Reactor模式介绍](https://zhuanlan.zhihu.com/p/428693405)
 
-###  4.4. <a name='Tcp'></a>Tcp 模块
+###  5.4. <a name='Tcp'></a>Tcp 模块
 
-####  4.4.1. <a name='TcpServer'></a>TcpServer
+####  5.4.1. <a name='TcpServer'></a>TcpServer
 TcpServer 的运行逻辑如下：
 
 ![](imgs/tcp_server.drawio.png)
@@ -847,7 +866,7 @@ TcpServer 的运行逻辑如下：
 
 
 
-####  4.4.2. <a name='TcpConnection'></a>TcpConnection
+####  5.4.2. <a name='TcpConnection'></a>TcpConnection
 
 TcpConnection 运行逻辑如下：
 
@@ -859,10 +878,10 @@ TcpConnection 运行逻辑如下：
 [C++实现的协程异步 RPC 框架 TinyRPC（六）-- TcpConnection 实现](https://zhuanlan.zhihu.com/p/524517895)
 
 
-###  4.5. <a name='TinyPB'></a>TinyPB 协议
+###  5.5. <a name='TinyPB'></a>TinyPB 协议
 TinyPB 是 TinyRPC 框架自定义的一种轻量化协议类型，它是基于 google 的 protobuf 而定制的，读者可以按需自行对协议格式进行扩充。
 
-#### TinyPB 协议报文格式分解
+####  5.5.1. <a name='TinyPB-1'></a>TinyPB 协议报文格式分解
 **TinyPb** 协议包报文用 c++ 伪代码描述如下：
 ```c++
 /*
@@ -896,16 +915,16 @@ char end;                           // 代表报文结束，一般是 0x03
 另外，**TinyPb** 协议里面所有的 int 类型的字段在编码时都会先转为**网络字节序**！
 
 
-###  4.6. <a name='Http'></a>Http 模块
+###  5.6. <a name='Http'></a>Http 模块
 TinyRPC 的 HTTP 模块实际上有点模仿 Java 的 Servlet 概念，每来一个 HTTP 请求就会找到对应的 HttpServlet 对象，执行其提前注册好的业务逻辑函数，用于处理 Http 请求，并回执 Http 响应。
 
-###  4.7. <a name='RPC-1'></a>RPC 调用封装
+###  5.7. <a name='RPC-1'></a>RPC 调用封装
 --建设中，敬请期待--
 
 
 
-## 错误码
-### 错误码判断规范
+##  6. <a name='-1'></a>错误码
+###  6.1. <a name='-1'></a>错误码判断规范
 **TinyPB** 协议使用错误码来标识 RPC 调用过程的那些不可控的错误。这些错误码是框架级错误码，当出现这些错误码时，说明是 RPC 调用的链路出了问题。自然，这次 RPC 调用是失败的。
 一般来说，在调用 RPC 时，需要判断两个错误码，例如：
 ```c++
@@ -928,7 +947,7 @@ rpc_controller.ErrorCode 是 RPC **框架级错误码**，即这个文档里面�
 
 另一个错误码是**业务错误码**，通常他被定义在 RPC 方法返回结构体的第一个字段中。出现这个错误码一般是对端在进行业务处理时出现了非预期的结果，此时将返回对应的错误码和错误信息。这个错误码的枚举值应由 RPC 通信双方自行约定。
 
-### 错误码释义文档
+###  6.2. <a name='-1'></a>错误码释义文档
 err_code 详细说明如下表：
 
 |  **错误码** | **错误代码** | **错误码描述** |
@@ -946,7 +965,7 @@ err_code 详细说明如下表：
 | ERROR_PARSE_SERVICE_NAME | 10000010 | 解析 service_name 失败|
 
 
-##  5. <a name='-1'></a>关于作者
+##  7. <a name='-1'></a>关于作者
 **ikerli**
 Linux 后台开发、分布式系统、C++  持续学习中！
 
@@ -963,7 +982,7 @@ Linux 后台开发、分布式系统、C++  持续学习中！
 
 
 
-##  6. <a name='-1'></a>参考资料
+##  8. <a name='-1'></a>参考资料
 libco: https://github.com/Tencent/libco
 
 sylar: https://github.com/sylar-yin/sylar

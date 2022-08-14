@@ -32,7 +32,7 @@
   <max_connect_timeout>75</max_connect_timeout>
 
   <!--count of io threads, at least 1-->
-  <iothread_num>8</iothread_num>
+  <iothread_num>32</iothread_num>
 
   <time_wheel>
     <bucket_num>3</bucket_num>
