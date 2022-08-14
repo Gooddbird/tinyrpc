@@ -5,10 +5,6 @@
 
 作者：**ikerli**  **2022-05-13**
 **使用 TinyRPC, 轻松地构建高性能分布式 RPC 服务！**
-
-
-
-
 <!-- vscode-markdown-toc -->
 * 1. [概述](#)
 	* 1.1. [TinyRPC 特点](#TinyRPC)
@@ -43,6 +39,8 @@
 * 5. [概要设计](#-1)
 	* 5.1. [异步日志模块](#-1)
 	* 5.2. [协程模块](#-1)
+		* 5.2.1. [协程封装](#-1)
+		* 5.2.2. [m:n 线程:协程模型](#m:n:)
 	* 5.3. [Reactor 模块](#Reactor)
 	* 5.4. [Tcp 模块](#Tcp)
 		* 5.4.1. [TcpServer](#TcpServer)
@@ -62,6 +60,8 @@
 	autoSave=true
 	/vscode-markdown-toc-config -->
 <!-- /vscode-markdown-toc -->
+
+
 
 
 
@@ -239,7 +239,7 @@ Transfer/sec:     26.67MB
 **protobuf** 是 **google** 开源的有名的序列化库。谷歌出品，必属精品！**TinyRPC** 的 **TinyPB** 协议是基于 protobuf 来 序列化/反序列化 的，因此这个库是必须的。
 其地址为：https://github.com/protocolbuffers/protobuf
 
-推荐安装版本 3.19.4 及以上。安装过程不再赘述, **注意将头文件和库文件 copy 到对应的系统路径下。**
+推荐安装版本 **3.19.4** 及以上。安装过程不再赘述, **注意将头文件和库文件 copy 到对应的系统路径下。**
 
 ####  3.1.2. <a name='tinyxml'></a>tinyxml
 由于 **TinyRPC** 读取配置使用了 **xml** 文件，因此需要安装 **tinyxml** 库来解析配置文件。
@@ -816,7 +816,7 @@ AppDebugLog << "11";
 
 ###  5.2. <a name='-1'></a>协程模块
 
-#### 协程封装
+####  5.2.1. <a name='-1'></a>协程封装
 TinyRPC 的协程底层切换使用了腾讯的开源协程库 [libco](https://github.com/Tencent/libco)，即协程上下文切换那一块，而协程切换的本质不过是寄存器切换罢了。
 除了协程切换之外，TinyRPC 提供了一些基本函数的 hook，如 read、write、connect 等函数。
 
@@ -828,7 +828,7 @@ TinyRPC 的协程底层切换使用了腾讯的开源协程库 [libco](https://g
 
 [协程篇（一）-- 函数调用栈](https://zhuanlan.zhihu.com/p/462968883)
 
-#### m:n 线程:协程模型
+####  5.2.2. <a name='m:n:'></a>m:n 线程:协程模型
 最初设计中 TinyRPC 框架是 **1:n** 线程:协程模型的，即一个线程对于 n 个协程。每个线程有单独的协程池，线程只会 Resume 属于它自己协程池里面的协程，各个 IO 线程之前的协程互相不干扰。
 
 然而 **1:n** 模型可能会增加请求的时延。例如当某个 IO 线程在处理请求时，耗费了太多的时间，导致此 IO 线程的其他请求得不到及时处理，只能阻塞等待。
@@ -963,6 +963,8 @@ err_code 详细说明如下表：
 | ERROR_SERVICE_NOT_FOUND | 10000008 | Service 不存在，即对方没有注册这个 Service |
 | ERROR_METHOD_NOT_FOUND | 10000009 | Method 不存在，对方没有这个 方法|
 | ERROR_PARSE_SERVICE_NAME | 10000010 | 解析 service_name 失败|
+| ERROR_ASYNC_RPC_CALL_SINGLE_IOTHREAD | 10000011 | 在只有一个 IO 线程情况下进行非阻塞协程式RPC调用|
+| ERROR_NOT_SET_ASYNC_PRE_CALL | 10000012 | 非阻塞协程式 RPC 调用前没保存对象 |
 
 
 ##  7. <a name='-1'></a>关于作者
