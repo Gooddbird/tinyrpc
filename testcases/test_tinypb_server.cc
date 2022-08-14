@@ -1,15 +1,13 @@
 #include <google/protobuf/service.h>
-#include "tcp_server.h"
-#include "net_address.h"
-#include "tinypb_rpc_dispatcher.h"
-#include "log.h"
-#include "tinyrpc/comm/start.h"
-#include "tinypb.pb.h"
-#include "coroutine_hook.h"
-#include "tinyrpc/comm/start.h"
-#include "tinyrpc/comm/start.h"
 #include <sstream>
 #include <atomic>
+
+#include "tinyrpc/net/tcp/tcp_server.h"
+#include "tinyrpc/net/net_address.h"
+#include "tinyrpc/net/tinypb/tinypb_rpc_dispatcher.h"
+#include "tinyrpc/comm/log.h"
+#include "tinyrpc/comm/start.h"
+#include "test_tinypb_server.pb.h"
 
 #ifdef DECLARE_MYSQL_PLUGIN
 
@@ -133,7 +131,6 @@ int main(int argc, char* argv[]) {
 
   tinyrpc::InitConfig(argv[1]);
 
-  // tinyrpc::GetServer()->registerService(std::make_shared<QueryServiceImpl>());
   REGISTER_SERVICE(QueryServiceImpl);
 
   tinyrpc::StartRpcServer();

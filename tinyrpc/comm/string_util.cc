@@ -52,7 +52,7 @@ void StringUtil::SplitStrToVector(const std::string& str, const std::string& spl
     std::string x = tmp.substr(0, i);
     tmp = tmp.substr(i + split_str.length(), l - i - split_str.length());
     if (!x.empty()) {
-      res.push_back(x);
+      res.push_back(std::move(x));
     }
   }
 

@@ -24,13 +24,10 @@ TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_
   m_fd_event = FdEventContainer::GetFdContainer()->getFdEvent(fd);
   m_fd_event->setReactor(m_reactor);
   initBuffer(buff_size); 
-
   m_loop_cor = GetCoroutinePool()->getCoroutineInstanse();
   m_loop_cor->setCallBack(std::bind(&TcpConnection::MainServerLoopCorFunc, this));
 
-  DebugLog << "succ create tcp connection";
-  m_reactor->addCoroutine(m_loop_cor);
-  
+  DebugLog << "succ create tcp connection[Connected]";
 }
 
 TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reactor, int fd, int buff_size, NetAddress::ptr peer_addr)
@@ -49,13 +46,18 @@ TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reac
 
 }
 
+void TcpConnection::setUpServer() {
+  m_reactor->addCoroutine(m_loop_cor);
+}
+
+
 void TcpConnection::registerToTimeWheel() {
   auto cb = [] (TcpConnection::ptr conn) {
     conn->shutdownConnection();
   };
   TcpTimeWheel::TcpConnectionSlot::ptr tmp = std::make_shared<AbstractSlot<TcpConnection>>(shared_from_this(), cb);
   m_weak_slot = tmp;
-  m_io_thread->getTimeWheel()->fresh(tmp);
+  m_tcp_svr->freshTcpConnection(tmp);
 
 }
 
@@ -126,12 +128,10 @@ void TcpConnection::input() {
     }
     if (rt <= 0) {
       DebugLog << "rt <= 0";
-      ErrorLog << "read empty while occur read event, because of peer close, sys error=" << strerror(errno) << ", now to clear tcp connection";
-      clearClient();
+      ErrorLog << "read empty while occur read event, because of peer close, fd= " << m_fd << ", sys error=" << strerror(errno) << ", now to clear tcp connection";
       // this cor can destroy
       close_flag = true;
       break;
-      read_all = true;
     } else {
       if (rt == read_count) {
         DebugLog << "read_count == rt";
@@ -145,9 +145,18 @@ void TcpConnection::input() {
       }
     }
   }
-  if (close_flag || m_is_over_time) {
+  if (close_flag) {
+    clearClient();
+    DebugLog << "peer close, now yield current coroutine, wait main thread clear this TcpConnection";
+    Coroutine::GetCurrentCoroutine()->setCanResume(false);
+    Coroutine::Yield();
+    // return;
+  }
+
+  if (m_is_over_time) {
     return;
   }
+
   if (!read_all) {
     ErrorLog << "not read all data in socket buffer";
   }
@@ -155,14 +164,14 @@ void TcpConnection::input() {
   if (m_connection_type == ServerConnection) {
     TcpTimeWheel::TcpConnectionSlot::ptr tmp = m_weak_slot.lock();
     if (tmp) {
-      m_io_thread->getTimeWheel()->fresh(tmp);
+      m_tcp_svr->freshTcpConnection(tmp);
     }
   }
 
 }
 
 void TcpConnection::execute() {
-  DebugLog << "begin to do execute";
+  // DebugLog << "begin to do execute";
 
   // it only server do this
   while(m_read_buffer->readAble() > 0) {
@@ -176,14 +185,14 @@ void TcpConnection::execute() {
     m_codec->decode(m_read_buffer.get(), data.get());
     // DebugLog << "parse service_name=" << pb_struct.service_full_name;
     if (!data->decode_succ) {
-      DebugLog << "it parse request error";
+      ErrorLog << "it parse request error of fd " << m_fd;
       break;
     }
-    DebugLog << "it parse request success";
+    // DebugLog << "it parse request success";
     if (m_connection_type == ServerConnection) {
-      DebugLog << "to dispatch this package";
+      // DebugLog << "to dispatch this package";
       m_tcp_svr->getDispatcher()->dispatch(data.get(), this);
-      DebugLog << "contine parse next package";
+      // DebugLog << "contine parse next package";
     } else if (m_connection_type == ClientConnection) {
       // TODO:
       std::shared_ptr<TinyPbStruct> tmp = std::dynamic_pointer_cast<TinyPbStruct>(data);
@@ -307,6 +316,10 @@ void TcpConnection::setOverTimeFlag(bool value) {
 
 bool TcpConnection::getOverTimerFlag() {
   return m_is_over_time;
+}
+
+Coroutine::ptr TcpConnection::getCoroutine() {
+  return m_loop_cor;
 }
 
 

@@ -4,13 +4,14 @@
 #include "tinyrpc/comm/log.h"
 #include "tinyrpc/coroutine/coroutine_pool.h"
 #include "tinyrpc/coroutine/coroutine.h"
+#include "tinyrpc/net/mutex.h"
 
 
 namespace tinyrpc {
 
 extern tinyrpc::Config::ptr gRpcConfig;
 
-static thread_local CoroutinePool* t_coroutine_container_ptr = nullptr; 
+static CoroutinePool* t_coroutine_container_ptr = nullptr; 
 
 CoroutinePool* GetCoroutinePool() {
   if (!t_coroutine_container_ptr) {
@@ -20,27 +21,18 @@ CoroutinePool* GetCoroutinePool() {
 }
 
 
-CoroutinePool::CoroutinePool(int pool_size, int stack_size /*= 1024 * 128*/) : m_pool_size(pool_size), m_stack_size(stack_size) {
+CoroutinePool::CoroutinePool(int pool_size, int stack_size /*= 1024 * 128 B*/) : m_pool_size(pool_size), m_stack_size(stack_size) {
+  // set main coroutine first
   Coroutine::GetCurrentCoroutine();
-  int total = pool_size * stack_size;
-  m_memory_pool = (char*)mmap(NULL, total, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-  if (m_memory_pool == (void*)-1) {
-    printf("Start TinyRPC failed, faild to mmap get coroutine memory size, errno=%d, err= %s\n", errno, strerror(errno));
-    Exit(0);
-  }
-  char* tmp = m_memory_pool;
-  m_index = getCoroutineIndex();
+  
+  m_memory_pool.push_back(std::make_shared<Memory>(stack_size, pool_size));
 
-  if (m_index == 0) {
-    // skip main coroutine
-    m_index = 1;
-  }
+  Memory::ptr tmp = m_memory_pool[0];
 
-  m_free_cors.resize(pool_size + m_index);
-
-  for (int i = m_index; i < pool_size + m_index; ++i) {
-    m_free_cors[i] = std::make_pair(std::make_shared<Coroutine>(stack_size, tmp), false);
-    tmp += m_stack_size;
+  for (int i = 0; i < pool_size; ++i) {
+    Coroutine::ptr cor = std::make_shared<Coroutine>(stack_size, tmp->getBlock());
+    cor->setIndex(i);
+    m_free_cors.push_back(std::make_pair(cor, false));
   }
 
 }
@@ -57,33 +49,38 @@ Coroutine::ptr CoroutinePool::getCoroutineInstanse() {
   // but unused coroutine no physical memory yet. we just call mmap get virtual address, but not write yet. 
   // so linux will alloc physical when we realy write, that casuse page fault interrupt
 
-  for (int i = m_index; i < m_pool_size; ++i) {
+  Mutex::Lock lock(m_mutex);
+  for (int i = 0; i < m_pool_size; ++i) {
     if (!m_free_cors[i].first->getIsInCoFunc() && !m_free_cors[i].second) {
       m_free_cors[i].second = true;
-      return m_free_cors[i].first;
+      Coroutine::ptr cor = m_free_cors[i].first;
+      lock.unlock();
+      return cor;
     }
   }
-  int newsize = (int)(1.5 * m_pool_size);
 
-  int t = newsize * m_stack_size; 
-  char* s = (char*)mmap(NULL, t, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-  if (s == (void*)-1) {
-    ErrorLog << "Start TinyRPC failed, faild to mmap get coroutine memory size\n";
-    return nullptr;
+  for (size_t i = 1; i < m_memory_pool.size(); ++i) {
+    char* tmp = m_memory_pool[i]->getBlock();
+    if(tmp) {
+      Coroutine::ptr cor = std::make_shared<Coroutine>(m_stack_size, tmp);
+      return cor;
+    }    
   }
-  char* s1 = s;
-  for (int i = 0; i < newsize - m_pool_size; ++i) {
-    m_free_cors.push_back(std::make_pair(std::make_shared<Coroutine>(m_stack_size, s1), false));
-    s1 += m_stack_size;
-  }
-  int tmp = m_pool_size;
-  m_pool_size = newsize;
-  return m_free_cors[tmp].first;
-
+  m_memory_pool.push_back(std::make_shared<Memory>(m_stack_size, m_pool_size));
+  return std::make_shared<Coroutine>(m_stack_size, m_memory_pool[m_memory_pool.size() - 1]->getBlock());
 }
 
 void CoroutinePool::returnCoroutine(Coroutine::ptr cor) {
-  m_free_cors[cor->getCorId()].second = false;
+  int i = cor->getIndex();
+  if (i >= 0 && i < m_pool_size) {
+    m_free_cors[i].second = false;
+  } else {
+    for (size_t i = 1; i < m_memory_pool.size(); ++i) {
+      if (m_memory_pool[i]->hasBlock(cor->getStackPtr())) {
+        m_memory_pool[i]->backBlock(cor->getStackPtr());
+      }
+    }
+  }
 }
 
 

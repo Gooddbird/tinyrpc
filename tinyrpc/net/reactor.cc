@@ -4,13 +4,13 @@
 #include <assert.h>
 #include <string.h>
 #include <algorithm>
-#include "../comm/log.h"
+#include "tinyrpc/comm/log.h"
 #include "reactor.h"
 #include "mutex.h"
 #include "fd_event.h"
 #include "timer.h"
-#include "../coroutine/coroutine.h"
-#include "../coroutine/coroutine_hook.h"
+#include "tinyrpc/coroutine/coroutine.h"
+#include "tinyrpc/coroutine/coroutine_hook.h"
 
 
 extern read_fun_ptr_t g_sys_read_fun;  // sys read func
@@ -21,6 +21,8 @@ namespace tinyrpc {
 static thread_local Reactor* t_reactor_ptr = nullptr;
 
 static thread_local int t_max_epoll_timeout = 10000;     // ms
+
+static CoroutineTaskQueue* t_couroutine_task_queue = nullptr;
 
 
 Reactor::Reactor() {
@@ -214,21 +216,47 @@ void Reactor::loop() {
   m_is_looping = true;
 	m_stop_flag = false;
 
+  Coroutine* first_coroutine = nullptr;
+
 	while(!m_stop_flag) {
 		const int MAX_EVENTS = 10;
 		epoll_event re_events[MAX_EVENTS + 1];
+
+    if (first_coroutine) {
+      tinyrpc::Coroutine::Resume(first_coroutine);
+      first_coroutine = NULL;
+    }
+
+    // main reactor need't to resume coroutine in global CoroutineTaskQueue, only io thread do this work
+    if (m_reactor_type != MainReactor) {
+      FdEvent* ptr = NULL;
+      // ptr->setReactor(NULL);
+      while(1) {
+        ptr = CoroutineTaskQueue::GetCoroutineTaskQueue()->pop();
+        if (ptr) {
+          ptr->setReactor(this);
+          tinyrpc::Coroutine::Resume(ptr->getCoroutine()); 
+        } else {
+          break;
+        }
+      }
+    }
+
+
 		// DebugLog << "task";
 		// excute tasks
-		for (size_t i = 0; i < m_pending_tasks.size(); ++i) {
+    Mutex::Lock lock(m_mutex);
+    std::vector<std::function<void()>> tmp_tasks;
+    tmp_tasks.swap(m_pending_tasks);
+    lock.unlock();
+
+		for (size_t i = 0; i < tmp_tasks.size(); ++i) {
 			// DebugLog << "begin to excute task[" << i << "]";
-			if (m_pending_tasks[i]) {
-				m_pending_tasks[i]();
+			if (tmp_tasks[i]) {
+				tmp_tasks[i]();
 			}
 			// DebugLog << "end excute tasks[" << i << "]";
 		}
-		// std::vector<std::function<void()>> tmp;
-		// m_pending_tasks.swap(tmp);
-		m_pending_tasks.clear();
 		// DebugLog << "to epoll_wait";
 		int rt = epoll_wait(m_epfd, re_events, MAX_EVENTS, t_max_epoll_timeout);
 
@@ -254,51 +282,61 @@ void Reactor::loop() {
 				} else {
 					tinyrpc::FdEvent* ptr = (tinyrpc::FdEvent*)one_event.data.ptr;
           if (ptr != nullptr) {
-            int fd;
-            std::function<void()> read_cb;
-            std::function<void()> write_cb;
-
-            {
-              Mutex::Lock lock(ptr->m_mutex);
-              fd = ptr->getFd();
-              read_cb = ptr->getCallBack(READ);
-              write_cb = ptr->getCallBack(WRITE);
-            }
+            int fd = ptr->getFd();
 
             if ((!(one_event.events & EPOLLIN)) && (!(one_event.events & EPOLLOUT))){
               ErrorLog << "socket [" << fd << "] occur other unknow event:[" << one_event.events << "], need unregister this socket";
               delEventInLoopThread(fd);
             } else {
-							// if timer event, direct excute
-							if (fd == m_timer_fd) {
-								read_cb();
-								continue;
-							}
-              if (one_event.events & EPOLLIN) {
-                // DebugLog << "socket [" << fd << "] occur read event";
-                Mutex::Lock lock(m_mutex);
-                m_pending_tasks.push_back(read_cb);						
+              // if register coroutine, pengding coroutine to common coroutine_tasks
+              if (ptr->getCoroutine()) {
+                // the first one coroutine when epoll_wait back, just directly resume by this thread, not add to global CoroutineTaskQueue
+                // because every operate CoroutineTaskQueue should add mutex lock
+                if (!first_coroutine) {
+                  first_coroutine = ptr->getCoroutine();
+                  continue;
+                }
+                if (m_reactor_type == SubReactor) {
+                  delEventInLoopThread(fd);
+                  ptr->setReactor(NULL);
+                  CoroutineTaskQueue::GetCoroutineTaskQueue()->push(ptr);
+                } else {
+                  // main reactor, just resume this coroutine. it is accept coroutine. and Main Reactor only have this coroutine
+                  tinyrpc::Coroutine::Resume(ptr->getCoroutine());
+                  if (first_coroutine) {
+                    first_coroutine = NULL;
+                  }
+                }
+
+              } else {
+                std::function<void()> read_cb;
+                std::function<void()> write_cb;
+                read_cb = ptr->getCallBack(READ);
+                write_cb = ptr->getCallBack(WRITE);
+                // if timer event, direct excute
+                if (fd == m_timer_fd) {
+                  read_cb();
+                  continue;
+                }
+                if (one_event.events & EPOLLIN) {
+                  // DebugLog << "socket [" << fd << "] occur read event";
+                  Mutex::Lock lock(m_mutex);
+                  m_pending_tasks.push_back(read_cb);						
+                }
+                if (one_event.events & EPOLLOUT) {
+                  // DebugLog << "socket [" << fd << "] occur write event";
+                  Mutex::Lock lock(m_mutex);
+                  m_pending_tasks.push_back(write_cb);						
+                }
+
               }
-              if (one_event.events & EPOLLOUT) {
-                // DebugLog << "socket [" << fd << "] occur write event";
-                Mutex::Lock lock(m_mutex);
-                m_pending_tasks.push_back(write_cb);						
-              }
+
             }
           }
 
 				}
 				
 			}
-			
-			// DebugLog << "task";
-			// excute tasks
-			// for (size_t i = 0; i < m_pending_tasks.size(); ++i) {
-			// 	// DebugLog << "begin to excute task[" << i << "]";
-			// 	m_pending_tasks[i]();
-			//   // DebugLog << "end excute tasks[" << i << "]";
-			// }
-      // m_pending_tasks.clear();
 
 			std::map<int, epoll_event> tmp_add;
 			std::vector<int> tmp_del;
@@ -378,6 +416,38 @@ Timer* Reactor::getTimer() {
 
 pid_t Reactor::getTid() {
   return m_tid;
+}
+
+void Reactor::setReactorType(ReactorType type) {
+  m_reactor_type = type;
+}
+
+
+CoroutineTaskQueue* CoroutineTaskQueue::GetCoroutineTaskQueue() {
+  if (t_couroutine_task_queue) {
+    return t_couroutine_task_queue;
+  }
+  t_couroutine_task_queue = new CoroutineTaskQueue();
+  return t_couroutine_task_queue;
+
+}
+
+void CoroutineTaskQueue::push(FdEvent* cor) {
+  Mutex::Lock lock(m_mutex);
+  m_task.push(cor);
+  lock.unlock();
+}
+
+FdEvent* CoroutineTaskQueue::pop() {
+  FdEvent* re = nullptr;
+  Mutex::Lock lock(m_mutex);
+  if (m_task.size() >= 1) {
+    re = m_task.front();
+    m_task.pop();
+  }
+  lock.unlock();
+
+  return re;
 }
 
 }

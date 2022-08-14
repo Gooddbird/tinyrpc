@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <signal.h>
 #include <algorithm>
+#include <semaphore.h>
 
 #ifdef DECLARE_MYSQL_PLUGIN 
 #include <mysql/mysql.h>
@@ -195,14 +196,11 @@ std::stringstream& LogEvent::getStringStream() {
 }
 
 void LogEvent::log() {
-  if (m_level >= gRpcConfig->m_log_level) {
-    m_ss << "\n";
-    // printf("%s", m_ss.str().c_str());
-    if (m_type == RPC_LOG) {
-      gRpcLogger->pushRpcLog(m_ss.str());
-    } else if (m_type == APP_LOG) {
-      gRpcLogger->pushAppLog(m_ss.str());
-    }
+  m_ss << "\n";
+  if (m_level >= gRpcConfig->m_log_level && m_type == RPC_LOG) {
+    gRpcLogger->pushRpcLog(m_ss.str());
+  } else if (m_level >= gRpcConfig->m_app_log_level && m_type == APP_LOG) {
+    gRpcLogger->pushAppLog(m_ss.str());
   }
 }
 
@@ -232,6 +230,7 @@ Logger::~Logger() {
 
 void Logger::init(const char* file_name, const char* file_path, int max_size, int sync_inteval) {
   if (!m_is_init) {
+    m_sync_inteval = sync_inteval;
     for (int i = 0 ; i < 1000000; ++i) {
       m_app_buffer.push_back("");
       m_buffer.push_back("");
@@ -239,8 +238,6 @@ void Logger::init(const char* file_name, const char* file_path, int max_size, in
     // m_app_buffer.resize(1000000);
     // m_buffer.resize(1000000);
 
-    TimerEvent::ptr event = std::make_shared<TimerEvent>(sync_inteval, true, std::bind(&Logger::loopFunc, this));
-    Reactor::GetReactor()->getTimer()->addTimerEvent(event);
     m_async_rpc_logger = std::make_shared<AsyncLogger>(file_name, file_path, max_size, RPC_LOG);
     m_async_app_logger = std::make_shared<AsyncLogger>(file_name, file_path, max_size, APP_LOG);
 
@@ -256,70 +253,37 @@ void Logger::init(const char* file_name, const char* file_path, int max_size, in
     m_is_init = true;
   }
 }
+
+void Logger::start() {
+  TimerEvent::ptr event = std::make_shared<TimerEvent>(m_sync_inteval, true, std::bind(&Logger::loopFunc, this));
+  Reactor::GetReactor()->getTimer()->addTimerEvent(event);
+}
 	
 void Logger::loopFunc() {
-  std::vector<std::string> tmp;
   std::vector<std::string> app_tmp;
-  for (int i = 0 ; i < 1000000; ++i) {
-    tmp.push_back("");
-    app_tmp.push_back("");
-  }
-
-  Mutex::Lock lock(m_mutex);
-  int64_t old_value1 = g_rpc_log_index.exchange(0);
-  int64_t old_value2 = g_app_log_index.exchange(0);
-  if (old_value1 > 0 && old_value2 > 0) {
-    while (m_buffer[old_value1 - 1] == "" && m_app_buffer[old_value2 - 1] == "") {
-      // wait unitl all pre log has already write to m_buffer and m_app_buffer
-    }
-  }
-
-  tmp.swap(m_buffer);
+  Mutex::Lock lock1(m_app_buff_mutex);
   app_tmp.swap(m_app_buffer);
-  lock.unlock();
-
-  auto it = find(tmp.begin(), tmp.end(), "");
-  tmp.erase(it, tmp.end());
-
-  auto it2 = find(app_tmp.begin(), app_tmp.end(), "");
-  app_tmp.erase(it2, app_tmp.end());
+  lock1.unlock();
+  
+  std::vector<std::string> tmp;
+  Mutex::Lock lock2(m_buff_mutex);
+  tmp.swap(m_buffer);
+  lock2.unlock();
 
   m_async_rpc_logger->push(tmp);
   m_async_app_logger->push(app_tmp);
 }
 
 void Logger::pushRpcLog(const std::string& msg) {
-  // Mutex::Lock lock(m_mutex);
-  // m_buffer.push_back(msg);
-  // lock.unlock();
-  // g_rpc_log_index == 0, means loopFunc has add mutex lock, ready to change buffer. so we cant't begin to write log until loopFunc release mutex lock
-  if (g_rpc_log_index == 0) {
-    Mutex::Lock lock(m_mutex);
-
-    int64_t i  = g_rpc_log_index++;
-    // printf("i=%ld\n", i);
-    m_buffer[i] = std::move(msg);
-    lock.unlock();
-  } else {
-    int64_t i  = g_rpc_log_index++;
-    // printf("i=%ld\n", i);
-    m_buffer[i] = std::move(msg);
-  }
+  Mutex::Lock lock(m_buff_mutex);
+  m_buffer.push_back(std::move(msg));
+  lock.unlock();
 }
 
 void Logger::pushAppLog(const std::string& msg) {
-  // Mutex::Lock lock(m_mutex);
-  // m_app_buffer.push_back(msg);
-  // lock.unlock();
-  if (g_app_log_index == 0) {
-    Mutex::Lock lock(m_mutex);
-    int64_t i = g_app_log_index++; 
-    m_app_buffer[i] = std::move(msg);
-    lock.unlock();
-  } else {
-    int64_t i = g_app_log_index++; 
-    m_app_buffer[i] = std::move(msg);
-  }
+  Mutex::Lock lock(m_app_buff_mutex);
+  m_app_buffer.push_back(std::move(msg));
+  lock.unlock();
 }
 
 void Logger::flush() {
@@ -333,8 +297,14 @@ void Logger::flush() {
 
 AsyncLogger::AsyncLogger(const char* file_name, const char* file_path, int max_size, LogType logtype)
   : m_file_name(file_name), m_file_path(file_path), m_max_size(max_size), m_log_type(logtype) {
+  int rt = sem_init(&m_semaphore, 0, 0);
+  assert(rt == 0);
 
-  pthread_create(&m_thread, nullptr, &AsyncLogger::excute, this);
+  rt = pthread_create(&m_thread, nullptr, &AsyncLogger::excute, this);
+  assert(rt == 0);
+  rt = sem_wait(&m_semaphore);
+  assert(rt == 0);
+
 }
 
 AsyncLogger::~AsyncLogger() {
@@ -343,12 +313,16 @@ AsyncLogger::~AsyncLogger() {
 
 void* AsyncLogger::excute(void* arg) {
   AsyncLogger* ptr = reinterpret_cast<AsyncLogger*>(arg);
-  pthread_cond_init(&ptr->m_condition, NULL);
+  int rt = pthread_cond_init(&ptr->m_condition, NULL);
+  assert(rt == 0);
+
+  rt = sem_post(&ptr->m_semaphore);
+  assert(rt == 0);
 
   while (1) {
     Mutex::Lock lock(ptr->m_mutex);
 
-    while (ptr->m_tasks.empty()) {
+    while (ptr->m_tasks.empty() && !ptr->m_stop) {
       pthread_cond_wait(&(ptr->m_condition), ptr->m_mutex.getMutex());
     }
     std::vector<std::string> tmp;
@@ -410,9 +384,11 @@ void* AsyncLogger::excute(void* arg) {
     }
 
     for(auto i : tmp) {
-      fwrite(i.c_str(), 1, i.length(), ptr->m_file_handle);
-      // printf("succ write rt %d bytes ,[%s] to file[%s]", rt, i.c_str(), full_file_name.c_str());
+      if (!i.empty()) {
+        fwrite(i.c_str(), 1, i.length(), ptr->m_file_handle);
+      }
     }
+    tmp.clear();
     fflush(ptr->m_file_handle);
     if (is_stop) {
       break;
@@ -448,6 +424,7 @@ void AsyncLogger::flush() {
 void AsyncLogger::stop() {
   if (!m_stop) {
     m_stop = true;
+    pthread_cond_signal(&m_condition);
   }
 }
 

@@ -7,11 +7,17 @@
 #include <atomic>
 #include <map>
 #include <functional>
-#include "../coroutine/coroutine.h"
+#include <queue>
+#include "tinyrpc/coroutine/coroutine.h"
 #include "fd_event.h"
 #include "mutex.h"
 
 namespace tinyrpc {
+
+enum ReactorType {
+  MainReactor = 1,    // main rewactor, only set this by main thread.
+  SubReactor = 2      // child reactor, every io thread is this type
+};
 
 class FdEvent;
 class Timer;
@@ -47,6 +53,8 @@ class Reactor {
   Timer* getTimer();
 
   pid_t getTid();
+
+  void setReactorType(ReactorType type);
  
  public:
   static Reactor* GetReactor();
@@ -85,6 +93,22 @@ class Reactor {
 
   Timer* m_timer {nullptr};
 
+  ReactorType m_reactor_type {SubReactor};
+
+};
+
+
+class CoroutineTaskQueue {
+ public:
+  static CoroutineTaskQueue* GetCoroutineTaskQueue();
+
+  void push(FdEvent* fd);
+
+  FdEvent* pop();
+
+ private:
+  std::queue<FdEvent*> m_task;
+  Mutex m_mutex;                    // mutex
 };
 
 

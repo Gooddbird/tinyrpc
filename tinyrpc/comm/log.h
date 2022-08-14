@@ -12,6 +12,7 @@
 #include <memory>
 #include <vector>
 #include <queue>
+#include <semaphore.h>
 #include "tinyrpc/net/mutex.h"
 #include "tinyrpc/comm/config.h"
 
@@ -23,7 +24,7 @@ extern tinyrpc::Config::ptr gRpcConfig;
 
 #define DebugLog \
 	if (tinyrpc::OpenLog() && tinyrpc::LogLevel::DEBUG >= tinyrpc::gRpcConfig->m_log_level) \
-		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::DEBUG, __FILE__, __LINE__, __func__, tinyrpc::LogType::RPC_LOG))).getStringStream() \
+		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::DEBUG, __FILE__, __LINE__, __func__, tinyrpc::LogType::RPC_LOG))).getStringStream()
 
 #define InfoLog \
 	if (tinyrpc::OpenLog() && tinyrpc::LogLevel::INFO >= tinyrpc::gRpcConfig->m_log_level) \
@@ -43,15 +44,15 @@ extern tinyrpc::Config::ptr gRpcConfig;
 		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::DEBUG, __FILE__, __LINE__, __func__, tinyrpc::LogType::APP_LOG))).getStringStream()
 
 #define AppInfoLog \
-	if (tinyrpc::OpenLog() && tinyrpc::LogLevel::DEBUG >= tinyrpc::gRpcConfig->m_app_log_level) \
+	if (tinyrpc::OpenLog() && tinyrpc::LogLevel::INFO >= tinyrpc::gRpcConfig->m_app_log_level) \
 		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::INFO, __FILE__, __LINE__, __func__, tinyrpc::LogType::APP_LOG))).getStringStream()
 
 #define AppWarnLog \
-	if (tinyrpc::OpenLog() && tinyrpc::LogLevel::DEBUG >= tinyrpc::gRpcConfig->m_app_log_level) \
+	if (tinyrpc::OpenLog() && tinyrpc::LogLevel::WARN >= tinyrpc::gRpcConfig->m_app_log_level) \
 		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::WARN, __FILE__, __LINE__, __func__, tinyrpc::LogType::APP_LOG))).getStringStream()
 
 #define AppErrorLog \
-	if (tinyrpc::OpenLog() && tinyrpc::LogLevel::DEBUG >= tinyrpc::gRpcConfig->m_app_log_level) \
+	if (tinyrpc::OpenLog() && tinyrpc::LogLevel::ERROR >= tinyrpc::gRpcConfig->m_app_log_level) \
 		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::ERROR, __FILE__, __LINE__, __func__, tinyrpc::LogType::APP_LOG))).getStringStream()
 
 
@@ -149,6 +150,7 @@ class AsyncLogger {
 
  public:
   pthread_t m_thread;
+	sem_t m_semaphore;
 
 };
 
@@ -167,6 +169,8 @@ class Logger {
 
 	void flush();
 
+	void start();
+
 	AsyncLogger::ptr getAsyncLogger() {
 		return m_async_rpc_logger;
 	}
@@ -180,10 +184,13 @@ class Logger {
 	std::vector<std::string> m_app_buffer;
 
  private:
- 	Mutex m_mutex;
+ 	Mutex m_app_buff_mutex;
+ 	Mutex m_buff_mutex;
 	bool m_is_init {false};
 	AsyncLogger::ptr m_async_rpc_logger;
 	AsyncLogger::ptr m_async_app_logger;
+
+	int m_sync_inteval {0};
 
 };
 

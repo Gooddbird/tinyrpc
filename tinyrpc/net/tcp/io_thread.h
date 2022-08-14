@@ -5,6 +5,7 @@
 #include <map>
 #include <atomic>
 #include <functional>
+#include <semaphore.h>
 #include "tinyrpc/net/reactor.h"
 #include "tinyrpc/net/tcp/tcp_connection_time_wheel.h"
 #include "tinyrpc/coroutine/coroutine.h"
@@ -13,7 +14,6 @@
 namespace tinyrpc {
 
 class TcpServer;
-class TcpConection;
 
 class IOThread {
 
@@ -26,9 +26,7 @@ class IOThread {
 
   Reactor* getReactor();
 
-  TcpTimeWheel::ptr getTimeWheel();
-
-  bool addClient(TcpServer* tcp_svr, int fd);
+  void addClient(TcpConnection* tcp_conn);
 
   pthread_t getPthreadId();
 
@@ -43,20 +41,14 @@ class IOThread {
  private:
  	static void* main(void* arg);
 
-
  private:
-  void MainLoopTimerFunc();
-
- private:
- 	Reactor* m_reactor;
-  std::map<int, std::shared_ptr<TcpConnection>> m_clients;
-
-  TcpTimeWheel::ptr m_time_wheel;
-
-	pthread_t m_thread;
-	pid_t m_tid;
-  TimerEvent::ptr m_timer_event;
+ 	Reactor* m_reactor {nullptr};
+	pthread_t m_thread {0};
+	pid_t m_tid {-1};
+  TimerEvent::ptr m_timer_event {nullptr};
   int m_index {-1};
+
+  sem_t m_semaphore;
 
 };
 

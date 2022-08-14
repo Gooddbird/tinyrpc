@@ -44,6 +44,7 @@ TcpServer::ptr GetServer() {
 }
 
 void StartRpcServer() {
+  gRpcLogger->start();
   gRpcServer->start();
 }
 

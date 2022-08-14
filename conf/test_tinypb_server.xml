@@ -4,7 +4,7 @@
   <log>
     <!--identify path of log file-->
     <log_path>./</log_path>
-    <log_prefix>test_rpc_server1</log_prefix>
+    <log_prefix>test_tinypb_server</log_prefix>
 
     <!--identify max size of single log file, MB-->
     <log_max_file_size>5</log_max_file_size>
@@ -42,7 +42,7 @@
   </time_wheel>
 
   <server>
-    <ip>0.0.0.0</ip>
+    <ip>127.0.0.1</ip>
     <port>39999</port>
     <protocal>TinyPB</protocal>
   </server>

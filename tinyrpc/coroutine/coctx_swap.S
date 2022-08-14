@@ -1,3 +1,5 @@
+# copy from https://github.com/Tencent/libco/blob/master/coctx_swap.S
+
 .globl coctx_swap
 coctx_swap:
     leaq (%rsp),%rax       

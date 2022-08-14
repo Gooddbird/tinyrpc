@@ -40,11 +40,11 @@ class TcpAcceptor {
   }
  
  private:
-  int m_family;
-  int m_fd;
+  int m_family {-1};
+  int m_fd {-1};
 
-  NetAddress::ptr m_local_addr;
-  NetAddress::ptr m_peer_addr;
+  NetAddress::ptr m_local_addr {nullptr};
+  NetAddress::ptr m_peer_addr {nullptr};
 
 };
 
@@ -63,24 +63,31 @@ class TcpServer {
 
   void addCoroutine(tinyrpc::Coroutine::ptr cor);
 
-  bool addClient(int fd);
-
-  AbstractDispatcher::ptr getDispatcher();
-
-  AbstractCodeC::ptr getCodec();
-
-  TcpTimeWheel* getTimeWheel();
-
-  NetAddress::ptr getPeerAddr();
-
   bool registerService(std::shared_ptr<google::protobuf::Service> service);
 
   bool registerHttpServlet(const std::string& url_path, HttpServlet::ptr servlet);
 
+  TcpConnection::ptr addClient(IOThread* io_thread, int fd);
+
+  void freshTcpConnection(TcpTimeWheel::TcpConnectionSlot::ptr slot);
+
+
+ public:
+  AbstractDispatcher::ptr getDispatcher();
+
+  AbstractCodeC::ptr getCodec();
+
+  NetAddress::ptr getPeerAddr();
+
   IOThreadPool::ptr getIOThreadPool();
+
+  TcpTimeWheel::ptr getTimeWheel();
+
 
  private:
   void MainAcceptCorFunc();
+
+  void ClearClientTimerFunc();
 
  private:
   
@@ -104,6 +111,11 @@ class TcpServer {
 
   ProtocalType m_protocal_type {TinyPb_Protocal};
 
+  TcpTimeWheel::ptr m_time_wheel;
+
+  std::map<int, std::shared_ptr<TcpConnection>> m_clients;
+
+  TimerEvent::ptr m_clear_clent_timer_event {nullptr};
 
 };
 

@@ -8,22 +8,19 @@
 
 namespace tinyrpc {
 
-// 主协程,主协程的栈就是当前线程的栈
-// 每个线程都有一个主协程
-static thread_local Coroutine* t_main_coroutine = nullptr;
+// main coroutine, every io thread have a main_coroutine
+static thread_local Coroutine* t_main_coroutine = NULL;
 
-// 线程当前正在执行的协程
-static thread_local Coroutine* t_cur_coroutine = nullptr;
+// current thread is runing which coroutine
+static thread_local Coroutine* t_cur_coroutine = NULL;
 
-static thread_local int t_coroutine_count = 0;
-
-static thread_local int t_cur_coroutine_id = 0;
-
-static thread_local std::string t_msg_no = "";
-
-static thread_local RunTime* t_cur_run_time = nullptr;
+static thread_local RunTime* t_cur_run_time = NULL;
 
 static thread_local bool t_enable_coroutine_swap = true;
+
+static std::atomic_int t_coroutine_count {0};
+
+static std::atomic_int t_cur_coroutine_id {1};
 
 int getCoroutineIndex() {
   return t_cur_coroutine_id;
@@ -48,7 +45,7 @@ void CoFunction(Coroutine* co) {
     co->setIsInCoFunc(false);
   }
 
-  // 执行完协程回调函数返回后,说明协程生命周期结束,此时需恢复到主协程
+  // here coroutine's callback function finished, that means coroutine's life is over. we should yiled main couroutine
   Coroutine::Yield();
 }
 
@@ -61,61 +58,39 @@ bool Coroutine::GetCoroutineSwapFlag() {
 }
 
 Coroutine::Coroutine() {
-  m_cor_id = t_cur_coroutine_id++;
+  // main coroutine'id is 0
+  m_cor_id = 0;
   t_coroutine_count++;
   memset(&m_coctx, 0, sizeof(m_coctx));
+  t_cur_coroutine = this;
+  DebugLog << "coroutine[" << m_cor_id << "] create";
 }
 
-Coroutine::Coroutine(int size) : m_stack_size(size) {
-
-  if (t_main_coroutine == nullptr) {
-    t_main_coroutine = new Coroutine();
-  }
-  // assert(t_main_coroutine != nullptr);
-
-  m_stack_sp =  reinterpret_cast<char*>(malloc(m_stack_size));
-  if (!m_stack_sp) {
-    ErrorLog << "start server error. malloc stack return nullptr";
-    Exit(0);
-  }
-  // assert(m_stack_sp != nullptr);
-
-  m_cor_id = t_cur_coroutine_id++;
-  t_coroutine_count++;
-  // DebugLog << "coroutine[null callback] created, id[" << m_cor_id << "]";
-}
-
-Coroutine::Coroutine(int size, char* stack_ptr) {
-  if (t_main_coroutine == nullptr) {
-    t_main_coroutine = new Coroutine();
-  }
-
+Coroutine::Coroutine(int size, char* stack_ptr) : m_stack_size(size), m_stack_sp(stack_ptr) {
   assert(stack_ptr);
-  m_stack_size = size;
-  m_stack_sp = stack_ptr;
-  m_cor_id = t_cur_coroutine_id++;
-  t_coroutine_count++;
-}
 
-Coroutine::Coroutine(int size, std::function<void()> cb)
-  : m_stack_size(size) {
-
-  if (t_main_coroutine == nullptr) {
+  if (!t_main_coroutine) {
     t_main_coroutine = new Coroutine();
   }
-  // assert(t_main_coroutine != nullptr);
 
-  m_stack_sp =  reinterpret_cast<char*>(malloc(m_stack_size));
-  if (!m_stack_sp) {
-    ErrorLog << "start server error. malloc stack return nullptr";
-    Exit(0);
+  m_cor_id = t_cur_coroutine_id++;
+  t_coroutine_count++;
+  DebugLog << "coroutine[" << m_cor_id << "] create";
+}
+
+Coroutine::Coroutine(int size, char* stack_ptr, std::function<void()> cb)
+  : m_stack_size(size), m_stack_sp(stack_ptr) {
+
+  assert(m_stack_sp);
+  
+  if (!t_main_coroutine) {
+    t_main_coroutine = new Coroutine();
   }
-  // assert(m_stack_sp != nullptr);
 
   setCallBack(cb);
   m_cor_id = t_cur_coroutine_id++;
   t_coroutine_count++;
-  // DebugLog << "coroutine created, id[" << m_cor_id << "]";
+  DebugLog << "coroutine[" << m_cor_id << "] create";
 }
 
 bool Coroutine::setCallBack(std::function<void()> cb) {
@@ -146,17 +121,14 @@ bool Coroutine::setCallBack(std::function<void()> cb) {
   m_coctx.regs[kRETAddr] = reinterpret_cast<char*>(CoFunction); 
   m_coctx.regs[kRDI] = reinterpret_cast<char*>(this);
 
+  m_can_resume = true;
+
   return true;
 
 }
 
 Coroutine::~Coroutine() {
   t_coroutine_count--;
-
-  if (m_stack_sp != nullptr) {
-    free(m_stack_sp);
-    m_stack_sp = nullptr;
-  }
   DebugLog << "coroutine[" << m_cor_id << "] die";
 }
 
@@ -168,6 +140,14 @@ Coroutine* Coroutine::GetCurrentCoroutine() {
   return t_cur_coroutine;
 }
 
+Coroutine* Coroutine::GetMainCoroutine() {
+  if (t_main_coroutine) {
+    return t_main_coroutine;
+  }
+  t_main_coroutine = new Coroutine();
+  return t_main_coroutine;
+}
+
 bool Coroutine::IsMainCoroutine() {
   if (t_main_coroutine == nullptr || t_cur_coroutine == t_main_coroutine) {
     return true;
@@ -176,7 +156,7 @@ bool Coroutine::IsMainCoroutine() {
 }
 
 /********
-让出执行权,切换到主协程
+form target coroutine back to main coroutine
 ********/
 void Coroutine::Yield() {
   if (!t_enable_coroutine_swap) {
@@ -194,27 +174,26 @@ void Coroutine::Yield() {
   }
   Coroutine* co = t_cur_coroutine;
   t_cur_coroutine = t_main_coroutine;
-  t_cur_run_time = nullptr;
+  t_cur_run_time = NULL;
   coctx_swap(&(co->m_coctx), &(t_main_coroutine->m_coctx));
   // DebugLog << "swap back";
 }
 
 /********
-取得执行权,从主协程切换到目标协程
+form main coroutine switch to target coroutine
 ********/
 void Coroutine::Resume(Coroutine* co) {
-
   if (t_cur_coroutine != t_main_coroutine) {
     ErrorLog << "swap error, current coroutine must be main coroutine";
     return;
   }
 
-  if (t_main_coroutine == nullptr) {
+  if (!t_main_coroutine) {
     ErrorLog << "main coroutine is nullptr";
     return;
   }
-  if (co == nullptr) {
-    ErrorLog << "pending coroutine is nullptr";
+  if (!co || !co->m_can_resume) {
+    ErrorLog << "pending coroutine is nullptr or can_resume is false";
     return;
   }
 
@@ -222,6 +201,7 @@ void Coroutine::Resume(Coroutine* co) {
     DebugLog << "current coroutine is pending cor, need't swap";
     return;
   }
+
   t_cur_coroutine = co;
   t_cur_run_time = co->getRunTime();
 

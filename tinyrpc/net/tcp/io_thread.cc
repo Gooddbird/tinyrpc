@@ -2,6 +2,7 @@
 #include <map>
 #include <time.h>
 #include <stdlib.h>
+#include <semaphore.h>
 #include "tinyrpc/net/reactor.h"
 #include "tinyrpc/net/tcp/io_thread.h"
 #include "tinyrpc/net/tcp/tcp_connection.h"
@@ -22,7 +23,17 @@ static thread_local IOThread* t_cur_io_thread = nullptr;
 
 
 IOThread::IOThread() {
+  int rt = sem_init(&m_semaphore, 0, 0);
+  assert(rt==0);
   pthread_create(&m_thread, nullptr, &IOThread::main, this);
+
+  DebugLog << "semaphore begin to wait until new thread frinish IOThread::main() to init";
+  // wait until new thread finish IOThread::main() func to init 
+  rt = sem_wait(&m_semaphore);
+  assert(rt == 0);
+  DebugLog << "semaphore wait end, finish create io thread";
+
+  sem_destroy(&m_semaphore);
 }
 
 IOThread::~IOThread() {
@@ -48,10 +59,6 @@ pthread_t IOThread::getPthreadId() {
   return m_thread;
 }
 
-TcpTimeWheel::ptr IOThread::getTimeWheel() {
-  return m_time_wheel;
-}
-
 void IOThread::setThreadIndex(const int index) {
   m_index = index;
 }
@@ -64,68 +71,29 @@ void* IOThread::main(void* arg) {
   // assert(t_reactor_ptr == nullptr);
 
   t_reactor_ptr = new Reactor();
+  assert(t_reactor_ptr != NULL);
+
   IOThread* thread = static_cast<IOThread*>(arg);
   t_cur_io_thread = thread;
   thread->m_reactor = t_reactor_ptr;
+  thread->m_reactor->setReactorType(SubReactor);
   thread->m_tid = gettid();
 
-  thread->m_timer_event = std::make_shared<TimerEvent>(10000, true, 
-    std::bind(&IOThread::MainLoopTimerFunc, thread));
-  
-  thread->getReactor()->getTimer()->addTimerEvent(thread->m_timer_event);
-  thread->m_time_wheel = std::make_shared<TcpTimeWheel>(thread->m_reactor, gRpcConfig->m_timewheel_bucket_num, gRpcConfig->m_timewheel_inteval);
-
   Coroutine::GetCurrentCoroutine();
+
+  DebugLog << "finish iothread init, now post semaphore";
+  sem_post(&thread->m_semaphore);
 
   t_reactor_ptr->loop();
 
   return nullptr;
 }
 
-bool IOThread::addClient(TcpServer* tcp_svr, int fd) {
-
-  auto it = m_clients.find(fd);
-  if (it != m_clients.end()) {
-    TcpConnection::ptr s_conn = it->second;
-    if (s_conn && s_conn.use_count() > 0 && s_conn->getState() != Closed) {
-      ErrorLog << "insert error, this fd of TcpConection exist and state not Closed";
-      return false;
-    }
-    // src Tcpconnection can delete
-    s_conn.reset();
-		it->second.reset();
-    // set new Tcpconnection	
-		it->second = std::make_shared<TcpConnection>(tcp_svr, this, fd, 128, tcp_svr->getPeerAddr());
-    it->second->registerToTimeWheel();
-
-  } else {
-    TcpConnection::ptr conn = std::make_shared<TcpConnection>(tcp_svr, this, fd, 128, tcp_svr->getPeerAddr()); 
-    m_clients.insert(std::make_pair(fd, conn));
-    conn->registerToTimeWheel();
-    
-  }
-  return true;
+void IOThread::addClient(TcpConnection* tcp_conn) {
+  tcp_conn->registerToTimeWheel();
+  tcp_conn->setUpServer();
+  return;
 }
-
-void IOThread::MainLoopTimerFunc() {
-  // DebugLog << "this IOThread loop timer excute";
-  
-  // delete Closed TcpConnection per loop
-  // for free memory
-	// DebugLog << "m_clients.size=" << m_clients.size();
-  for (auto &i : m_clients) {
-    // TcpConnection::ptr s_conn = i.second;
-		// DebugLog << "state = " << s_conn->getState();
-    if (i.second && i.second.use_count() > 0 && i.second->getState() == Closed) {
-      // need to delete TcpConnection
-      DebugLog << "TcpConection [fd:" << i.first << "] will delete";
-      (i.second).reset();
-      // s_conn.reset();
-    }
-	
-  }
-}
-
 
 IOThreadPool::IOThreadPool(int size) : m_size(size) {
   m_io_threads.resize(size);
