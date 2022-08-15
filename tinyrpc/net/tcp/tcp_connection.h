@@ -58,7 +58,9 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
   void shutdownConnection();
 
-  TcpConnectionState getState() const;
+  TcpConnectionState getState();
+
+  void setState(const TcpConnectionState& state);
 
   TcpBuffer* getInBuffer();
 
@@ -118,6 +120,8 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
   std::map<std::string, std::shared_ptr<TinyPbStruct>> m_reply_datas;
 
   std::weak_ptr<AbstractSlot<TcpConnection>> m_weak_slot;
+
+  RWMutex m_mutex;
 
 };
 

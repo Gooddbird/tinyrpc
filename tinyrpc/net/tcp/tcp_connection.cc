@@ -15,7 +15,7 @@
 namespace tinyrpc {
 
 TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_thread, int fd, int buff_size, NetAddress::ptr peer_addr)
-  : m_io_thread(io_thread), m_fd(fd), m_state(Connected), m_connection_type(ServerConnection), m_peer_addr(peer_addr) {	
+  : m_io_thread(io_thread), m_fd(fd), m_connection_type(ServerConnection), m_peer_addr(peer_addr) {	
   m_reactor = m_io_thread->getReactor();
 
   m_tcp_svr = tcp_svr;
@@ -26,8 +26,8 @@ TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_
   initBuffer(buff_size); 
   m_loop_cor = GetCoroutinePool()->getCoroutineInstanse();
   m_loop_cor->setCallBack(std::bind(&TcpConnection::MainServerLoopCorFunc, this));
-
-  DebugLog << "succ create tcp connection[Connected]";
+  m_state = Connected;
+  DebugLog << "succ create tcp connection[" << m_state << "], fd=" << fd;
 }
 
 TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reactor, int fd, int buff_size, NetAddress::ptr peer_addr)
@@ -62,7 +62,7 @@ void TcpConnection::registerToTimeWheel() {
 }
 
 void TcpConnection::setUpClient() {
-  m_state = Connected;
+  setState(Connected);
 }
 
 TcpConnection::~TcpConnection() {
@@ -98,7 +98,8 @@ void TcpConnection::input() {
     InfoLog << "over timer, skip input progress";
     return;
   }
-  if (m_state == Closed || m_state == NotConnected) {
+  TcpConnectionState state = getState();
+  if (state == Closed || state == NotConnected) {
     return;
   }
   bool read_all = false;
@@ -120,7 +121,7 @@ void TcpConnection::input() {
     }
     DebugLog << "m_read_buffer size=" << m_read_buffer->getBufferVector().size() << "rd=" << m_read_buffer->readIndex() << "wd=" << m_read_buffer->writeIndex();
 
-    DebugLog << "read data back";
+    DebugLog << "read data back, fd=" << m_fd;
     count += rt;
     if (m_is_over_time) {
       InfoLog << "over timer, now break read function";
@@ -211,7 +212,8 @@ void TcpConnection::output() {
     return;
   }
   while(true) {
-    if (m_state != Connected) {
+    TcpConnectionState state = getState();
+    if (state != Connected) {
       break;
     }
 
@@ -249,7 +251,7 @@ void TcpConnection::output() {
 
 
 void TcpConnection::clearClient() {
-  if (m_state == Closed) {
+  if (getState() == Closed) {
     DebugLog << "this client has closed";
     return;
   }
@@ -260,17 +262,18 @@ void TcpConnection::clearClient() {
   m_stop = true;
 
   close(m_fd_event->getFd());
-  m_state = Closed;
+  setState(Closed);
 
 }
 
 void TcpConnection::shutdownConnection() {
-  if (m_state == Closed || m_state == NotConnected) {
+  TcpConnectionState state = getState();
+  if (state == Closed || state == NotConnected) {
     DebugLog << "this client has closed";
     return;
   }
-  m_state = HalfClosing; 
-  InfoLog << "shutdown conn[" << m_peer_addr->toString() << "]";
+  setState(HalfClosing);
+  InfoLog << "shutdown conn[" << m_peer_addr->toString() << "], fd=" << m_fd;
   // call sys shutdown to send FIN
   // wait client done something, client will send FIN
   // and fd occur read event but byte count is 0
@@ -306,8 +309,19 @@ AbstractCodeC::ptr TcpConnection::getCodec() const {
   return m_codec;
 }
 
-TcpConnectionState TcpConnection::getState() const {
-  return m_state;
+TcpConnectionState TcpConnection::getState() {
+  TcpConnectionState state;
+  RWMutex::ReadLock lock(m_mutex);
+  state = m_state;
+  lock.unlock();
+
+  return state;
+}
+
+void TcpConnection::setState(const TcpConnectionState& state) {
+  RWMutex::WriteLock lock(m_mutex);
+  m_state = state;
+  lock.unlock(); 
 }
 
 void TcpConnection::setOverTimeFlag(bool value) {
@@ -321,6 +335,8 @@ bool TcpConnection::getOverTimerFlag() {
 Coroutine::ptr TcpConnection::getCoroutine() {
   return m_loop_cor;
 }
+
+
 
 
 
