@@ -166,6 +166,7 @@ void TcpServer::MainAcceptCorFunc() {
     }
     IOThread *io_thread = m_io_pool->getIOThread();
 		TcpConnection::ptr conn = addClient(io_thread, fd);
+		conn->initServer();
 		DebugLog << "tcpconnection address is " << conn.get() << ", and fd is" << fd;
 
     // auto cb = [io_thread, conn]() mutable {
@@ -220,10 +221,12 @@ TcpConnection::ptr TcpServer::addClient(IOThread* io_thread, int fd) {
   if (it != m_clients.end()) {
 		it->second.reset();
     // set new Tcpconnection	
+		DebugLog << "fd " << fd << "have exist, reset it";
 		it->second = std::make_shared<TcpConnection>(this, io_thread, fd, 128, getPeerAddr());
 		return it->second;
 
   } else {
+		DebugLog << "fd " << fd << "did't exist, new it";
     TcpConnection::ptr conn = std::make_shared<TcpConnection>(this, io_thread, fd, 128, getPeerAddr()); 
     m_clients.insert(std::make_pair(fd, conn));
 		return conn;

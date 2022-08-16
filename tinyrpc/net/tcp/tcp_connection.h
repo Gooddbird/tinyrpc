@@ -87,6 +87,7 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
   bool getOverTimerFlag();
 
+  void initServer();
 
  private:
   void clearClient();

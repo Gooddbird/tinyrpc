@@ -15,9 +15,10 @@
 namespace tinyrpc {
 
 TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_thread, int fd, int buff_size, NetAddress::ptr peer_addr)
-  : m_io_thread(io_thread), m_fd(fd), m_connection_type(ServerConnection), m_peer_addr(peer_addr) {	
+  : m_io_thread(io_thread), m_fd(fd), m_state(Connected), m_connection_type(ServerConnection), m_peer_addr(peer_addr) {	
   m_reactor = m_io_thread->getReactor();
 
+  // DebugLog << "m_state=[" << m_state << "], =" << fd;
   m_tcp_svr = tcp_svr;
 
   m_codec = m_tcp_svr->getCodec();
@@ -25,7 +26,6 @@ TcpConnection::TcpConnection(tinyrpc::TcpServer* tcp_svr, tinyrpc::IOThread* io_
   m_fd_event->setReactor(m_reactor);
   initBuffer(buff_size); 
   m_loop_cor = GetCoroutinePool()->getCoroutineInstanse();
-  m_loop_cor->setCallBack(std::bind(&TcpConnection::MainServerLoopCorFunc, this));
   m_state = Connected;
   DebugLog << "succ create tcp connection[" << m_state << "], fd=" << fd;
 }
@@ -46,6 +46,9 @@ TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reac
 
 }
 
+void TcpConnection::initServer() {
+  m_loop_cor->setCallBack(std::bind(&TcpConnection::MainServerLoopCorFunc, this));
+}
 void TcpConnection::setUpServer() {
   m_reactor->addCoroutine(m_loop_cor);
 }
