@@ -153,9 +153,6 @@ TcpServer::~TcpServer() {
   DebugLog << "~TcpServer";
 }
 
-NetAddress::ptr TcpServer::getPeerAddr() {
-	return m_acceptor->getPeerAddr();
-}
 
 void TcpServer::MainAcceptCorFunc() {
 
@@ -169,6 +166,8 @@ void TcpServer::MainAcceptCorFunc() {
     }
     IOThread *io_thread = m_io_pool->getIOThread();
 		TcpConnection::ptr conn = addClient(io_thread, fd);
+		conn->initServer();
+		DebugLog << "tcpconnection address is " << conn.get() << ", and fd is" << fd;
 
     // auto cb = [io_thread, conn]() mutable {
     //   io_thread->addClient(conn.get());
@@ -181,13 +180,6 @@ void TcpServer::MainAcceptCorFunc() {
   }
 }
 
-AbstractDispatcher::ptr TcpServer::getDispatcher() {	
-	return m_dispatcher;	
-}
-
-AbstractCodeC::ptr TcpServer::getCodec() {
-	return m_codec;
-}
 
 void TcpServer::addCoroutine(Coroutine::ptr cor) {
 	m_main_reactor->addCoroutine(cor);
@@ -223,29 +215,25 @@ bool TcpServer::registerHttpServlet(const std::string& url_path, HttpServlet::pt
 	return true;
 }
 
-IOThreadPool::ptr TcpServer::getIOThreadPool() {
-	return m_io_pool;
-}
-
 
 TcpConnection::ptr TcpServer::addClient(IOThread* io_thread, int fd) {
   auto it = m_clients.find(fd);
   if (it != m_clients.end()) {
 		it->second.reset();
     // set new Tcpconnection	
+		DebugLog << "fd " << fd << "have exist, reset it";
 		it->second = std::make_shared<TcpConnection>(this, io_thread, fd, 128, getPeerAddr());
 		return it->second;
 
   } else {
+		DebugLog << "fd " << fd << "did't exist, new it";
     TcpConnection::ptr conn = std::make_shared<TcpConnection>(this, io_thread, fd, 128, getPeerAddr()); 
     m_clients.insert(std::make_pair(fd, conn));
 		return conn;
   }
 }
 
-TcpTimeWheel::ptr TcpServer::getTimeWheel() {
-  return m_time_wheel;
-}
+
 
 void TcpServer::freshTcpConnection(TcpTimeWheel::TcpConnectionSlot::ptr slot) {
 	auto cb = [slot, this]() mutable {
@@ -267,12 +255,33 @@ void TcpServer::ClearClientTimerFunc() {
 		// DebugLog << "state = " << s_conn->getState();
     if (i.second && i.second.use_count() > 0 && i.second->getState() == Closed) {
       // need to delete TcpConnection
-      DebugLog << "TcpConection [fd:" << i.first << "] will delete";
+      DebugLog << "TcpConection [fd:" << i.first << "] will delete, state=" << i.second->getState();
       (i.second).reset();
       // s_conn.reset();
     }
 	
   }
+}
+
+NetAddress::ptr TcpServer::getPeerAddr() {
+	return m_acceptor->getPeerAddr();
+}
+
+TcpTimeWheel::ptr TcpServer::getTimeWheel() {
+  return m_time_wheel;
+}
+
+IOThreadPool::ptr TcpServer::getIOThreadPool() {
+	return m_io_pool;
+}
+
+
+AbstractDispatcher::ptr TcpServer::getDispatcher() {	
+	return m_dispatcher;	
+}
+
+AbstractCodeC::ptr TcpServer::getCodec() {
+	return m_codec;
 }
 
 }
