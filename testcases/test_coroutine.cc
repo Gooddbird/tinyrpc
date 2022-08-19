@@ -28,6 +28,7 @@ void* thread1_func(void*) {
 }
 
 void* thread2_func(void*) {
+  tinyrpc::Coroutine::GetCurrentCoroutine();
   std::cout << "thread 2 begin" << std::endl;
   std::cout << "now begin to resume fun1 coroutine in thread 2" << std::endl;
   tinyrpc::Coroutine::Resume(cor.get());
