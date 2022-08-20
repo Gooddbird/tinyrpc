@@ -63,7 +63,7 @@ Coroutine::Coroutine() {
   t_coroutine_count++;
   memset(&m_coctx, 0, sizeof(m_coctx));
   t_cur_coroutine = this;
-  DebugLog << "coroutine[" << m_cor_id << "] create";
+  // DebugLog << "coroutine[" << m_cor_id << "] create";
 }
 
 Coroutine::Coroutine(int size, char* stack_ptr) : m_stack_size(size), m_stack_sp(stack_ptr) {
@@ -75,7 +75,7 @@ Coroutine::Coroutine(int size, char* stack_ptr) : m_stack_size(size), m_stack_sp
 
   m_cor_id = t_cur_coroutine_id++;
   t_coroutine_count++;
-  DebugLog << "coroutine[" << m_cor_id << "] create";
+  // DebugLog << "coroutine[" << m_cor_id << "] create";
 }
 
 Coroutine::Coroutine(int size, char* stack_ptr, std::function<void()> cb)
@@ -90,7 +90,7 @@ Coroutine::Coroutine(int size, char* stack_ptr, std::function<void()> cb)
   setCallBack(cb);
   m_cor_id = t_cur_coroutine_id++;
   t_coroutine_count++;
-  DebugLog << "coroutine[" << m_cor_id << "] create";
+  // DebugLog << "coroutine[" << m_cor_id << "] create";
 }
 
 bool Coroutine::setCallBack(std::function<void()> cb) {
@@ -129,7 +129,7 @@ bool Coroutine::setCallBack(std::function<void()> cb) {
 
 Coroutine::~Coroutine() {
   t_coroutine_count--;
-  DebugLog << "coroutine[" << m_cor_id << "] die";
+  // DebugLog << "coroutine[" << m_cor_id << "] die";
 }
 
 Coroutine* Coroutine::GetCurrentCoroutine() {
