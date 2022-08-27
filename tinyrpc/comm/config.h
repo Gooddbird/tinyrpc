@@ -24,6 +24,7 @@ class Config {
 
  public:
   typedef std::shared_ptr<Config> ptr;
+
   Config(const char* file_path);
 
   ~Config();
@@ -33,6 +34,8 @@ class Config {
   void readDBConfig(TiXmlElement* node);
 
   void readLogConfig(TiXmlElement* node);
+
+  TiXmlElement* getXmlNode(const std::string& name);
 
  public:
 

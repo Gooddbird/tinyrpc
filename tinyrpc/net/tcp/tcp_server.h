@@ -79,6 +79,8 @@ class TcpServer {
 
   NetAddress::ptr getPeerAddr();
 
+  NetAddress::ptr getLocalAddr();
+
   IOThreadPool::ptr getIOThreadPool();
 
   TcpTimeWheel::ptr getTimeWheel();
