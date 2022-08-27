@@ -37,6 +37,8 @@ TcpServer::ptr GetServer();
 
 int GetIOThreadPoolSize();
 
+Config::ptr GetConfig();
+
 
 }
 

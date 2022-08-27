@@ -267,6 +267,10 @@ NetAddress::ptr TcpServer::getPeerAddr() {
 	return m_acceptor->getPeerAddr();
 }
 
+NetAddress::ptr TcpServer::getLocalAddr() {
+	return m_addr;
+}
+
 TcpTimeWheel::ptr TcpServer::getTimeWheel() {
   return m_time_wheel;
 }

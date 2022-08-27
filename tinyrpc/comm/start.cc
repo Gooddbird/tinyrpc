@@ -52,5 +52,8 @@ int GetIOThreadPoolSize() {
   return gRpcServer->getIOThreadPool()->getIOThreadPoolSize();
 }
 
+Config::ptr GetConfig() {
+  return gRpcConfig;
+}
 
 }

@@ -269,4 +269,8 @@ Config::~Config() {
 }
 
 
+TiXmlElement* Config::getXmlNode(const std::string& name) {
+  return m_xml_file->RootElement()->FirstChildElement(name.c_str());
+}
+
 }

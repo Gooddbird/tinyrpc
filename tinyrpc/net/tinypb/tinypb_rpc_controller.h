@@ -4,6 +4,7 @@
 #include <google/protobuf/service.h>
 #include <google/protobuf/stubs/callback.h>
 #include <stdio.h>
+#include <memory>
 #include "../net_address.h"
 
 namespace tinyrpc {
@@ -11,7 +12,7 @@ namespace tinyrpc {
 class TinyPbRpcController : public google::protobuf::RpcController {
 
  public:
-
+  typedef std::shared_ptr<TinyPbRpcController> ptr;
   // Client-side methods ---------------------------------------------
 
   TinyPbRpcController() = default;
