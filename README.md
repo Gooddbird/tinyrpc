@@ -310,7 +310,7 @@ mkdir bin && mkdir lib
 
 // 生成测试pb桩文件
 cd testcases
-protoc --cpp_out=./ tinypb.proto
+protoc --cpp_out=./ test_tinypb_server.proto
 
 cd ..
 // 先执行编译
@@ -374,7 +374,7 @@ service QueryService {
 ```
 使用 protoc 工具生成对应的 C++ 代码：
 ```
-protoc --cpp_out=protoc --cpp_out=./ test_tinypb_server.proto
+protoc --cpp_out=./ test_tinypb_server.proto
 ```
 
 ### 4.1.2. 准备配置文件
