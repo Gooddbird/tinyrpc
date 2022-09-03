@@ -10,20 +10,14 @@
 
 namespace tinyrpc {
 
-// void CououtineLock() {
-//   // disable coroutine swap, that's means couroutine can't yield until unlock
-//   Coroutine::SetCoroutineSwapFlag(false);
-// }
-
-// void CououtineUnLock() {
-//   Coroutine::SetCoroutineSwapFlag(true);
-// }
-
-
 
 CoroutineMutex::CoroutineMutex() {}
 
-CoroutineMutex::~CoroutineMutex() {}
+CoroutineMutex::~CoroutineMutex() {
+  if (m_lock) {
+    unlock();
+  }
+}
 
 void CoroutineMutex::lock() {
 
@@ -31,17 +25,21 @@ void CoroutineMutex::lock() {
     ErrorLog << "main coroutine can't use coroutine mutex";
     return;
   }
+
+  Coroutine* cor = Coroutine::GetCurrentCoroutine();
+
+  Mutex::Lock lock(m_mutex);
   if (!m_lock) {
     m_lock = true;
+    lock.unlock();
   } else {
-    // beacuse can't get lock, so should yield current cor
 
-    Coroutine* cor = Coroutine::GetCurrentCoroutine();
-    // add to tasks, wait next reactor back to resume this coroutine
-    std::shared_ptr<Coroutine> tmp(cor);
-    Reactor::GetReactor()->addCoroutine(tmp, false);
+    m_sleep_cors.push(cor);
+    lock.unlock();
+
     Coroutine::Yield();
   } 
+  DebugLog << "succ get coroutine mutex"; 
 }
 
 void CoroutineMutex::unlock() {
@@ -49,8 +47,21 @@ void CoroutineMutex::unlock() {
     ErrorLog << "main coroutine can't use coroutine mutex";
     return;
   }
+
+  Mutex::Lock lock(m_mutex);
   if (m_lock) {
     m_lock = false;
+
+    Coroutine* cor = m_sleep_cors.front();
+    m_sleep_cors.pop();
+    lock.unlock();
+
+    if (cor) {
+      // wakeup the first cor in sleep queue
+      tinyrpc::Reactor::GetReactor()->addTask([cor]() {
+        tinyrpc::Coroutine::Resume(cor);
+      }, true);
+    }
   }
 }
 

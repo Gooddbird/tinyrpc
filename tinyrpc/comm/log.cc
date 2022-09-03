@@ -68,6 +68,10 @@ void setLogLevel(LogLevel level) {
 
 
 bool OpenLog() {
+  if (!gRpcLogger) {
+    return false;
+  }
+
   #ifdef DECLARE_OPEN_TINYRPC_LOG 
     return true;  
   #endif

@@ -16,7 +16,7 @@ static thread_local Coroutine* t_cur_coroutine = NULL;
 
 static thread_local RunTime* t_cur_run_time = NULL;
 
-static thread_local bool t_enable_coroutine_swap = true;
+// static thread_local bool t_enable_coroutine_swap = true;
 
 static std::atomic_int t_coroutine_count {0};
 
@@ -49,13 +49,13 @@ void CoFunction(Coroutine* co) {
   Coroutine::Yield();
 }
 
-void Coroutine::SetCoroutineSwapFlag(bool value) {
-  t_enable_coroutine_swap = value;
-}
+// void Coroutine::SetCoroutineSwapFlag(bool value) {
+//   t_enable_coroutine_swap = value;
+// }
 
-bool Coroutine::GetCoroutineSwapFlag() {
-  return t_enable_coroutine_swap;
-}
+// bool Coroutine::GetCoroutineSwapFlag() {
+//   return t_enable_coroutine_swap;
+// }
 
 Coroutine::Coroutine() {
   // main coroutine'id is 0
@@ -159,10 +159,10 @@ bool Coroutine::IsMainCoroutine() {
 form target coroutine back to main coroutine
 ********/
 void Coroutine::Yield() {
-  if (!t_enable_coroutine_swap) {
-    ErrorLog << "can't yield, because disable coroutine swap";
-    return;
-  }
+  // if (!t_enable_coroutine_swap) {
+  //   ErrorLog << "can't yield, because disable coroutine swap";
+  //   return;
+  // }
   if (t_main_coroutine == nullptr) {
     ErrorLog << "main coroutine is nullptr";
     return;

@@ -3,6 +3,8 @@
 
 #include <pthread.h>
 #include <memory>
+#include <queue>
+#include "tinyrpc/coroutine/coroutine.h"
 
 // this file copy form sylar
 
@@ -219,6 +221,8 @@ class CoroutineMutex {
   void unlock();
  private:
   bool m_lock {false};
+  Mutex m_mutex;
+  std::queue<Coroutine*> m_sleep_cors;
 };
 
 

@@ -88,9 +88,9 @@ class Coroutine {
 
   static bool IsMainCoroutine();
 
-  static void SetCoroutineSwapFlag(bool value);
+  // static void SetCoroutineSwapFlag(bool value);
 
-  static bool GetCoroutineSwapFlag();
+  // static bool GetCoroutineSwapFlag();
 
  private:
   int m_cor_id {0};        // coroutine' id

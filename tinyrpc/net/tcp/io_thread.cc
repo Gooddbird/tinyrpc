@@ -23,17 +23,21 @@ static thread_local IOThread* t_cur_io_thread = nullptr;
 
 
 IOThread::IOThread() {
-  int rt = sem_init(&m_semaphore, 0, 0);
+  int rt = sem_init(&m_init_semaphore, 0, 0);
   assert(rt==0);
+
+  rt = sem_init(&m_start_semaphore, 0, 0);
+  assert(rt==0);
+
   pthread_create(&m_thread, nullptr, &IOThread::main, this);
 
   DebugLog << "semaphore begin to wait until new thread frinish IOThread::main() to init";
   // wait until new thread finish IOThread::main() func to init 
-  rt = sem_wait(&m_semaphore);
+  rt = sem_wait(&m_init_semaphore);
   assert(rt == 0);
   DebugLog << "semaphore wait end, finish create io thread";
 
-  sem_destroy(&m_semaphore);
+  sem_destroy(&m_init_semaphore);
 }
 
 IOThread::~IOThread() {
@@ -49,6 +53,10 @@ IOThread::~IOThread() {
 
 IOThread* IOThread::GetCurrentIOThread() {
   return t_cur_io_thread;
+}
+
+sem_t* IOThread::getStartSemaphore() {
+  return &m_start_semaphore;
 }
 
 Reactor* IOThread::getReactor() {
@@ -82,8 +90,14 @@ void* IOThread::main(void* arg) {
   Coroutine::GetCurrentCoroutine();
 
   DebugLog << "finish iothread init, now post semaphore";
-  sem_post(&thread->m_semaphore);
+  sem_post(&thread->m_init_semaphore);
 
+  // wait for main thread post m_start_semaphore to start iothread loop
+  sem_wait(&thread->m_start_semaphore);
+
+  sem_destroy(&thread->m_start_semaphore);
+
+  DebugLog << "IOThread " << thread->m_tid << " begin to loop";
   t_reactor_ptr->loop();
 
   return nullptr;
@@ -100,6 +114,13 @@ IOThreadPool::IOThreadPool(int size) : m_size(size) {
   for (int i = 0; i < size; ++i) {
     m_io_threads[i] = std::make_shared<IOThread>();
     m_io_threads[i]->setThreadIndex(i);
+  }
+}
+
+void IOThreadPool::start() {
+  for (int i = 0; i < m_size; ++i) {
+    int rt = sem_post(m_io_threads[i]->getStartSemaphore());
+    assert(rt == 0);
   }
 }
 
@@ -155,6 +176,26 @@ Coroutine::ptr IOThreadPool::addCoroutineToRandomThread(std::function<void()> cb
   cor->setCallBack(cb);
   addCoroutineToRandomThread(cor, self);
   return cor;
+}
+
+Coroutine::ptr IOThreadPool::addCoroutineToThreadByIndex(int index, std::function<void()> cb, bool self/* = false*/) {
+  if (index >= (int)m_io_threads.size() || index < 0) {
+    ErrorLog << "addCoroutineToThreadByIndex error, invalid iothread index[" << index << "]";
+    return nullptr;
+  }
+  Coroutine::ptr cor = GetCoroutinePool()->getCoroutineInstanse();
+  cor->setCallBack(cb);
+  m_io_threads[index]->getReactor()->addCoroutine(cor, true);
+  return cor;
+
+}
+
+void IOThreadPool::addCoroutineToEachThread(std::function<void()> cb) {
+  for (auto i : m_io_threads) {
+    Coroutine::ptr cor = GetCoroutinePool()->getCoroutineInstanse();
+    cor->setCallBack(cb);
+    i->getReactor()->addCoroutine(cor, true);
+  }
 }
 
 
