@@ -55,4 +55,8 @@ Config::ptr GetConfig() {
   return gRpcConfig;
 }
 
+void AddTimerEvent(TimerEvent::ptr event) {
+
+}
+
 }

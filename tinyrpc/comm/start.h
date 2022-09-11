@@ -4,8 +4,10 @@
 #include <google/protobuf/service.h>
 #include <memory>
 #include <stdio.h>
+#include <functional>
 #include "tinyrpc/comm/log.h"
 #include "tinyrpc/net/tcp/tcp_server.h"
+#include "tinyrpc/net/timer.h"
 
 namespace tinyrpc {
 
@@ -39,6 +41,7 @@ int GetIOThreadPoolSize();
 
 Config::ptr GetConfig();
 
+void AddTimerEvent(TimerEvent::ptr event);
 
 }
 

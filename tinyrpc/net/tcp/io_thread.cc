@@ -149,6 +149,10 @@ void IOThreadPool::addTaskByIndex(int index, std::function<void()> cb) {
 }
 
 void IOThreadPool::addCoroutineToRandomThread(Coroutine::ptr cor, bool self /* = false*/) {
+  if (m_size == 1) {
+    m_io_threads[0]->getReactor()->addCoroutine(cor, true);
+    return;
+  }
   srand(time(0));
   int i = 0;
   while (1) {
