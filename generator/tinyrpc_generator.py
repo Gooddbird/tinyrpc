@@ -18,13 +18,53 @@ conf_path = ''
 generator_path = sys.path[0]
 
 
-def main():
-    pass
 
+def parse_protobuf_file(): 
+    pb_head_file = src_path + '/pb/' + project_name + '.pb.h'
+    file = open(pb_head_file, 'r')
+    origin_text = file.read()
+    
+    begin = origin_text.find('virtual ~')
+    i1 = origin_text[begin:].find('~') 
+    i2 = origin_text[begin:].find('(') 
+    service_name = origin_text[begin + i1 + 1 : begin + i2]
+    print("service name is " + service_name)
 
-def test():
-    pass
+    origin_text = origin_text[begin + i2: ] 
+    method_list = []
 
+    i1 = 0
+    while 1:
+        i1 = origin_text.find('virtual void')
+        if (i1 == -1):
+            break
+        i2 = origin_text[i1:].find(');')
+        method_list.append(origin_text[i1: i1 + i2 + 2])
+        print(origin_text[i1: i1 + i2 + 2])
+        origin_text = origin_text[i1 + i2 + 3: ]
+
+    out_head_file = open(src_path + 'service' + project_name + '.h', 'w')
+    out_cc_file = open(src_path + 'service' + project_name + '.cc', 'w')
+
+    head_file_temlate = Template(open(generator_path + '/template/server.h.template','r').read())
+    head_file_content = head_file_temlate.safe_substitute(
+        FILE_NAME = project_name + '.cc',
+        PROJECT_NAME = project_name,
+        CLASS_NAME = service_name + '_IMPL',
+        CREATE_TIME = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    )
+
+    i1 = head_file_content.find('{METHOD}') 
+    pre_content = head_file_content[0: i1]
+    next_content = head_file_content[i1 + 8: ]
+    for each in method_list:
+        pre_content += each
+        pre_content += '\n  '
+    content = pre_content + next_content
+    content = content.replace('PROTOBUF_NAMESPACE_ID', 'google::protobuf')
+    out_head_file.write(content)
+    out_head_file.close()
+        
 
 def gen_pb_files():
     pb_path = src_path + '/pb/'
@@ -57,7 +97,6 @@ def gen_makefile():
     print('succ write to ' + out_file)
     print('End generate makefile')
     print('=' * 100)
-
 
 def gen_conf_file():
     print('=' * 100)
@@ -144,6 +183,8 @@ def generate_tinyrpc_project():
 
         gen_conf_file()
 
+        parse_protobuf_file()
+
     except Exception as e:
         print(e)
         traceback.print_exc()
@@ -183,6 +224,7 @@ def parseInput():
 
     print('End Input paramters')
     print('=' * 100)
+
 
 
 
