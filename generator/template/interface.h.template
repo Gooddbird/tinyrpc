@@ -12,25 +12,37 @@
  * Just write this file while not exist
 *************************************************************/
 
+#ifndef ${HEADER_DEFINE}
+#define ${HEADER_DEFINE} 
 
-#include <google/protobuf/service.h>
-#include "tinyrpc/comm/start.h"
-${INCLUDE_SERVER_HEADER}
+${INCLUDE_PB_HEADER}
 
 
-int main(int argc, char* argv[]) {
-  if (argc != 2) {
-    printf("Start ${PROJECT_NAME} server error, input argc is not 2!");
-    printf("Start ${PROJECT_NAME} like this: \n");
-    printf("./${PROJECT_NAME} ${PROJECT_NAME}.xml\n");
-    return 0;
-  }
+namespace ${PROJECT_NAME} {
 
-  tinyrpc::InitConfig(argv[1]);
+/*
+ * Rpc Interface Class
+ * Alloc one object every time RPC call begin, and destroy this object while RPC call end
+*/
 
-  REGISTER_SERVICE(${PROJECT_NAME}::${CLASS_NAME});
+class ${CLASS_NAME} {
+ public:
 
-  tinyrpc::StartRpcServer();
-  
-  return 0;
+  ${CLASS_NAME}(const ${REQUEST_TYPE}& request, ${RESPONSE_TYPE}& response);
+
+  ~${CLASS_NAME}();
+
+  void run();
+
+ private:
+  const ${REQUEST_TYPE}& m_request;      // request object fron client
+
+  ${RESPONSE_TYPE}& m_response;           // response object that reply to client
+
+};
+
+
 }
+
+
+#endif

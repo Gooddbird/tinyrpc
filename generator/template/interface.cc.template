@@ -13,24 +13,30 @@
 *************************************************************/
 
 
-#include <google/protobuf/service.h>
-#include "tinyrpc/comm/start.h"
-${INCLUDE_SERVER_HEADER}
+#include "tinyrpc/comm/log.h"
+${INCLUDE_INTERFACE_HEADER_FILE}
+${INCLUDE_PB_HEADER}
+
+namespace ${PROJECT_NAME} {
+
+${CLASS_NAME}::${CLASS_NAME}(const ${REQUEST_TYPE}& request, ${RESPONSE_TYPE}& response)
+  : m_request(request), 
+  m_response(response) {
+
+}
+
+${CLASS_NAME}::~${CLASS_NAME}() {
+
+}
+
+void ${CLASS_NAME}::run() {
+  //
+  // Run your business at here
+  // m_reponse.set_ret_code(0);
+  // m_reponse.set_res_info("Succ");
+  //
+
+}
 
 
-int main(int argc, char* argv[]) {
-  if (argc != 2) {
-    printf("Start ${PROJECT_NAME} server error, input argc is not 2!");
-    printf("Start ${PROJECT_NAME} like this: \n");
-    printf("./${PROJECT_NAME} ${PROJECT_NAME}.xml\n");
-    return 0;
-  }
-
-  tinyrpc::InitConfig(argv[1]);
-
-  REGISTER_SERVICE(${PROJECT_NAME}::${CLASS_NAME});
-
-  tinyrpc::StartRpcServer();
-  
-  return 0;
 }

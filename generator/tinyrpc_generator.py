@@ -19,11 +19,28 @@ generator_path = sys.path[0]
 
 
 
-def parse_protobuf_file(): 
+def to_camel(input_s):
+    if input_s.find('_') == -1:
+        return input_s
+    re = ''
+    for s in input_s.split('_'):
+        re += s.capitalize()
+    return re
+
+def to_underline(input_s):
+    tmp = to_camel(input_s)
+    re = ''
+    for s in tmp:
+        re += s if s.islower() else '_' + s.lower()
+    re = re[1:]
+    return re
+
+def generate_framework_code(): 
     pb_head_file = src_path + '/pb/' + project_name + '.pb.h'
     file = open(pb_head_file, 'r')
     origin_text = file.read()
     
+    # parse all rpc interface method from pb.h file
     begin = origin_text.find('virtual ~')
     i1 = origin_text[begin:].find('~') 
     i2 = origin_text[begin:].find('(') 
@@ -40,30 +57,167 @@ def parse_protobuf_file():
             break
         i2 = origin_text[i1:].find(');')
         method_list.append(origin_text[i1: i1 + i2 + 2])
-        print(origin_text[i1: i1 + i2 + 2])
+        # print(origin_text[i1: i1 + i2 + 2])
         origin_text = origin_text[i1 + i2 + 3: ]
 
-    out_head_file = open(src_path + 'service' + project_name + '.h', 'w')
-    out_cc_file = open(src_path + 'service' + project_name + '.cc', 'w')
+    
+    # generate business_exception.h
+    exception_template = Template(open(generator_path + '/template/business_exception.h.template', 'r').read())
+    exception_content = exception_template.safe_substitute(
+        PROJECT_NAME = project_name,
+        FILE_NAME = 'business_exception.cc',
+        HEADER_DEFINE = project_name.upper() + '_COMM_BUSINESSEXCEPTION_H',
+    )
+    out_exception_file = open(src_path + '/comm/' + 'business_exception.h', 'w')
+    out_exception_file.write(exception_content)
+    out_exception_file.close()
 
+
+
+    # genneator server.h file
+    class_name = to_camel(service_name) + 'Impl'
     head_file_temlate = Template(open(generator_path + '/template/server.h.template','r').read())
     head_file_content = head_file_temlate.safe_substitute(
-        FILE_NAME = project_name + '.cc',
+        HEADER_DEFINE = project_name.upper() + '_SERVICE_' + project_name.upper() + '_H',
+        FILE_NAME = project_name + '.h',
         PROJECT_NAME = project_name,
-        CLASS_NAME = service_name + '_IMPL',
+        CLASS_NAME = class_name,
+        SERVICE_NAME = service_name,
+        PB_HEAD_FILE = project_name + '/pb/' + project_name + '.pb.h', 
         CREATE_TIME = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     )
 
-    i1 = head_file_content.find('{METHOD}') 
+    i1 = head_file_content.find('${METHOD}') 
     pre_content = head_file_content[0: i1]
-    next_content = head_file_content[i1 + 8: ]
+    next_content = head_file_content[i1 + 9: ]
     for each in method_list:
+        each = each.replace('PROTOBUF_NAMESPACE_ID', 'google::protobuf')
+        pre_content += '// override from ' + service_name + '\n  '
         pre_content += each
-        pre_content += '\n  '
+        pre_content += '\n\n  '
     content = pre_content + next_content
-    content = content.replace('PROTOBUF_NAMESPACE_ID', 'google::protobuf')
+    out_head_file = open(src_path + '/service/' + project_name + '.h', 'w')
     out_head_file.write(content)
     out_head_file.close()
+
+    # genneator server.cc file
+    cc_file_temlate = Template(open(generator_path + '/template/server.cc.template','r').read())
+    cc_file_content = cc_file_temlate.safe_substitute(
+        FILE_NAME = project_name + '.cc',
+        PROJECT_NAME = project_name,
+        INCLUDE_PB_HEADER = '#include "' + project_name + '/pb/' + project_name + '.pb.h"', 
+        INCLUDE_BUSINESS_EXCEPTION_HEADER = '#include "' + project_name + '/comm/business_exception.h"',
+        INCLUDE_SERVER_HEADER = '#include "' + project_name + '/service/' + project_name + '.h"', 
+        CREATE_TIME = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    )
+
+
+    method_i = cc_file_content.find('${METHOD}')
+    pre_content = cc_file_content[0: method_i]
+    next_content = cc_file_content[method_i + 9: ]
+    interface_list = []
+
+    for each in method_list:
+        tmp = each.replace('PROTOBUF_NAMESPACE_ID', 'google::protobuf')
+        i1 = tmp.find('void')
+        tmp = tmp[i1:]
+
+        i2 = tmp.find('(')
+        method_name = tmp[5: i2]
+        # print(method_name)
+        interface_class_name = to_camel(method_name) + 'Interface'
+        interface_file_name = to_underline(method_name)
+        l = tmp.split(',')
+        y = l[1].find('request')
+        request_type = l[1][0: y - 1].replace('*', '').replace('const ', '').replace('\n', '').replace(' ', '')
+        # print(request_type)
+
+        y = l[2].find('response')
+        response_type = l[2][0: y - 1].replace('*', '').replace('\n', '').replace(' ', '')
+        # print(response_type)
+
+
+        interface_list.append({
+            'interface_name': interface_file_name,
+            'interface_class_name': interface_class_name,
+            'request_type': request_type,
+            'response_type': response_type
+        })
+        # print(interface_list)
+
+        tmp = tmp[0: 5] + class_name + '::' + tmp[5:]
+        tmp = tmp[0: -1] + '{\n\n  ' + 'CALL_RPC_INTERFACE(' + interface_class_name + ');\n}'
+        # print(tmp)
+        pre_content += tmp
+        pre_content += '\n\n'
+
+    include_str = ''
+    for each in interface_list:
+        include_str += '#include "' + project_name + '/interface/' + each['interface_name'] + '.h"\n'
+    pre_content = pre_content.replace('${INCLUDE_SERVICE}', include_str)
+    
+    out_cc_file = open(src_path + '/service/' + project_name + '.cc', 'w')
+    out_cc_file.write(pre_content + next_content)
+    out_cc_file.close()
+
+    # genneator main.cc file
+    main_file = src_path + '/service/' + 'main.cc'
+    if not os.path.exists(main_file):
+        main_file_temlate = Template(open(generator_path + '/template/main.cc.template','r').read())
+        main_file_content = main_file_temlate.safe_substitute(
+            FILE_NAME = project_name + '.h',
+            PROJECT_NAME = project_name,
+            CLASS_NAME = class_name,
+            INCLUDE_SERVER_HEADER = '#include "' + project_name + '/service/' + project_name + '.h"', 
+            CREATE_TIME = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        )
+        main_file_handler = open(main_file, 'w')
+        main_file_handler.write(main_file_content)
+        main_file_handler.close()
+
+
+    # genneator each interface.cc and .h file
+    interface_head_file_temlate = Template(open(generator_path + '/template/interface.h.template','r').read())
+    interface_cc_file_temlate = Template(open(generator_path + '/template/interface.cc.template','r').read())
+
+    for each in interface_list:
+
+        file = src_path + '/interface/' + each['interface_name'] + '.h'
+        if not os.path.exists(file):
+            header_content = interface_head_file_temlate.safe_substitute(
+                PROJECT_NAME = project_name,
+                INCLUDE_PB_HEADER = '#include "' + project_name + '/pb/' + project_name + '.pb.h"', 
+                HEADER_DEFINE = project_name.upper() + '_INTERFACE_' + each['interface_name'].upper() + '_H',
+                CREATE_TIME = datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                CLASS_NAME = each['interface_class_name'],
+                REQUEST_TYPE = each['request_type'],
+                RESPONSE_TYPE = each['response_type'],
+                FILE_NAME = each['interface_name'] + '.h'
+            )
+            out_interface_header_file = open(file, 'w')
+            out_interface_header_file.write(header_content)
+            out_interface_header_file.close()
+
+
+        file = src_path + '/interface/' + each['interface_name'] + '.cc'
+        if not os.path.exists(file):
+            cc_file_content = interface_cc_file_temlate.safe_substitute(
+                PROJECT_NAME = project_name,
+                INCLUDE_PB_HEADER = '#include "' + project_name + '/pb/' + project_name + '.pb.h"', 
+                INCLUDE_INTERFACE_HEADER_FILE = '#include "' + project_name + '/interface/' + each['interface_name'] + '.h"',
+                CREATE_TIME = datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                CLASS_NAME = each['interface_class_name'],
+                REQUEST_TYPE = each['request_type'],
+                RESPONSE_TYPE = each['response_type'],
+                FILE_NAME = each['interface_name'] + '.cc'
+            )
+            out_interface_cc_file = open(file, 'w')
+            out_interface_cc_file.write(cc_file_content)
+            out_interface_cc_file.close()
+        
+        
+
+
         
 
 def gen_pb_files():
@@ -150,6 +304,7 @@ def generate_dir():
     src_interface_path = src_path + '/interface'
     src_service_path = src_path + '/service'
     src_pb_path = src_path + '/pb'
+    src_comm_path = src_path + '/comm'
 
     dir_list = []
     dir_list.append(proj_path) 
@@ -161,6 +316,7 @@ def generate_dir():
     dir_list.append(src_interface_path) 
     dir_list.append(src_service_path) 
     dir_list.append(src_pb_path) 
+    dir_list.append(src_comm_path) 
 
     for each in dir_list:
         if not os.path.exists(each):
@@ -183,7 +339,7 @@ def generate_tinyrpc_project():
 
         gen_conf_file()
 
-        parse_protobuf_file()
+        generate_framework_code()
 
     except Exception as e:
         print(e)
