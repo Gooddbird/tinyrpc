@@ -25,6 +25,7 @@ PATH_SERVICE = service
 PATH_INTERFACE = interface
 PATH_PB = pb
 PATH_COMM = comm
+PATH_OBJ = ../obj
 
 
 # libtinypc
@@ -52,26 +53,26 @@ LIBS += $(TINYRPC_LIB)
 
 LIBS += $(PROTOBUF_LIB) $(TINYXML_LIB)
 
-PB_OBJS := $(patsubst $(PATH_PB)/%.cc, $(PATH_PB)/%.o, $(wildcard $(PATH_PB)/*.cc))
-SERVICE_OBJS := $(patsubst $(PATH_SERVICE)/%.cc, $(PATH_SERVICE)/%.o, $(wildcard $(PATH_SERVICE)/*.cc))
-INTERFACE_OBJS := $(patsubst $(PATH_INTERFACE)/%.cc, $(PATH_INTERFACE)/%.o, $(wildcard $(PATH_INTERFACE)/*.cc))
-COMM_OBJS := $(patsubst $(PATH_COMM)/%.cc, $(PATH_COMM)/%.o, $(wildcard $(PATH_COMM)/*.cc))
+PB_OBJS := $(patsubst $(PATH_PB)/%.cc, $(PATH_OBJ)/%.o, $(wildcard $(PATH_PB)/*.cc))
+SERVICE_OBJS := $(patsubst $(PATH_SERVICE)/%.cc, $(PATH_OBJ)/%.o, $(wildcard $(PATH_SERVICE)/*.cc))
+INTERFACE_OBJS := $(patsubst $(PATH_INTERFACE)/%.cc, $(PATH_OBJ)/%.o, $(wildcard $(PATH_INTERFACE)/*.cc))
+COMM_OBJS := $(patsubst $(PATH_COMM)/%.cc, $(PATH_OBJ)/%.o, $(wildcard $(PATH_COMM)/*.cc))
 
 OUT : $(TARGET)
 
 $(TARGET) : $(PB_OBJS) $(SERVICE_OBJS) $(INTERFACE_OBJS)
-	$(CXX) $(CXX_FLAGS) $(PATH_SERVICE)/main.cc -o $@ $^ $(LIBS) -ldl -lpthread
+	$(CXX) $(CXX_FLAGS) main.cc -o $@ $^ $(LIBS) -ldl -lpthread
 
-$(PATH_PB)/%.o : $(PATH_PB)/%.cc
+$(PATH_OBJ)/%.o : $(PATH_PB)/%.cc
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
-$(PATH_SERVICE)/%.o : $(PATH_SERVICE)/%.cc
+$(PATH_OBJ)/%.o : $(PATH_SERVICE)/%.cc
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
-$(PATH_INTERFACE)/%.o : $(PATH_INTERFACE)/%.cc
+$(PATH_OBJ)/%.o : $(PATH_INTERFACE)/%.cc
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
-$(PATH_COMM)/%.o : $(PATH_COMM)/%.cc
+$(PATH_OBJ)/%.o : $(PATH_COMM)/%.cc
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
 

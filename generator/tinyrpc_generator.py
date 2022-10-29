@@ -36,6 +36,8 @@ def to_underline(input_s):
     return re
 
 def generate_framework_code(): 
+    print('=' * 100)
+    print('Begin to generate tinyrpc framework code')
     pb_head_file = src_path + '/pb/' + project_name + '.pb.h'
     file = open(pb_head_file, 'r')
     origin_text = file.read()
@@ -61,19 +63,30 @@ def generate_framework_code():
         origin_text = origin_text[i1 + i2 + 3: ]
 
     
-    # generate business_exception.h
-    exception_template = Template(open(generator_path + '/template/business_exception.h.template', 'r').read())
-    exception_content = exception_template.safe_substitute(
-        PROJECT_NAME = project_name,
-        FILE_NAME = 'business_exception.cc',
-        HEADER_DEFINE = project_name.upper() + '_COMM_BUSINESSEXCEPTION_H',
-    )
-    out_exception_file = open(src_path + '/comm/' + 'business_exception.h', 'w')
-    out_exception_file.write(exception_content)
-    out_exception_file.close()
+    print('=' * 100)
+    print('Begin generate business_exception.h')
+    exception_file = src_path + '/comm/' + 'business_exception.h'
+    if not os.path.exists(exception_file):
+        # generate business_exception.h
+        exception_template = Template(open(generator_path + '/template/business_exception.h.template', 'r').read())
+        exception_content = exception_template.safe_substitute(
+            PROJECT_NAME = project_name,
+            FILE_NAME = 'business_exception.cc',
+            HEADER_DEFINE = project_name.upper() + '_COMM_BUSINESSEXCEPTION_H',
+            CREATE_TIME = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        )
+        out_exception_file = open(exception_file, 'w')
+        out_exception_file.write(exception_content)
+        out_exception_file.close()
+    else:
+        print("file: [" + exception_file + "] exist, skip")
+
+    print('End generate business_exception.h')
+    print('=' * 100)
 
 
-
+    print('=' * 100)
+    print('Begin generate server.h')
     # genneator server.h file
     class_name = to_camel(service_name) + 'Impl'
     head_file_temlate = Template(open(generator_path + '/template/server.h.template','r').read())
@@ -101,6 +114,11 @@ def generate_framework_code():
     out_head_file.write(content)
     out_head_file.close()
 
+    print('End generate server.h')
+    print('=' * 100)
+
+    print('=' * 100)
+    print('Begin generate server.cc')
     # genneator server.cc file
     cc_file_temlate = Template(open(generator_path + '/template/server.cc.template','r').read())
     cc_file_content = cc_file_temlate.safe_substitute(
@@ -161,8 +179,14 @@ def generate_framework_code():
     out_cc_file.write(pre_content + next_content)
     out_cc_file.close()
 
+    print('End generate server.cc')
+    print('=' * 100)
+
+
+    print('=' * 100)
+    print('Begin generate main.cc')
     # genneator main.cc file
-    main_file = src_path + '/service/' + 'main.cc'
+    main_file = src_path + '/main.cc'
     if not os.path.exists(main_file):
         main_file_temlate = Template(open(generator_path + '/template/main.cc.template','r').read())
         main_file_content = main_file_temlate.safe_substitute(
@@ -175,8 +199,14 @@ def generate_framework_code():
         main_file_handler = open(main_file, 'w')
         main_file_handler.write(main_file_content)
         main_file_handler.close()
+    else:
+        print("file: [" + main_file + "] exist, skip")
 
+    print('End generate main.cc')
+    print('=' * 100)
 
+    print('=' * 100)
+    print('Begin generate each interface.cc & interface.h')
     # genneator each interface.cc and .h file
     interface_head_file_temlate = Template(open(generator_path + '/template/interface.h.template','r').read())
     interface_cc_file_temlate = Template(open(generator_path + '/template/interface.cc.template','r').read())
@@ -198,6 +228,8 @@ def generate_framework_code():
             out_interface_header_file = open(file, 'w')
             out_interface_header_file.write(header_content)
             out_interface_header_file.close()
+        else:
+            print("file: [" + file + "] exist, skip")
 
 
         file = src_path + '/interface/' + each['interface_name'] + '.cc'
@@ -215,18 +247,30 @@ def generate_framework_code():
             out_interface_cc_file = open(file, 'w')
             out_interface_cc_file.write(cc_file_content)
             out_interface_cc_file.close()
+        else:
+            print("file: [" + file + "] exist, skip")
+        
+
+    print('End generate each interface.cc & interface.h')
+    print('=' * 100)
+        
+    print('End generate tinyrpc framework code')
+    print('=' * 100)
         
         
 
-
-        
 
 def gen_pb_files():
+    print('=' * 100)
+    print('Begin generate protobuf file')
     pb_path = src_path + '/pb/'
     cmd = 'cp -r ' + proto_file + ' ' + pb_path
     cmd += ' && cd ' + pb_path + ' && protoc --cpp_out=./ ' + proto_file 
     print('excute cmd: ' + cmd)
     os.system(cmd)
+
+    print('End generate protobuf file')
+    print('=' * 100)
 
 def gen_makefile():
     print('=' * 100)
@@ -283,7 +327,7 @@ def gen_conf_file():
 
 def generate_dir():
     print('=' * 100)
-    print('Begin to generate dir')
+    print('Begin to generate project dir')
 
     if out_project_path == "":
         proj_path = './' + project_name.strip()
@@ -299,6 +343,7 @@ def generate_dir():
 
     log_path = proj_path + '/log'
     lib_path = proj_path + '/lib'
+    obj_path = proj_path + '/obj'
 
     global src_path
     src_path = proj_path + '/' + project_name
@@ -313,6 +358,7 @@ def generate_dir():
     dir_list.append(conf_path) 
     dir_list.append(log_path) 
     dir_list.append(lib_path) 
+    dir_list.append(obj_path) 
     dir_list.append(src_path) 
     dir_list.append(src_interface_path) 
     dir_list.append(src_service_path) 
@@ -324,13 +370,17 @@ def generate_dir():
             os.mkdir(each)
             print("succ make dir in " + each)
 
-    print('End generate dir')
+    print('End generate project dir')
     print('=' * 100)
     
 
 def generate_tinyrpc_project():
     try:
+
         parseInput()
+
+        print('=' * 150)
+        print('Begin generate tinyrpc project')
 
         generate_dir()
 
@@ -342,22 +392,49 @@ def generate_tinyrpc_project():
 
         generate_framework_code()
 
+        print('Succ generate tinyrpc project')
+        print('=' * 150)
+
     except Exception as e:
+        print('Falied generate tinyrpc project, err:')
         print(e)
         traceback.print_exc()
+        print('=' * 150)
     finally:
         pass
 
 
-def parseInput():
+def printHelp():
     print('=' * 100)
-    print('Begin to parse Input paramters')
+    print('Welcome to use TinyRPC Generator, this is help document:\n')
+    print('Run Environment: Python3.6 or high version is best.')
+    print('Run Platform: Linux Only(Kernel version >= 3.9 is best.)')
+    print('Others: Only protobuf3 support, not protobuf2.')
+    print('Usage:')
+    print('tinyrpc_generator.py -[options][target]\n')
+    print('Options:')
+    print('-h, --help')
+    print(('    ') + 'Print help document.\n')
+
+    print('-i file, --input file')
+    print(('    ') + 'Input the target proto file, must standard protobuf3 file, not support protobuf2.\n')
+
+    print('-o dir, --output dir')
+    print(('    ') + 'Give the path that your want to generate project, please give a dir param.\n')
+    print('')
+
+
+    print('=' * 100)
+    
+
+def parseInput():
 
     opts,args=getopt.getopt(sys.argv[1:],"hi:o:",["help","input=","output="])
   
     for opts,arg in opts:
         if opts=="-h" or opts=="--help":
-            print("help")
+            printHelp()
+            sys.exit(0)
         if opts=="-i" or opts=="--input":
             global proto_file 
             proto_file = arg 
@@ -378,9 +455,6 @@ def parseInput():
     global project_name
     project_name = proto_file[0: -6]
     print("project name is " + project_name)
-
-    print('End Input paramters')
-    print('=' * 100)
 
 
 
