@@ -84,7 +84,8 @@ def generate_framework_code():
         CLASS_NAME = class_name,
         SERVICE_NAME = service_name,
         PB_HEAD_FILE = project_name + '/pb/' + project_name + '.pb.h', 
-        CREATE_TIME = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        CREATE_TIME = datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        INCLUDE_PB_HEADER = '#include "' + project_name + '/pb/' + project_name + '.pb.h"', 
     )
 
     i1 = head_file_content.find('${METHOD}') 

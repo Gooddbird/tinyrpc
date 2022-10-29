@@ -60,7 +60,7 @@ COMM_OBJS := $(patsubst $(PATH_COMM)/%.cc, $(PATH_COMM)/%.o, $(wildcard $(PATH_C
 OUT : $(TARGET)
 
 $(TARGET) : $(PB_OBJS) $(SERVICE_OBJS) $(INTERFACE_OBJS)
-	$(CXX) $(CXX_FLAGS) main.cc -o $@ $^ $(LIBS) -ldl -lpthread
+	$(CXX) $(CXX_FLAGS) $(PATH_SERVICE)/main.cc -o $@ $^ $(LIBS) -ldl -lpthread
 
 $(PATH_PB)/%.o : $(PATH_PB)/%.cc
 	$(CXX) $(CXX_FLAGS) -c $< -o $@

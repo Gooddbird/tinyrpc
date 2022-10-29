@@ -16,7 +16,7 @@
 #define ${HEADER_DEFINE}
 
 #include <google/protobuf/service.h>
-${INCLUDE_SERVER_HEADER}
+${INCLUDE_PB_HEADER}
 
 namespace ${PROJECT_NAME} {
 
