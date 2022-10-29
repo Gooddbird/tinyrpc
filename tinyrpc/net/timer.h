@@ -31,6 +31,19 @@ class TimerEvent {
     // DebugLog << "reset tiemrevent, origin arrivetime=" << m_arrive_time;
     m_arrive_time = getNowMs() + m_interval;  	
     // DebugLog << "reset tiemrevent, now arrivetime=" << m_arrive_time;
+    m_is_cancled = false;
+  }
+
+  void wake() {
+    m_is_cancled = false;
+  }
+
+  void cancle () {
+    m_is_cancled = true;
+  }
+
+  void cancleRepeated () {
+    m_is_repeated = false;
   }
 
  public:

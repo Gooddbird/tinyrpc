@@ -114,26 +114,26 @@ class NonBlockCallHttpServlet: public tinyrpc::HttpServlet {
     stub.query_age(rpc_controller.get(), rpc_req.get(), rpc_res.get(), NULL);
     AppDebugLog << "NonBlockCallHttpServlet async end, now you can to some another thing";
 
-    // async_channel->wait();
-    // AppDebugLog << "wait() back, now to check is rpc call succ";
+    async_channel->wait();
+    AppDebugLog << "wait() back, now to check is rpc call succ";
 
-    // if (rpc_controller->ErrorCode() != 0) {
-    //   AppDebugLog << "failed to call QueryServer rpc server";
-    //   char buf[512];
-    //   sprintf(buf, html, "failed to call QueryServer rpc server");
-    //   setHttpBody(res, std::string(buf));
-    //   return;
-    // }
+    if (rpc_controller->ErrorCode() != 0) {
+      AppDebugLog << "failed to call QueryServer rpc server";
+      char buf[512];
+      sprintf(buf, html, "failed to call QueryServer rpc server");
+      setHttpBody(res, std::string(buf));
+      return;
+    }
 
-    // if (rpc_res->ret_code() != 0) {
-    //   std::stringstream ss;
-    //   ss << "QueryServer rpc server return bad result, ret = " << rpc_res->ret_code() << ", and res_info = " << rpc_res->res_info();
-    //   AppDebugLog << ss.str();
-    //   char buf[512];
-    //   sprintf(buf, html, ss.str().c_str());
-    //   setHttpBody(res, std::string(buf));
-    //   return;
-    // }
+    if (rpc_res->ret_code() != 0) {
+      std::stringstream ss;
+      ss << "QueryServer rpc server return bad result, ret = " << rpc_res->ret_code() << ", and res_info = " << rpc_res->res_info();
+      AppDebugLog << ss.str();
+      char buf[512];
+      sprintf(buf, html, ss.str().c_str());
+      setHttpBody(res, std::string(buf));
+      return;
+    }
 
     std::stringstream ss;
     ss << "Success!! Your age is," << rpc_res->age() << " and Your id is " << rpc_res->id();

@@ -27,8 +27,8 @@ const int ERROR_SERVICE_NOT_FOUND = SYS_ERROR_PREFIX(0008);    // not found serv
 const int ERROR_METHOD_NOT_FOUND = SYS_ERROR_PREFIX(0009);    // not found method 
 
 const int ERROR_PARSE_SERVICE_NAME = SYS_ERROR_PREFIX(0010);    // not found service name
-const int ERROR_ASYNC_RPC_CALL_SINGLE_IOTHREAD = SYS_ERROR_PREFIX(0011);    // not supoort async rpc call when only have single iothread
-const int ERROR_NOT_SET_ASYNC_PRE_CALL = SYS_ERROR_PREFIX(0012);            // you didn't set some nessary param before call async rpc
+const int ERROR_NOT_SET_ASYNC_PRE_CALL = SYS_ERROR_PREFIX(0011);            // you didn't set some nessary param before call async rpc
+const int ERROR_CONNECT_SYS_ERR = SYS_ERROR_PREFIX(0012);           // connect sys error
  
 } // namespace tinyrpc 
 

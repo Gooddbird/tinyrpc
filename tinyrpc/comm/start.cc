@@ -9,7 +9,6 @@ namespace tinyrpc {
 
 tinyrpc::Config::ptr gRpcConfig;
 tinyrpc::Logger::ptr gRpcLogger;
-tinyrpc::Logger::ptr gAppLogger;
 tinyrpc::TcpServer::ptr gRpcServer;
 
 static int g_init_config = 0;
@@ -54,6 +53,10 @@ int GetIOThreadPoolSize() {
 
 Config::ptr GetConfig() {
   return gRpcConfig;
+}
+
+void AddTimerEvent(TimerEvent::ptr event) {
+
 }
 
 }

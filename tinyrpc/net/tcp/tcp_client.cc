@@ -94,6 +94,14 @@ int TcpClient::sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct::pb_ptr
         m_reactor->getTimer()->delTimerEvent(event);
         return ERROR_PEER_CLOSED;
       }
+      if (errno == EAFNOSUPPORT) {
+        std::stringstream ss;
+        ss << "connect cur sys ror, errinfo is " << std::string(strerror(errno)) <<  " ] closed.";
+        m_err_info = ss.str();
+        m_reactor->getTimer()->delTimerEvent(event);
+        return ERROR_CONNECT_SYS_ERR;
+
+      } 
     } else {
       break;
     }

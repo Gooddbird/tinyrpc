@@ -144,6 +144,8 @@ void TcpServer::start() {
 
 	InfoLog << "resume accept coroutine";
 	tinyrpc::Coroutine::Resume(m_accept_cor.get());
+
+  m_io_pool->start();
 	m_main_reactor->loop();
 
 }

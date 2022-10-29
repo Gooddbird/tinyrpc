@@ -34,6 +34,8 @@ class IOThread {
 
   int getThreadIndex();
 
+  sem_t* getStartSemaphore();
+
 
  public:
   static IOThread* GetCurrentIOThread();
@@ -48,7 +50,9 @@ class IOThread {
   TimerEvent::ptr m_timer_event {nullptr};
   int m_index {-1};
 
-  sem_t m_semaphore;
+  sem_t m_init_semaphore;
+
+  sem_t m_start_semaphore;
 
 };
 
@@ -58,6 +62,8 @@ class IOThreadPool {
   typedef std::shared_ptr<IOThreadPool> ptr;
 
   IOThreadPool(int size);
+
+  void start();
 
   IOThread* getIOThread();
 
@@ -74,6 +80,10 @@ class IOThreadPool {
   // please free cor, or causes memory leak
   // call returnCoroutine(cor) to free coroutine
   Coroutine::ptr addCoroutineToRandomThread(std::function<void()> cb, bool self = false);
+
+  Coroutine::ptr addCoroutineToThreadByIndex(int index, std::function<void()> cb, bool self = false);
+
+  void addCoroutineToEachThread(std::function<void()> cb);
 
  private:
   int m_size {0};

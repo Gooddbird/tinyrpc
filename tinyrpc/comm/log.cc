@@ -68,10 +68,10 @@ void setLogLevel(LogLevel level) {
 
 
 bool OpenLog() {
-  #ifdef DECLARE_OPEN_TINYRPC_LOG 
-    return true;  
-  #endif
+  if (!gRpcLogger) {
     return false;
+  }
+  return true;
 }
 
 LogEvent::LogEvent(LogLevel level, const char* file_name, int line, const char* func_name, LogType type)

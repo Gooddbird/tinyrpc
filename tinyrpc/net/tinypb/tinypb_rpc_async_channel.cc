@@ -27,8 +27,7 @@ TinyPbRpcAsyncChannel::TinyPbRpcAsyncChannel(NetAddress::ptr addr) {
 }
 
 TinyPbRpcAsyncChannel::~TinyPbRpcAsyncChannel() {
-  DebugLog << "~TinyPbRpcAsyncChannel(), return coroutine";
-  // printf("~TinyPbRpcAsyncChannel(), return coroutine\n");
+  // DebugLog << "~TinyPbRpcAsyncChannel(), return coroutine";
   GetCoroutinePool()->returnCoroutine(m_pending_cor);
 }
 
@@ -54,14 +53,6 @@ void TinyPbRpcAsyncChannel::CallMethod(const google::protobuf::MethodDescriptor*
     ErrorLog << "Error! must call [saveCallee()] function before [CallMethod()]"; 
     TinyPbRpcController* rpc_controller = dynamic_cast<TinyPbRpcController*>(controller);
     rpc_controller->SetError(ERROR_NOT_SET_ASYNC_PRE_CALL, "Error! must call [saveCallee()] function before [CallMethod()];");
-    m_is_finished = true;
-    return;
-  }
-
-  if (GetServer()->getIOThreadPool()->getIOThreadPoolSize() <= 1) {
-    ErrorLog << "Error! must have at least 2 iothread when call TinyPbRpcAsyncChannel";
-    TinyPbRpcController* rpc_controller = dynamic_cast<TinyPbRpcController*>(controller);
-    rpc_controller->SetError(ERROR_ASYNC_RPC_CALL_SINGLE_IOTHREAD, "Error! must have at least 2 iothread when call TinyPbRpcAsyncChannel");
     m_is_finished = true;
     return;
   }
