@@ -36,6 +36,12 @@
   - [4.3. RPC 服务调用](#43-rpc-服务调用)
     - [4.3.1. 阻塞协程式异步调用](#431-阻塞协程式异步调用)
     - [4.3.2. 非阻塞协程式异步调用](#432-非阻塞协程式异步调用)
+  - [4.4. TinyRPC 脚手架(tinyrpc_generator)](#44-tinyrpc-脚手架tinyrpc_generator)
+    - [4.4.1 准备 protobuf 文件](#441-准备-protobuf-文件)
+    - [4.4.2 生成 TinyRPC 框架](#442-生成-tinyrpc-框架)
+    - [4.4.3 业务逻辑开发](#443-业务逻辑开发)
+    - [4.4.4 Protobuf 接口升级怎么办？](#444-protobuf-接口升级怎么办)
+    - [4.4.5 tinyrpc_generator 选项详解](#445-tinyrpc_generator-选项详解)
 - [5. 概要设计](#5-概要设计)
   - [5.1. 异步日志模块](#51-异步日志模块)
   - [5.2. 协程模块](#52-协程模块)
@@ -782,6 +788,195 @@ REGISTER_HTTP_SERVLET("/nonblock", NonBlockCallHttpServlet);
 [ikerli@localhost bin]$ curl -X GET 'http://127.0.0.1:19999/nonblock?id=1'
 <html><body><h1>Welcome to TinyRPC, just enjoy it!</h1><p>Success!! Your age is,0 and Your id is 0</p></body></html>
 ```
+
+## 4.4. TinyRPC 脚手架(tinyrpc_generator)
+TinyRPC 提供了代码生成工具，简单到只需要一个 protobuf 文件，就能生成全部框架代码，作为使用者只需要写业务逻辑即可，不必关心框架的原理，也不用再去写繁琐的重复代码，以及考虑如何链接 tinyrpc 库的问题。接下来用一个实例来说明如何使用 `tinyrpc_generator`.
+### 4.4.1 准备 protobuf 文件
+例如我们需要搭建一个订单服务: `order_server`. 它的提供一些简单的订单操作：查询订单、生成订单、删除订单等。 
+首先定义 `order_server.proto` 如下：
+```
+syntax = "proto3";
+option cc_generic_services = true;
+
+message queryOrderDetailReq {
+  int32 req_no = 1;         // 请求标识,一般是唯一id
+  string order_id = 2;      // 单号
+}
+
+message queryOrderDetailRsp {
+  int32 ret_code = 1;     // 返回码，0代表响应成功
+  string res_info = 2;    // 返回信息， SUCC 代表成功，否则为失败的具体信息
+  int32 req_no = 3; 
+  string order_id = 4;      // 单号
+  string goods_name = 5;    // 货物名称
+  string user_name = 6;     // 用户名称
+}
+
+message makeOrderReq {
+  int32 req_no = 1;
+  string user = 2;
+  string goods_name = 3;    // 货物名称
+  string pay_amount = 4;    // 支付金额
+}
+
+message makeOrderRsp {
+  int32 ret_code = 1;
+  string res_info = 2;
+  int32 req_no = 3;
+  string order_id = 4;      // 订单号
+}
+
+message deleteOrderReq {
+  int32 req_no = 1;         // 请求标识,一般是唯一id
+  string order_id = 2;      // 单号
+}
+
+message deleteOrderRsp {
+  int32 ret_code = 1;
+  string res_info = 2;
+  int32 req_no = 3;
+  string order_id = 4;      // 订单号
+}
+
+
+service OrderService {
+  // 查询订单
+  rpc query_order_detail(queryOrderDetailReq) returns (queryOrderDetailRsp);
+
+  // 生成订单
+  rpc make_order(makeOrderReq) returns (makeOrderRsp);
+
+  // 删除订单
+  rpc delete_order(deleteOrderReq) returns (deleteOrderRsp);
+
+}
+```
+
+### 4.4.2 生成 TinyRPC 框架
+这一步很简单，简单到只需要一行命令：
+```
+tinyrpc/generator/tinyrpc_generator.py -o ./ -i order_server.proto -p 12345
+```
+这里先不介绍各个选项的含义，你可以观察到在当前目录下 `./` 已经生成了项目 `order_server`, 其项目结构如下：
+```
+order_server: 根目录
+  - bin: 可执行文件目录
+    - run.sh: 启动脚本
+    - shutdown.sh: 停止脚本
+    - order_server: 可执行文件
+  - conf: 配置文件目录
+    - order_server.xml: TinyRPC 配置文件
+  - log: 日志目录，存放运行时产生的日志文件
+  - obj: 库文件目录，存放编译过程的中间产物
+  - order_server: 源代码文件目录
+    - comm: 公共文件
+    - interface: 接口定义文件目录，每一个RPC方法会在此处定义一个接口
+    - pb: 由 protoc 生成的文件，以及源protobuf文件
+    - service: 接口转发层，将每个 RPC 方法跳转到对应的 interface 接口
+      - order_server.cc
+      - order_server.h
+    - main.cc: main 文件，TinyRPC 服务的 main 函数在此
+    - makefile: TinyRPC 工程的 makefile 文件，直接执行 make 即可
+  - test_client: 测试工具目录，每一个 interface 下的接口，在此处都会有一个对应的 cleint 工具，可以简单测试 RPC 通信
+  
+```
+OK, 你唯一需要做的就是进入 `order_server/order_server` 目录，执行 `make -j4` 即可，整个项目就完成构建了。
+
+接下来，进入 `order_server/bin` 目录下，执行：
+```
+sh run.sh order_server
+```
+不出意外的话，你的 TinyRPC 服务已经成功的运行起来了。接下来简单测试一下，进入 `order_server/test_client` 目录，执行客户端测试工具，如：
+```
+./test_query_order_detail
+```
+如果 TinyRPC 服务启动成功，你会看到以下输出：
+```
+[ikerli@localhost test_client]$ ./test_query_order_detail_client 
+Send to tinyrpc server 0.0.0.0:12345, requeset body: 
+Success get response frrom tinyrpc server 0.0.0.0:12345, response body: res_info: "OK"
+```
+
+否则，你会看到失败的具体原因，请根据错误码自行排查。例如这里错误显示为 peer closed，多半是服务没有启动，导致该端口没人监听。
+```
+[ikerli@localhost test_client]$ ./test_query_order_detail_client 
+Send to tinyrpc server 0.0.0.0:12345, requeset body: 
+Failed to call tinyrpc server, error code: 10000000, error info: connect error, peer[ 0.0.0.0:12345 ] closed.
+```
+
+### 4.4.3 业务逻辑开发
+`tinyrpc_geneator` 为 Protobuf 文件中的每一个 rpc 方法生成了一个接口(interface), 这些接口位于 `order_server/interface/` 目录下.
+
+例如这里的 `test_query_order_detail` 方法, 我们可以在 `interface` 目录下找到这两个文件：
+`query_order_detail.cc` 和 `query_order_detail.h`
+```c++
+// interface/query_order_detail.cc
+
+#include "tinyrpc/comm/log.h"
+#include "order_server/interface/query_order_detail.h"
+#include "order_server/pb/order_server.pb.h"
+
+namespace order_server {
+
+QueryOrderDetailInterface::QueryOrderDetailInterface(const ::queryOrderDetailReq& request, ::queryOrderDetailRsp& response)
+  : m_request(request), 
+  m_response(response) {
+
+    // m_request: 客户端请求的结构体，从中可以取出请求信息
+    // m_response: 服务端响应结构体，只需要将结果设置到此即可，TinyRPC 会负责会送给客户端结果
+}
+
+QueryOrderDetailInterface::~QueryOrderDetailInterface() {
+
+}
+
+void QueryOrderDetailInterface::run() {
+  //
+  // Run your business at here
+  // m_reponse.set_ret_code(0);
+  // m_reponse.set_res_info("Succ");
+  //
+}
+
+```
+那么写业务逻辑就非常简单了，只需要实现具体的 `QueryOrderDetailInterface::run()` 方法即可，其他任何逻辑完全不需要关心,TinyRPC 已经处理好了一切。
+
+
+### 4.4.4 Protobuf 接口升级怎么办？
+当需要升级接口的时候，即修改 protobuf 文件，要怎么重新生成项目呢？因为你在 `interface` 目录下实现了业务逻辑，会不会重新生成项目之后，之前的代码被覆盖了？
+
+完全不用担心，`tinyrpc_generator` 已经考虑到了这种情况，你可以放心大胆的修改 protobuf 文件，然后重新执行生成命令:
+```
+tinyrpc/generator/tinyrpc_generator.py -o ./ -i order_server.proto -p 12345
+```
+`tinyrpc_generator` 会智能的判断哪些文件需要更新，哪些文件无需更新。规则如下:
+- interface: 下所有的接口定义文件，如果同名文件存在则不会更新，否则生成新文件
+- service: 该目录下的文件每次都会被更新，因为 protobuf 文件修改意味着接口有变化，比如新增或者删除接口之类的，需要重新生成文件以便能对新增的接口进行转发
+- makefile: 不存在时生成，存在则不更新
+- main.cc: 不存在时生成，存在则不更新
+- test_client: 不存在时生成，存在则不更新
+- pb: 每次都会更新(这是必然的，比较 protobuf 文件都变了)
+
+### 4.4.5 tinyrpc_generator 选项详解
+`tinyrpc_generator` 是用 python 语言实现的简单脚本，其提供了几个简单的命令行入参选项，你也可以使用 `-h` 或者 `--help` 选项获取帮助文档:
+```
+Options:
+-h, --help
+    打印帮助文档
+-i xxx.proto, --input xxx.proto
+    指定源 protobuf 文件，注意只支持 porotbuf3 
+
+-o dir, --output dir
+    指定项目生成路径
+
+-p port, --input port
+    指定 TinyRPC 服务监听的端口(默认是 39999)
+
+-h x.x.x.x, --host x.x.x.x
+    指定 TinyRPC 服务绑定的 IP 地址(默认是 0.0.0.0)
+```
+
+
 
 
 
