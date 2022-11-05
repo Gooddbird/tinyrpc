@@ -14,6 +14,11 @@ project_name = ''
 proto_file = ''
 src_path = ''
 conf_path = ''
+bin_path = ''
+test_client_path = ''
+
+IP = '0.0.0.0'
+PORT = 39999
 
 generator_path = sys.path[0]
 
@@ -210,9 +215,12 @@ def generate_framework_code():
     # genneator each interface.cc and .h file
     interface_head_file_temlate = Template(open(generator_path + '/template/interface.h.template','r').read())
     interface_cc_file_temlate = Template(open(generator_path + '/template/interface.cc.template','r').read())
+    interface_test_client_file_template = Template(open(generator_path + '/template/test_tinyrpc_client.cc.template','r').read())
 
+    stub_name = service_name + "_Stub"
     for each in interface_list:
 
+        # interface.h 
         file = src_path + '/interface/' + each['interface_name'] + '.h'
         if not os.path.exists(file):
             header_content = interface_head_file_temlate.safe_substitute(
@@ -231,7 +239,7 @@ def generate_framework_code():
         else:
             print("file: [" + file + "] exist, skip")
 
-
+        # interface.cc 
         file = src_path + '/interface/' + each['interface_name'] + '.cc'
         if not os.path.exists(file):
             cc_file_content = interface_cc_file_temlate.safe_substitute(
@@ -249,16 +257,36 @@ def generate_framework_code():
             out_interface_cc_file.close()
         else:
             print("file: [" + file + "] exist, skip")
+       
+        # test_interface_client.cc 
+        file = test_client_path + '/test_' + each['interface_name'] + '_client.cc'
+        if not os.path.exists(file):
+            cc_file_content = interface_test_client_file_template.safe_substitute(
+                INCLUDE_PB_HEADER = '#include "' + project_name + '/pb/' + project_name + '.pb.h"', 
+                CREATE_TIME = datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                REQUEST_TYPE = each['request_type'],
+                RESPONSE_TYPE = each['response_type'],
+                STUBCLASS = stub_name,
+                METHOD_NAME = each['interface_name'],
+                FILE_NAME = 'test_' + each['interface_name'] + '_client.cc',
+                IP = IP,
+                PORT = PORT,
+            )
+            out_interface_cc_file = open(file, 'w')
+            out_interface_cc_file.write(cc_file_content)
+            out_interface_cc_file.close()
+        else:
+            print("file: [" + file + "] exist, skip")
+            
         
 
-    print('End generate each interface.cc & interface.h')
+    print('End generate each interface.cc & interface.h & test_interface_client.h')
     print('=' * 100)
         
     print('End generate tinyrpc framework code')
     print('=' * 100)
         
         
-
 
 def gen_pb_files():
     print('=' * 100)
@@ -301,11 +329,6 @@ def gen_conf_file():
     print('=' * 100)
     print('Begin to generate tinyrpc conf file')
     out_file = conf_path + '/' + project_name + '.xml'
-    if os.path.exists(out_file):
-        print('conf file exist, skip generate')
-        print('End generate tinyrpc conf file')
-        print('=' * 100)
-        return 
     
     template_file = open(generator_path + '/template/conf.xml.template','r')
     # print(template_file.read())
@@ -313,6 +336,8 @@ def gen_conf_file():
 
     content = tmpl.safe_substitute(
         PROJECT_NAME = project_name,
+        IP = IP,
+        PORT = str(PORT),
         CREATE_TIME = datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
     file = open(out_file, 'w')
@@ -322,6 +347,18 @@ def gen_conf_file():
     print('End generate tinyrpc conf file')
     print('=' * 100)
     
+    
+def gen_run_script():
+    print('=' * 100)
+    print('Begin to generate run script')
+    script = open(generator_path + '/template/conf.xml.template','r')
+    dir_src = generator_path + '/template/'
+    cmd = 'cp -r ' + dir_src + '*.sh ' + bin_path + "/" 
+    print('excute cmd: ' + cmd)
+    os.system(cmd)
+
+    print('End generate run script')
+    print('=' * 100)
     
     
 
@@ -336,10 +373,14 @@ def generate_dir():
     else:
         proj_path = out_project_path + './' + project_name.strip()
     
+    global bin_path 
     bin_path = proj_path + '/bin'
 
     global conf_path
     conf_path = proj_path + '/conf'
+
+    global test_client_path 
+    test_client_path = proj_path + '/test_client'
 
     log_path = proj_path + '/log'
     lib_path = proj_path + '/lib'
@@ -359,6 +400,7 @@ def generate_dir():
     dir_list.append(log_path) 
     dir_list.append(lib_path) 
     dir_list.append(obj_path) 
+    dir_list.append(test_client_path) 
     dir_list.append(src_path) 
     dir_list.append(src_interface_path) 
     dir_list.append(src_service_path) 
@@ -388,6 +430,8 @@ def generate_tinyrpc_project():
 
         gen_makefile()
 
+        gen_run_script()
+
         gen_conf_file()
 
         generate_framework_code()
@@ -407,20 +451,31 @@ def generate_tinyrpc_project():
 def printHelp():
     print('=' * 100)
     print('Welcome to use TinyRPC Generator, this is help document:\n')
-    print('Run Environment: Python3.6 or high version is best.')
-    print('Run Platform: Linux Only(Kernel version >= 3.9 is best.)')
-    print('Others: Only protobuf3 support, not protobuf2.')
+    print('Run Environment: Python(version 3.6 or high version is better).')
+    print('Run Platform: Linux Only(kernel version >= 3.9 is better).')
+    print('Others: Only protobuf3 support, not support protobuf2.\n')
     print('Usage:')
     print('tinyrpc_generator.py -[options][target]\n')
     print('Options:')
     print('-h, --help')
     print(('    ') + 'Print help document.\n')
 
-    print('-i file, --input file')
+    print('-i xxx.proto, --input xxx.proto')
     print(('    ') + 'Input the target proto file, must standard protobuf3 file, not support protobuf2.\n')
 
     print('-o dir, --output dir')
-    print(('    ') + 'Give the path that your want to generate project, please give a dir param.\n')
+    print(('    ') + 'Set the path that your want to generate project, please give a dir param.\n')
+
+    print('-p port, --input port')
+    print(('    ') + 'Set the port(default 39999) of tinyrpc server, you should input a short integer.\n')
+
+    print('-h x.x.x.x, --host x.x.x.x')
+    print(('    ') + 'Set the ip(default 0.0.0.0) of tinyrpc server.\n')
+    
+    print('')
+    print('For example:')
+    print('tinyrpc_generator.py -i order_server.proto -o ./ -p 12345 -h 127.0.0.1')
+
     print('')
 
 
@@ -429,7 +484,7 @@ def printHelp():
 
 def parseInput():
 
-    opts,args=getopt.getopt(sys.argv[1:],"hi:o:",["help","input=","output="])
+    opts,args=getopt.getopt(sys.argv[1:],"hi:o:p:h:",["help","input=","output="])
   
     for opts,arg in opts:
         if opts=="-h" or opts=="--help":
@@ -443,6 +498,15 @@ def parseInput():
             out_project_path = arg
             if out_project_path[-1] != '/':
                 out_project_path = out_project_path + '/'
+        elif opts=="-p" or opts=="--port":
+            global PORT 
+            PORT = int(arg)
+            if PORT <= 0 or PORT > 65536 :
+                raise Exception("invalid port: [" + PORT + "]")
+                
+        elif opts=="-h" or opts=="--host":
+            global IP 
+            IP = arg
         else:
             raise Exception("invalid options: [" + opts + ": " + arg + "]")
 

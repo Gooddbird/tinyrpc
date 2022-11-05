@@ -6,7 +6,7 @@
   <!--log config-->
   <log>
     <!--identify path of log file-->
-    <log_path>./</log_path>
+    <log_path>../log/</log_path>
     <log_prefix>${PROJECT_NAME}</log_prefix>
 
     <!--identify max size of single log file, MB-->
@@ -45,8 +45,8 @@
   </time_wheel>
 
   <server>
-    <ip>127.0.0.1</ip>
-    <port>39999</port>
+    <ip>${IP}</ip>
+    <port>${PORT}</port>
     <protocal>TinyPB</protocal>
   </server>
 

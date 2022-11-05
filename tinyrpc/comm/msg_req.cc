@@ -21,7 +21,10 @@ static int g_random_fd = -1;
 
 std::string MsgReqUtil::genMsgNumber() {
 
-  int t_msg_req_len = gRpcConfig->m_msg_req_len;
+  int t_msg_req_len = 20;
+  if (gRpcConfig) {
+    t_msg_req_len = gRpcConfig->m_msg_req_len;
+  }
 
   if (t_msg_req_nu.empty() || t_msg_req_nu == t_max_msg_req_nu) {
     if (g_random_fd == -1) {
