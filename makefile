@@ -60,14 +60,17 @@ TINYPB_OBJ := $(patsubst $(PATH_TINYPB)/%.cc, $(PATH_OBJ)/%.o, $(wildcard $(PATH
 
 COR_CTX_SWAP := coctx_swap.o
 
-ALL_TESTS : $(PATH_BIN)/test_tinypb_server $(PATH_BIN)/test_http_server $(PATH_BIN)/test_coroutine\
+ALL_TESTS : $(PATH_BIN)/test_tinypb_server $(PATH_BIN)/test_http_server $(PATH_BIN)/test_coroutine $(PATH_BIN)/test_tinypb_server_client\
 
-TEST_CASE_OUT := $(PATH_BIN)/test_tinypb_server $(PATH_BIN)/test_http_server\
+TEST_CASE_OUT := $(PATH_BIN)/test_tinypb_server $(PATH_BIN)/test_http_server $(PATH_BIN)/test_tinypb_server_client\
 
 LIB_OUT := $(PATH_LIB)/libtinyrpc.a
 
 $(PATH_BIN)/test_tinypb_server: $(LIB_OUT)
 	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_tinypb_server.cc $(PATH_TESTCASES)/test_tinypb_server.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -pthread $(PLUGIN_LIB)
+
+$(PATH_BIN)/test_tinypb_server_client: $(LIB_OUT)
+	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_tinypb_server_client.cc $(PATH_TESTCASES)/test_tinypb_server.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -pthread $(PLUGIN_LIB)
 
 $(PATH_BIN)/test_http_server: $(LIB_OUT)
 	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_http_server.cc $(PATH_TESTCASES)/test_tinypb_server.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -pthread $(PLUGIN_LIB)
