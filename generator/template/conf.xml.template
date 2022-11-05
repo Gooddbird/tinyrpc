@@ -45,7 +45,7 @@
   </time_wheel>
 
   <server>
-    <ip>127.0.0.1</ip>
+    <ip>0.0.0.0</ip>
     <port>39999</port>
     <protocal>TinyPB</protocal>
   </server>

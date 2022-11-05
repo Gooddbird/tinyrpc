@@ -14,6 +14,7 @@ project_name = ''
 proto_file = ''
 src_path = ''
 conf_path = ''
+bin_path = ''
 
 generator_path = sys.path[0]
 
@@ -323,6 +324,18 @@ def gen_conf_file():
     print('=' * 100)
     
     
+def gen_run_script():
+    print('=' * 100)
+    print('Begin to generate run script')
+    script = open(generator_path + '/template/conf.xml.template','r')
+    dir_src = generator_path + '/template/'
+    cmd = 'cp -r ' + dir_src + '*.sh ' + bin_path + "/" 
+    print('excute cmd: ' + cmd)
+    os.system(cmd)
+
+    print('End generate run script')
+    print('=' * 100)
+    
     
 
 def generate_dir():
@@ -336,6 +349,7 @@ def generate_dir():
     else:
         proj_path = out_project_path + './' + project_name.strip()
     
+    global bin_path 
     bin_path = proj_path + '/bin'
 
     global conf_path
@@ -388,6 +402,8 @@ def generate_tinyrpc_project():
 
         gen_makefile()
 
+        gen_run_script()
+
         gen_conf_file()
 
         generate_framework_code()
@@ -407,9 +423,9 @@ def generate_tinyrpc_project():
 def printHelp():
     print('=' * 100)
     print('Welcome to use TinyRPC Generator, this is help document:\n')
-    print('Run Environment: Python3.6 or high version is best.')
-    print('Run Platform: Linux Only(Kernel version >= 3.9 is best.)')
-    print('Others: Only protobuf3 support, not protobuf2.')
+    print('Run Environment: Python(version 3.6 or high version is best).')
+    print('Run Platform: Linux Only(kernel version >= 3.9 is best).')
+    print('Others: Only protobuf3 support, not support protobuf2.\n')
     print('Usage:')
     print('tinyrpc_generator.py -[options][target]\n')
     print('Options:')
@@ -421,6 +437,10 @@ def printHelp():
 
     print('-o dir, --output dir')
     print(('    ') + 'Give the path that your want to generate project, please give a dir param.\n')
+    print('')
+    print('For example:')
+    print('tinyrpc_generator.py -i order_server.proto -o ./')
+
     print('')
 
 
