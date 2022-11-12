@@ -1,4 +1,4 @@
-![](https://img.shields.io/github/v/release/Gooddbird/tinyrpc?color=2&label=tinyrpc&logoColor=2&style=plastic) ![GitHub repo size](https://img.shields.io/github/repo-size/Gooddbird/tinyrpc?style=plastic) ![GitHub all releases](https://img.shields.io/github/downloads/Gooddbird/tinyrpc/total?style=plastic) ![GitHub issues](https://img.shields.io/github/issues/Gooddbird/tinyrpc?style=plastic) ![GitHub pull requests](https://img.shields.io/github/issues-pr/Gooddbird/tinyrpc?style=plastic) ![GitHub forks](https://img.shields.io/github/forks/Gooddbird/tinyrpc?style=plastic) ![GitHub Repo stars](https://img.shields.io/github/stars/Gooddbird/tinyrpc?style=plastic) ![GitHub contributors](https://img.shields.io/github/contributors/Gooddbird/tinyrpc?style=plastic) ![GitHub last commit](https://img.shields.io/github/last-commit/Gooddbird/tinyrpc)
+![](https://img.shields.io/github/v/release/Gooddbird/tinyrpc?color=2&label=tinyrpc&logoColor=2&style=plastic) ![GitHub repo size](https://img.shields.io/github/repo-size/Gooddbird/tinyrpc?style=plastic) ![GitHub issues](https://img.shields.io/github/issues/Gooddbird/tinyrpc?style=plastic) ![GitHub pull requests](https://img.shields.io/github/issues-pr/Gooddbird/tinyrpc?style=plastic) ![GitHub forks](https://img.shields.io/github/forks/Gooddbird/tinyrpc?style=plastic) ![GitHub Repo stars](https://img.shields.io/github/stars/Gooddbird/tinyrpc?style=plastic) ![GitHub contributors](https://img.shields.io/github/contributors/Gooddbird/tinyrpc?style=plastic) ![GitHub last commit](https://img.shields.io/github/last-commit/Gooddbird/tinyrpc)
 
 
 作者：**ikerli**  **2022-05-13**
@@ -18,11 +18,9 @@
   - [3.1. 安装必要的依赖库](#31-安装必要的依赖库)
     - [3.1.1. protobuf](#311-protobuf)
     - [3.1.2. tinyxml](#312-tinyxml)
-  - [3.2. 选装插件库(可以跳过)](#32-选装插件库可以跳过)
-    - [3.2.1. libmysqlclient](#321-libmysqlclient)
-  - [3.3. 安装和卸载](#33-安装和卸载)
-    - [3.3.1. 安装 TinyRPC](#331-安装-tinyrpc)
-    - [3.3.2. 卸载 TinyRPC](#332-卸载-tinyrpc)
+  - [3.2. 安装和卸载](#32-安装和卸载)
+    - [3.2.1. 安装 TinyRPC](#321-安装-tinyrpc)
+    - [3.2.2. 卸载 TinyRPC](#322-卸载-tinyrpc)
 - [4. 快速上手](#4-快速上手)
   - [4.1. 搭建基于 TinyPB 协议的 RPC 服务](#41-搭建基于-tinypb-协议的-rpc-服务)
     - [4.1.1. 实现 Protobuf 文件接口](#411-实现-protobuf-文件接口)
@@ -58,7 +56,7 @@
 - [6. 错误码](#6-错误码)
   - [6.1. 错误码判断规范](#61-错误码判断规范)
   - [6.2. 错误码释义文档](#62-错误码释义文档)
-- [7. 关于作者](#7-关于作者)
+- [7. 问题反馈](#7-问题反馈)
 - [8. 参考资料](#8-参考资料)
 
 <!-- /TOC -->
@@ -268,41 +266,10 @@ mkdir /usr/include/tinyxml
 cp *.h /usr/include/tinyxml
 ```
 
-## 3.2. 选装插件库(可以跳过)
-有些库不是那么容易安装，为了不妨碍核心功能的实现，我把这些库都作为插件来编译了。
-这些插件库不是强依赖的，因为它不属于 TinyRPC 服务的核心功能，只能算是功能上的锦上添花。为了不影响基础库的编译， TinyRPC 把这些库作为插件来加载，通过宏定义来控制编译。
 
-**需要说明的是：即使你不安装这些插件库， TinyRPC 依然能正常编译，它的核心基础功能是完全具备的。**
+## 3.2. 安装和卸载
 
-### 3.2.1. libmysqlclient
-TinyRPC 简单封装了下 MySQL 的调用，因为 MySQL 确实在 RPC 服务中用的比较多了。
-需要安装 **MySQL** 的 glibc 库，用于 MySQL 操作, 选择所需的版本安装即可(建议 5.7 以上)
-
-官方下载地址：https://downloads.mysql.com/archives/community/
-
-注意，以上几个库的头文件我都放在了 **/usr/include** 下， 库文件放在了 **/usr/lib** 下。因此在 [makefile](./makefile) 中并没有指定其头文件和库文件路径，因为其被安装在了系统默认搜索路径中，无需特殊指定。
-
-另外，额外需要修改下 [makefile](./makefile) 文件才能支持插件的编译，否则默认的编译是不会包含这些插件功能的。
-
-修改也很简单，如下即可：
-```makefile
-1. 添加宏定义 -D DECLARE_MYSQL_PLUGIN, 表示需要编译 MySQL 插件
-
-# CXXFLAGS += -g -O0 -std=c++11 -Wall -Wno-deprecated -Wno-unused-but-set-variable
-CXXFLAGS += -g -O0 -std=c++11 -Wall -Wno-deprecated -Wno-unused-but-set-variable -D DECLARE_MYSQL_PLUGIN
-
-
-2. 添加库文件路径
-
-MYSQL_LIB = /usr/lib/libmysqlclient.a
-PLUGIN_LIB = $(MYSQL_LIB)
-
-```
-
-
-## 3.3. 安装和卸载
-
-### 3.3.1. 安装 TinyRPC
+### 3.2.1. 安装 TinyRPC
 在安装了前置的几个库之后，就可以开始编译和安装 **TinyRPC** 了。安装过程十分简单，只要不出什么意外就好了。
 
 **祈祷**一下一次性成功，然后直接执行以下几个命令即可：
@@ -329,7 +296,7 @@ make install
 
 如果编译出现问题，欢迎提 [issue](https://github.com/Gooddbird/tinyrpc/issues/), 我会尽快回应。
 
-### 3.3.2. 卸载 TinyRPC
+### 3.2.2. 卸载 TinyRPC
 卸载也很简单，如下即可：
 ```
 make uninstall
@@ -1155,17 +1122,10 @@ err_code 详细说明如下表：
 | ERROR_NOT_SET_ASYNC_PRE_CALL | 10000011 | 非阻塞协程式 RPC 调用前没保存对象 |
 
 
-# 7. 关于作者
-**ikerli**
-技术栈：Linux 后台开发、分布式系统、C++
-
-联系我：**1753009868@qq.com** (也可直接添加 QQ)
-
-欢迎关注我的**知乎**账号：知乎搜索 **ikerli**
-
-欢迎关注我的**个人微信**公众号, **微信公众号** 搜索 **ikerli**(无广告，放心食用):
-
-![](imgs/code.jpg)
+# 7. 问题反馈
+- 交流群：**260423934**
+- 邮箱地址：**1753009868@qq.com**
+- 知乎账号：知乎搜索 **ikerli**
 
 
 
