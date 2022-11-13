@@ -163,6 +163,7 @@ def generate_framework_code():
 
         interface_list.append({
             'interface_name': interface_file_name,
+            'method_name': method_name,
             'interface_class_name': interface_class_name,
             'request_type': request_type,
             'response_type': response_type
@@ -267,7 +268,7 @@ def generate_framework_code():
                 REQUEST_TYPE = each['request_type'],
                 RESPONSE_TYPE = each['response_type'],
                 STUBCLASS = stub_name,
-                METHOD_NAME = each['interface_name'],
+                METHOD_NAME = each['method_name'],
                 FILE_NAME = 'test_' + each['interface_name'] + '_client.cc',
                 IP = IP,
                 PORT = PORT,

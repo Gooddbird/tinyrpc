@@ -1125,7 +1125,11 @@ err_code 详细说明如下表：
 # 7. 问题反馈
 - 交流群：**260423934**
 - 邮箱地址：**1753009868@qq.com**
-- 知乎账号：知乎搜索 **ikerli**
+- 知乎：知乎搜索 **ikerli**
+
+如果您愿意支援一点电费，不胜感激！
+
+![](./imgs/mine/wechatpay.png)(wechat pay) &nbsp; ![](./imgs/mine/alipay.png)(alipay)  
 
 
 
