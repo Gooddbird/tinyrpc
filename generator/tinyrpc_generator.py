@@ -296,8 +296,10 @@ def gen_pb_files():
     cmd = 'cp -r ' + proto_file + ' ' + pb_path
     cmd += ' && cd ' + pb_path + ' && protoc --cpp_out=./ ' + proto_file 
     print('excute cmd: ' + cmd)
-    os.system(cmd)
 
+    if os.system(cmd) is not 0:
+        raise Exception("execute cmd failed [" + cmd + "]")
+    
     print('End generate protobuf file')
     print('=' * 100)
 
