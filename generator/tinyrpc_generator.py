@@ -16,6 +16,7 @@ src_path = ''
 conf_path = ''
 bin_path = ''
 test_client_path = ''
+test_client_tool_path = ''
 
 IP = '0.0.0.0'
 PORT = 39999
@@ -385,6 +386,9 @@ def generate_dir():
     global test_client_path 
     test_client_path = proj_path + '/test_client'
 
+    global test_client_tool_path 
+    test_client_tool_path = test_client_path + '/test_tool'
+
     log_path = proj_path + '/log'
     lib_path = proj_path + '/lib'
     obj_path = proj_path + '/obj'
@@ -404,6 +408,7 @@ def generate_dir():
     dir_list.append(lib_path) 
     dir_list.append(obj_path) 
     dir_list.append(test_client_path) 
+    dir_list.append(test_client_tool_path) 
     dir_list.append(src_path) 
     dir_list.append(src_interface_path) 
     dir_list.append(src_service_path) 

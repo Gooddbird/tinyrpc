@@ -27,6 +27,7 @@ PATH_PB = pb
 PATH_COMM = comm
 PATH_OBJ = ../obj
 PATH_TEST_CLIENT = ../test_client
+PATH_TEST_CLIENT_TOOL = $(PATH_TEST_CLIENT)/test_tool
 
 
 # libtinypc
@@ -58,14 +59,14 @@ PB_OBJS := $(patsubst $(PATH_PB)/%.cc, $(PATH_OBJ)/%.o, $(wildcard $(PATH_PB)/*.
 SERVICE_OBJS := $(patsubst $(PATH_SERVICE)/%.cc, $(PATH_OBJ)/%.o, $(wildcard $(PATH_SERVICE)/*.cc))
 INTERFACE_OBJS := $(patsubst $(PATH_INTERFACE)/%.cc, $(PATH_OBJ)/%.o, $(wildcard $(PATH_INTERFACE)/*.cc))
 COMM_OBJS := $(patsubst $(PATH_COMM)/%.cc, $(PATH_OBJ)/%.o, $(wildcard $(PATH_COMM)/*.cc))
-TEST_BINS := $(patsubst $(PATH_TEST_CLIENT)/%.cc, $(PATH_TEST_CLIENT)/%, $(wildcard $(PATH_TEST_CLIENT)/*.cc))
+TEST_BINS := $(patsubst $(PATH_TEST_CLIENT)/%.cc, $(PATH_TEST_CLIENT_TOOL)/%, $(wildcard $(PATH_TEST_CLIENT)/*.cc))
 
 OUT : $(TARGET) $(TEST_BINS)
 
 $(TARGET) : $(PB_OBJS) $(SERVICE_OBJS) $(INTERFACE_OBJS)
 	$(CXX) $(CXX_FLAGS) main.cc -o $@ $^ $(LIBS) -ldl -lpthread
 
-$(PATH_TEST_CLIENT)/%: $(PATH_TEST_CLIENT)/%.cc $(PB_OBJS)
+$(PATH_TEST_CLIENT_TOOL)/%: $(PATH_TEST_CLIENT)/%.cc $(PB_OBJS)
 	$(CXX) $(CXX_FLAGS) $< -o $@ $(LIBS) $(PB_OBJS) -ldl -lpthread
 
 $(PATH_OBJ)/%.o : $(PATH_PB)/%.cc
