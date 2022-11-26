@@ -43,7 +43,7 @@ void test_client() {
     return;
   }
 
-  std::cout << "Success get response frrom tinyrpc server " << addr->toString() << ", response body: " << rpc_res.ShortDebugString() << std::endl;
+  std::cout << "Success get response from tinyrpc server " << addr->toString() << ", response body: " << rpc_res.ShortDebugString() << std::endl;
 
 } 
 

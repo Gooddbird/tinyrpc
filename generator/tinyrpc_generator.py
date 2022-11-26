@@ -333,6 +333,11 @@ def gen_conf_file():
     print('=' * 100)
     print('Begin to generate tinyrpc conf file')
     out_file = conf_path + '/' + project_name + '.xml'
+    if os.path.exists(out_file):
+        print('makefile exist, skip generate')
+        print('End generate makefile')
+        print('=' * 100)
+        return 
     
     template_file = open(generator_path + '/template/conf.xml.template','r')
     # print(template_file.read())
