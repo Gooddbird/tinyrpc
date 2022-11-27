@@ -11,6 +11,22 @@
 
 namespace tinyrpc {
 
+bool IPAddress::CheckValidIPAddr(const std::string& addr) {
+  size_t i = addr.find_first_of(":");
+  if (i == addr.npos) {
+    return false;
+  }
+  int port = std::atoi(addr.substr(i + 1, addr.size() - i - 1).c_str());
+  if (port < 0 || port > 65536) {
+    return false;
+  }
+
+  if(inet_addr(addr.substr(0, i).c_str()) == INADDR_NONE) {
+    return false;
+  }
+  return true;
+}
+
 IPAddress::IPAddress(const std::string& ip, uint16_t port) 
   : m_ip(ip), m_port(port) {
   
