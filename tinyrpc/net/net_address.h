@@ -58,6 +58,9 @@ class IPAddress : public NetAddress {
     return m_port;
   }
 
+ public:
+  static bool CheckValidIPAddr(const std::string& addr);
+
 
  private:
   

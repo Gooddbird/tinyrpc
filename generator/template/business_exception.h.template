@@ -27,7 +27,9 @@
 #include <exception>
 #include <string>
 #include <memory>
+#include <sstream>
 #include "tinyrpc/comm/log.h"
+
 
 
 namespace ${PROJECT_NAME} {
@@ -35,9 +37,10 @@ namespace ${PROJECT_NAME} {
 class BusinessException : public std::exception {
  public:
 
-  BusinessException(long long code, const std::string& err_info) {
-    m_error_code = code;
-    AppInfoLog << "throw CharonException: {code: " << m_error_code << ", errinfo:" << m_error_info << "}";
+  BusinessException(long long code, const std::string& err_info, const std::string& file_name, int line):
+      m_error_code(code), m_error_info(err_info), m_file_name(file_name), m_line(line) {
+
+    AppInfoLog << "[" << file_name << ":" << line << "] throw BusinessException: {code: " << m_error_code << ", errinfo:" << m_error_info << "}";
   }
 
   ~BusinessException() {
@@ -56,9 +59,20 @@ class BusinessException : public std::exception {
     return m_error_code;
   }
 
+  std::string file_name() {
+    return m_file_name;
+  }
+
+  int line() {
+    return m_line;
+  }
+
  private:
   long long m_error_code {0};
   std::string m_error_info;
+
+  std::string m_file_name;
+  int m_line {0};
 
 };
 
