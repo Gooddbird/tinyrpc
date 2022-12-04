@@ -278,7 +278,7 @@ git clone https://github.com/Gooddbird/tinyrpc
 
 cd tinyrpc
 
-mkdir bin && mkdir lib
+mkdir bin && mkdir lib && mkdir obj
 
 // 生成测试pb桩文件
 cd testcases

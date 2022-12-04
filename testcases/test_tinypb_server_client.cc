@@ -1,3 +1,4 @@
+#include <iostream>
 #include <google/protobuf/service.h>
 #include "tinyrpc/net/tinypb/tinypb_rpc_channel.h"
 #include "tinyrpc/net/tinypb/tinypb_rpc_async_channel.h"
