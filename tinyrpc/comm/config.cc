@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <memory>
+#include <algorithm>
 #include "tinyrpc/comm/config.h"
 #include "tinyrpc/comm/log.h"
 #include "tinyrpc/net/tcp/tcp_server.h"
