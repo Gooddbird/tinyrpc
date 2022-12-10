@@ -73,6 +73,8 @@ int TcpClient::sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct::pb_ptr
   TimerEvent::ptr event = std::make_shared<TimerEvent>(m_max_timeout, false, timer_cb);
   m_reactor->getTimer()->addTimerEvent(event);
 
+  DebugLog << "add rpc timer event, timeout on " << event->m_arrive_time;
+
   while (!is_timeout) {
     DebugLog << "begin to connect";
     if (m_connection->getState() != Connected) {
@@ -91,6 +93,7 @@ int TcpClient::sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct::pb_ptr
         std::stringstream ss;
         ss << "connect error, peer[ " << m_peer_addr->toString() <<  " ] closed.";
         m_err_info = ss.str();
+        ErrorLog << "cancle overtime event, err info=" << m_err_info;
         m_reactor->getTimer()->delTimerEvent(event);
         return ERROR_PEER_CLOSED;
       }
@@ -98,6 +101,7 @@ int TcpClient::sendAndRecvTinyPb(const std::string& msg_no, TinyPbStruct::pb_ptr
         std::stringstream ss;
         ss << "connect cur sys ror, errinfo is " << std::string(strerror(errno)) <<  " ] closed.";
         m_err_info = ss.str();
+        ErrorLog << "cancle overtime event, err info=" << m_err_info;
         m_reactor->getTimer()->delTimerEvent(event);
         return ERROR_CONNECT_SYS_ERR;
 

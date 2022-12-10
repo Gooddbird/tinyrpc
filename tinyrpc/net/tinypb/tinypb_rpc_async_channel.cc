@@ -68,7 +68,9 @@ void TinyPbRpcAsyncChannel::CallMethod(const google::protobuf::MethodDescriptor*
     auto call_back = [s_ptr]() mutable {
       DebugLog << "async excute rpc call method back old thread";
       // callback function excute in origin thread
-      s_ptr->getClosurePtr()->Run();
+      if (s_ptr->getClosurePtr() != nullptr) {
+        s_ptr->getClosurePtr()->Run();
+      }
       s_ptr->setFinished(true);
 
       if (s_ptr->getNeedResume()) {
