@@ -110,7 +110,7 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
   Coroutine::ptr m_loop_cor;
 
-  TinyPbCodeC::ptr m_codec;
+  AbstractCodeC::ptr m_codec;
 
   FdEvent::ptr m_fd_event;
 

@@ -591,7 +591,7 @@ nohup ./test_http_server ../conf/test_http_server.xml &
 ```
 
 ## 4.3. RPC 服务调用
-这一节将使用 test_http_server 服务调用 test_rpc_server，前面说过，TinyRPC 支出两种 RPC 调用方式：**阻塞协程式异步调用** 和 **非阻塞协程式异步调用**
+这一节将使用 test_http_server 服务调用 test_rpc_server，前面说过，TinyRPC 支持两种 RPC 调用方式：**阻塞协程式异步调用** 和 **非阻塞协程式异步调用**
 
 ### 4.3.1. 阻塞协程式异步调用
 这种调用方式适用于我们依赖 RPC 调用结果的场景，必须等待 RPC 调用返回后才能进行下一步业务处理。BlockHttpServlet 即属于这种调用方式：
