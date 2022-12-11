@@ -126,7 +126,7 @@ void Timer::onTimer() {
 
 	m_pending_events.erase(m_pending_events.begin(), it);
 	for (auto i = tmps.begin(); i != tmps.end(); ++i) {
-    DebugLog << "excute timer event on " << (*i)->m_arrive_time;
+    // DebugLog << "excute timer event on " << (*i)->m_arrive_time;
 		if ((*i)->m_is_repeated) {
 			(*i)->resetTime();
 			addTimerEvent(*i, false);

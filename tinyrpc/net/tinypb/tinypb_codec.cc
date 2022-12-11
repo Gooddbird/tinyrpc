@@ -63,6 +63,7 @@ const char* TinyPbCodeC::encodePbData(TinyPbStruct* data, int& len) {
   if (data->msg_req.empty()) {
     data->msg_req = MsgReqUtil::genMsgNumber();
     data->msg_req_len = data->msg_req.length();
+    DebugLog << "generate msgno = " << data->msg_req;
   }
 
   int32_t pk_len = 2 * sizeof(char) + 6 * sizeof(int32_t)
