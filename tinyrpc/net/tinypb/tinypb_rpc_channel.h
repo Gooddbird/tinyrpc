@@ -23,7 +23,7 @@ void CallMethod(const google::protobuf::MethodDescriptor* method,
  
  private:
   NetAddress::ptr m_addr;
-  TcpClient::ptr m_client;
+  // TcpClient::ptr m_client;
 
 };
 

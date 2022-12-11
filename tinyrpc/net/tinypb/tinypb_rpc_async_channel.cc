@@ -14,6 +14,8 @@
 #include "tinyrpc/net/tinypb/tinypb_data.h"
 #include "tinyrpc/comm/log.h"
 #include "tinyrpc/comm/start.h"
+#include "tinyrpc/comm/run_time.h"
+#include "tinyrpc/comm/msg_req.h"
 #include "tinyrpc/coroutine/coroutine_pool.h"
 #include "tinyrpc/coroutine/coroutine.h"
 
@@ -49,12 +51,21 @@ void TinyPbRpcAsyncChannel::CallMethod(const google::protobuf::MethodDescriptor*
     google::protobuf::Message* response, 
     google::protobuf::Closure* done) {
   
+  TinyPbRpcController* rpc_controller = dynamic_cast<TinyPbRpcController*>(controller);
   if (!m_is_pre_set) {
     ErrorLog << "Error! must call [saveCallee()] function before [CallMethod()]"; 
     TinyPbRpcController* rpc_controller = dynamic_cast<TinyPbRpcController*>(controller);
     rpc_controller->SetError(ERROR_NOT_SET_ASYNC_PRE_CALL, "Error! must call [saveCallee()] function before [CallMethod()];");
     m_is_finished = true;
     return;
+  }
+  RunTime* run_time = getCurrentRunTime();
+  if (run_time) {
+    rpc_controller->SetMsgReq(run_time->m_msg_no);
+    DebugLog << "get from RunTime succ, msgno=" << run_time->m_msg_no;
+  } else {
+    rpc_controller->SetMsgReq(MsgReqUtil::genMsgNumber());
+    DebugLog << "get from RunTime error, generate new msgno=" << rpc_controller->MsgSeq();
   }
 
   std::shared_ptr<TinyPbRpcAsyncChannel> s_ptr = shared_from_this();
@@ -68,7 +79,9 @@ void TinyPbRpcAsyncChannel::CallMethod(const google::protobuf::MethodDescriptor*
     auto call_back = [s_ptr]() mutable {
       DebugLog << "async excute rpc call method back old thread";
       // callback function excute in origin thread
-      s_ptr->getClosurePtr()->Run();
+      if (s_ptr->getClosurePtr() != nullptr) {
+        s_ptr->getClosurePtr()->Run();
+      }
       s_ptr->setFinished(true);
 
       if (s_ptr->getNeedResume()) {

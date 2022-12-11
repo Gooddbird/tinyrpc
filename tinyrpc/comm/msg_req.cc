@@ -56,7 +56,7 @@ std::string MsgReqUtil::genMsgNumber() {
     }
 
   }    
-  DebugLog << "get msg_req_nu is " << t_msg_req_nu;
+  // DebugLog << "get msg_req_nu is " << t_msg_req_nu;
   return t_msg_req_nu;
 }
 

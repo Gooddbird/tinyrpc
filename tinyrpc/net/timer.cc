@@ -65,7 +65,7 @@ void Timer::addTimerEvent(TimerEvent::ptr event, bool need_reset /*=true*/) {
 
 void Timer::delTimerEvent(TimerEvent::ptr event) {
   event->m_is_cancled = true;
-  // DebugLog << "del timer event succ";
+  DebugLog << "del timer event succ, origin arrvite time=" << event->m_arrive_time;
 }
 
 void Timer::resetArriveTime() {
@@ -126,6 +126,7 @@ void Timer::onTimer() {
 
 	m_pending_events.erase(m_pending_events.begin(), it);
 	for (auto i = tmps.begin(); i != tmps.end(); ++i) {
+    // DebugLog << "excute timer event on " << (*i)->m_arrive_time;
 		if ((*i)->m_is_repeated) {
 			(*i)->resetTime();
 			addTimerEvent(*i, false);

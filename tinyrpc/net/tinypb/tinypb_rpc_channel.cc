@@ -10,6 +10,8 @@
 #include "tinyrpc/net/tinypb/tinypb_codec.h"
 #include "tinyrpc/net/tinypb/tinypb_data.h"
 #include "tinyrpc/comm/log.h"
+#include "tinyrpc/comm/msg_req.h"
+#include "tinyrpc/comm/run_time.h"
 
 
 namespace tinyrpc {
@@ -24,15 +26,14 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
     google::protobuf::Message* response, 
     google::protobuf::Closure* done) {
 
-  m_client = std::make_shared<TcpClient>(m_addr);
   TinyPbStruct pb_struct;
   TinyPbRpcController* rpc_controller = dynamic_cast<TinyPbRpcController*>(controller);
   if (!rpc_controller) {
     ErrorLog << "call failed. falid to dynamic cast TinyPbRpcController";
-    // return;
+    return;
   }
 
-
+  TcpClient::ptr m_client = std::make_shared<TcpClient>(m_addr);
   rpc_controller->SetLocalAddr(m_client->getLocalAddr());
   rpc_controller->SetPeerAddr(m_client->getPeerAddr());
   
@@ -42,14 +43,28 @@ void TinyPbRpcChannel::CallMethod(const google::protobuf::MethodDescriptor* meth
     ErrorLog << "serialize send package error";
     return;
   }
+
+  if (!rpc_controller->MsgSeq().empty()) {
+    pb_struct.msg_req = rpc_controller->MsgSeq();
+  } else {
+    // get current coroutine's msgno to set this request
+    RunTime* run_time = getCurrentRunTime();
+    if(run_time != NULL && !run_time->m_msg_no.empty()) {
+      pb_struct.msg_req = run_time->m_msg_no;
+      DebugLog << "get from RunTime succ, msgno = " << pb_struct.msg_req;
+    } else {
+      pb_struct.msg_req = MsgReqUtil::genMsgNumber();
+      DebugLog << "get from RunTime error, generate new msgno = " << pb_struct.msg_req;
+    }
+    rpc_controller->SetMsgReq(pb_struct.msg_req);
+  }
+
   AbstractCodeC::ptr m_codec = m_client->getConnection()->getCodec();
   m_codec->encode(m_client->getConnection()->getOutBuffer(), &pb_struct);
   if (!pb_struct.encode_succ) {
     rpc_controller->SetError(ERROR_FAILED_ENCODE, "encode tinypb data error");
     return;
   }
-
-  rpc_controller->SetMsgReq(pb_struct.msg_req);
 
   InfoLog << "============================================================";
   InfoLog << pb_struct.msg_req << "|" << rpc_controller->PeerAddr()->toString() 
