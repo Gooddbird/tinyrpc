@@ -46,6 +46,7 @@ Timer::~Timer() {
 
 
 void Timer::addTimerEvent(TimerEvent::ptr event, bool need_reset /*=true*/) {
+  RWMutex::WriteLock lock(m_event_mutex);
   bool is_reset = false;
   if (m_pending_events.empty()) {
     is_reset = true;
@@ -56,6 +57,8 @@ void Timer::addTimerEvent(TimerEvent::ptr event, bool need_reset /*=true*/) {
     }
   }
   m_pending_events.emplace(event->m_arrive_time, event);
+  lock.unlock();
+
   if (is_reset && need_reset) {
     DebugLog << "need reset timer";
     resetArriveTime();
@@ -65,17 +68,36 @@ void Timer::addTimerEvent(TimerEvent::ptr event, bool need_reset /*=true*/) {
 
 void Timer::delTimerEvent(TimerEvent::ptr event) {
   event->m_is_cancled = true;
+
+  RWMutex::WriteLock lock(m_event_mutex);
+  auto begin = m_pending_events.lower_bound(event->m_arrive_time);
+  auto end = m_pending_events.upper_bound(event->m_arrive_time);
+  auto it = begin;
+  for (it = begin; it != end; it++) {
+    if (it->second == event) {
+      DebugLog << "find timer event, now delete it. src arrive time=" << event->m_arrive_time;
+      break;
+    }
+  }
+  if (it != m_pending_events.end()) {
+    m_pending_events.erase(it);
+  }
+  lock.unlock();
   DebugLog << "del timer event succ, origin arrvite time=" << event->m_arrive_time;
 }
 
 void Timer::resetArriveTime() {
-  if (m_pending_events.size() == 0) {
+  RWMutex::ReadLock lock(m_event_mutex);
+ 	std::multimap<int64_t, TimerEvent::ptr> tmp = m_pending_events;
+  lock.unlock();
+
+  if (tmp.size() == 0) {
     DebugLog << "no timerevent pending, size = 0";
     return;
   }
 
   int64_t now = getNowMs();
-  auto it = m_pending_events.begin();
+  auto it = tmp.begin();
   if ((*it).first < now) {
     DebugLog<< "all timer events has already expire";
     return;
@@ -112,6 +134,7 @@ void Timer::onTimer() {
   }
 
   int64_t now = getNowMs();
+  RWMutex::WriteLock lock(m_event_mutex);
 	auto it = m_pending_events.begin();
 	std::vector<TimerEvent::ptr> tmps;
   std::vector<std::pair<int64_t, std::function<void()>>> tasks;
@@ -125,6 +148,8 @@ void Timer::onTimer() {
 	}
 
 	m_pending_events.erase(m_pending_events.begin(), it);
+  lock.unlock();
+
 	for (auto i = tmps.begin(); i != tmps.end(); ++i) {
     // DebugLog << "excute timer event on " << (*i)->m_arrive_time;
 		if ((*i)->m_is_repeated) {
