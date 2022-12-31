@@ -31,15 +31,18 @@ void CoroutineMutex::lock() {
   Mutex::Lock lock(m_mutex);
   if (!m_lock) {
     m_lock = true;
+    DebugLog << "coroutine succ get coroutine mutex";
     lock.unlock();
   } else {
-
     m_sleep_cors.push(cor);
+    auto tmp = m_sleep_cors;
     lock.unlock();
+
+    DebugLog << "coroutine yield, pending coroutine mutex, current sleep queue exist ["
+      << tmp.size() << "] coroutines";
 
     Coroutine::Yield();
   } 
-  DebugLog << "succ get coroutine mutex"; 
 }
 
 void CoroutineMutex::unlock() {
@@ -51,6 +54,9 @@ void CoroutineMutex::unlock() {
   Mutex::Lock lock(m_mutex);
   if (m_lock) {
     m_lock = false;
+    if (m_sleep_cors.empty()) {
+      return;
+    }
 
     Coroutine* cor = m_sleep_cors.front();
     m_sleep_cors.pop();
@@ -58,6 +64,8 @@ void CoroutineMutex::unlock() {
 
     if (cor) {
       // wakeup the first cor in sleep queue
+      DebugLog << "coroutine unlock, now to resume coroutine[" << cor->getCorId() << "]";
+
       tinyrpc::Reactor::GetReactor()->addTask([cor]() {
         tinyrpc::Coroutine::Resume(cor);
       }, true);

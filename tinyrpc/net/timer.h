@@ -78,6 +78,7 @@ class Timer : public tinyrpc::FdEvent {
  private:
 
  	std::multimap<int64_t, TimerEvent::ptr> m_pending_events;
+  RWMutex m_event_mutex;
 
 
 };

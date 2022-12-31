@@ -16,6 +16,8 @@
 
 const char* html = "<html><body><h1>Welcome to TinyRPC, just enjoy it!</h1><p>%s</p></body></html>";
 
+tinyrpc::IPAddress::ptr addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 20000);
+
 class BlockCallHttpServlet : public tinyrpc::HttpServlet {
  public:
   BlockCallHttpServlet() = default;
@@ -32,7 +34,7 @@ class BlockCallHttpServlet : public tinyrpc::HttpServlet {
     AppDebugLog << "now to call QueryServer TinyRPC server to query who's id is " << req->m_query_maps["id"];
     rpc_req.set_id(std::atoi(req->m_query_maps["id"].c_str()));
 
-    tinyrpc::TinyPbRpcChannel channel(std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999));
+    tinyrpc::TinyPbRpcChannel channel(addr);
     QueryService_Stub stub(&channel);
 
     tinyrpc::TinyPbRpcController rpc_controller;
@@ -96,7 +98,6 @@ class NonBlockCallHttpServlet: public tinyrpc::HttpServlet {
 
     AppDebugLog << "NonBlockCallHttpServlet begin to call RPC async";
 
-    tinyrpc::IPAddress::ptr addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
 
     tinyrpc::TinyPbRpcAsyncChannel::ptr async_channel = 
       std::make_shared<tinyrpc::TinyPbRpcAsyncChannel>(addr);

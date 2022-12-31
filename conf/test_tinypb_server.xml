@@ -43,7 +43,7 @@
 
   <server>
     <ip>127.0.0.1</ip>
-    <port>39999</port>
+    <port>20000</port>
     <protocal>TinyPB</protocal>
   </server>
 

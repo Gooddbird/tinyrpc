@@ -226,8 +226,5 @@ class CoroutineMutex {
 };
 
 
-void CououtineLock();
-void CououtineUnLock();
-
 }
 #endif
