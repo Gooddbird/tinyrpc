@@ -47,6 +47,7 @@ TcpConnection::TcpConnection(tinyrpc::TcpClient* tcp_cli, tinyrpc::Reactor* reac
 }
 
 void TcpConnection::initServer() {
+  registerToTimeWheel();
   m_loop_cor->setCallBack(std::bind(&TcpConnection::MainServerLoopCorFunc, this));
 }
 void TcpConnection::setUpServer() {
