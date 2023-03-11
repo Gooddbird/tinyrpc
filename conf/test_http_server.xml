@@ -38,7 +38,7 @@
     <bucket_num>3</bucket_num>
 
     <!--inteval that destroy bad TcpConnection, s-->
-    <inteval>10</inteval>
+    <inteval>5</inteval>
   </time_wheel>
 
   <server>
