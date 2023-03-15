@@ -267,7 +267,7 @@ cp *.h /usr/include/tinyxml
 ```
 
 
-## 3.2. 安装和卸载
+## 3.2. 安装和卸载 (makefile)
 
 ### 3.2.1. 安装 TinyRPC
 在安装了前置的几个库之后，就可以开始编译和安装 **TinyRPC** 了。安装过程十分简单，只要不出什么意外就好了。
@@ -303,6 +303,28 @@ make uninstall
 ```
 **注：如果此前已经安装过 TinyRPC, 建议先执行卸载命令后再重新 make install 安装.**
 
+## 3.3. 安装和卸载 (cmake)
+### 3.3.1. 安装 TinyRPC
+```shell
+$ git clone https://github.com/Gooddbird/tinyrpc
+
+# 需要先生成 pb 文件
+$ cd tinyrpc/testcases
+$ protoc --cpp_out=./ test_tinypb_server.proto
+
+# 安装
+$ sudo ./build.sh
+```
+
+`build.sh` 也是通过 `cmake` 安装的，当然你也可以手动通过 `cmake` 去创建
+
+### 3.3.2. 卸载 TinyRPC
+```shell
+$ sudo rm -rf /usr/include/tinyrpc/
+$ sudo rm -rf /usr/lib/libtinyrpc.a
+
+# 如果更改 makefile 中和 CMakeLists 中的存储路径的话，也可以直接执行：make uninstall
+```
 
 # 4. 快速上手
 ## 4.1. 搭建基于 TinyPB 协议的 RPC 服务
