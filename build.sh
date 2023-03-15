@@ -4,6 +4,8 @@ set -x
 
 SOURCE_DIR=`pwd`
 BUILD_DIR=${BUILD_DIR:-./build}
+BIN_DIR=${BIN_DIR:-./bin}
+LIB_DIR=${LIB_DIR:-./lib}
 
 PATH_INSTALL_INC_ROOT=${PATH_INSTALL_INC_ROOT:-/usr/include}
 PATH_INSTALL_LIB_ROOT=${PATH_INSTALL_LIB_ROOT:-/usr/lib}
@@ -12,6 +14,8 @@ LIB=${LIB:-./lib/libtinyrpc.a}
 
 mkdir -p ${BUILD_DIR} \
     && mkdir -p ${INCLUDE_DIR} \
+    && mkdir -p ${BIN_DIR} \
+    && mkdir -p ${LIB_DIR} \
     && cd ${BUILD_DIR} \
     && cmake .. \
     && make install \
