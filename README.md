@@ -323,7 +323,7 @@ $ sudo ./build.sh
 $ sudo rm -rf /usr/include/tinyrpc/
 $ sudo rm -rf /usr/lib/libtinyrpc.a
 
-# 如果更改 makefile 中和 CMakeLists 中的存储路径的话，也可以直接执行：make uninstall
+# 如果没有更改 makefile 中和 CMakeLists 中的 头文件 和 静态库 的存储路径的话，也可以直接执行：make uninstall
 ```
 
 # 4. 快速上手
