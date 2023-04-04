@@ -12,6 +12,7 @@
 #include <signal.h>
 #include <algorithm>
 #include <semaphore.h>
+#include <errno.h>
 
 #ifdef DECLARE_MYSQL_PLUGIN 
 #include <mysql/mysql.h>
@@ -362,6 +363,9 @@ void* AsyncLogger::excute(void* arg) {
       }
 
       ptr->m_file_handle = fopen(full_file_name.c_str(), "a");
+      if(ptr->m_file_handle == nullptr) {
+        printf("open fail errno = %d reason = %s \n", errno, strerror(errno));
+      }
       ptr->m_need_reopen = false;
     }
 

@@ -12,10 +12,7 @@ PATH_INSTALL_LIB_ROOT=${PATH_INSTALL_LIB_ROOT:-/usr/lib}
 INCLUDE_DIR=${INCLUDE_DIR:-./include}
 LIB=${LIB:-./lib/libtinyrpc.a}
 
-mkdir -p ${BUILD_DIR} \
-    && mkdir -p ${INCLUDE_DIR} \
-    && mkdir -p ${BIN_DIR} \
-    && mkdir -p ${LIB_DIR} \
+mkdir -p ${INCLUDE_DIR} \
     && cd ${BUILD_DIR} \
     && cmake .. \
     && make install \

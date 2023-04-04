@@ -4,15 +4,7 @@ project(tinyrpc)
 SET(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 enable_language(ASM)
 
-set(CXX_FLAGS
-    -g
-    -O0 
-    -std=c++11 
-    -Wall 
-    -Wno-deprecated 
-    -Wno-unused-but-set-variable
-)
-string(REPLACE ";" " " CXX_FLAGS "${CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -std=c++11 -Wall -Wno-deprecated -Wno-unused-but-set-variable")
 
 set(PATH_LIB lib)
 set(PATH_BIN bin)
