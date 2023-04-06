@@ -315,6 +315,9 @@ $ git clone https://github.com/Gooddbird/tinyrpc
 $ cd tinyrpc/testcases
 $ protoc --cpp_out=./ test_tinypb_server.proto
 
+$ cd ..
+$ mkdir bin && mkdir lib && mkdir build
+
 # 安装
 $ sudo ./build.sh
 ```
