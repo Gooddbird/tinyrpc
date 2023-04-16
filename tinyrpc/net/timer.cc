@@ -97,7 +97,7 @@ void Timer::resetArriveTime() {
   }
 
   int64_t now = getNowMs();
-  auto it = tmp.begin();
+  auto it = tmp.rbegin();
   if ((*it).first < now) {
     DebugLog<< "all timer events has already expire";
     return;
