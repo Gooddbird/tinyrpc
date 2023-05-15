@@ -1,10 +1,10 @@
 #ifndef TINYRPC_COMM_CONFIG_H
 #define TINYRPC_COMM_CONFIG_H
 
-#include <tinyxml/tinyxml.h>
 #include <string>
 #include <memory>
 #include <map>
+#include <tinyxml/tinyxml.h>
 
 #ifdef DECLARE_MYSQL_PLUGIN
 #include "tinyrpc/comm/mysql_instase.h"
@@ -37,6 +37,7 @@ class Config {
 
   TiXmlElement* getXmlNode(const std::string& name);
 
+
  public:
 
   // log params
@@ -65,7 +66,9 @@ class Config {
 
  private:
   std::string m_file_path;
+
   TiXmlDocument* m_xml_file;
+
 
 };
 
