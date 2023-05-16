@@ -3,6 +3,7 @@
 build/*
 bin/*
 lib/*
+.vscode/
 
 *.swp
 *.swo

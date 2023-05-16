@@ -1,4 +1,3 @@
-#include <tinyxml/tinyxml.h>
 #include <assert.h>
 #include <stdio.h>
 #include <memory>
@@ -7,6 +6,8 @@
 #include "tinyrpc/comm/log.h"
 #include "tinyrpc/net/tcp/tcp_server.h"
 #include "tinyrpc/net/net_address.h"
+#include <tinyxml/tinyxml.h>
+
 
 
 namespace tinyrpc {
@@ -23,6 +24,7 @@ Config::Config(const char* file_path) : m_file_path(std::string(file_path)) {
     exit(0);
   }
 }
+
 
 void Config::readLogConfig(TiXmlElement* log_node) {
   TiXmlElement* node = log_node->FirstChildElement("log_path");

@@ -97,8 +97,8 @@ class LogEvent {
 	const char* m_func_name;
 	LogType m_type;
 	std::string m_msg_no;
-	std::stringstream m_ss;
 
+	std::stringstream m_ss;
 };
 
 
