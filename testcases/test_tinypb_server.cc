@@ -10,21 +10,24 @@
 #include "tinyrpc/comm/start.h"
 #include "test_tinypb_server.pb.h"
 
+#include <sys/stat.h>
 
 static int i = 0;
 tinyrpc::CoroutineMutex g_cor_mutex;
 
-class QueryServiceImpl : public QueryService {
- public:
+class QueryServiceImpl : public QueryService
+{
+public:
   QueryServiceImpl() {}
   ~QueryServiceImpl() {}
 
-  void query_name(google::protobuf::RpcController* controller,
-                       const ::queryNameReq* request,
-                       ::queryNameRes* response,
-                       ::google::protobuf::Closure* done) {
-    
-    AppInfoLog << "QueryServiceImpl.query_name, req={"<< request->ShortDebugString() << "}";
+  void query_name(google::protobuf::RpcController *controller,
+                  const ::queryNameReq *request,
+                  ::queryNameRes *response,
+                  ::google::protobuf::Closure *done)
+  {
+
+    AppInfoLog << "QueryServiceImpl.query_name, req={" << request->ShortDebugString() << "}";
 
     // DebugLog << "========================";
     // DebugLog << "this is query_name func";
@@ -35,20 +38,21 @@ class QueryServiceImpl : public QueryService {
     response->set_id(request->id());
     response->set_name("ikerli");
 
-    AppInfoLog << "QueryServiceImpl.query_name, req={"<< request->ShortDebugString() << "}, res={" << response->ShortDebugString() << "}";
+    AppInfoLog << "QueryServiceImpl.query_name, req={" << request->ShortDebugString() << "}, res={" << response->ShortDebugString() << "}";
 
-    if (done) {
+    if (done)
+    {
       done->Run();
     }
-
   }
 
-  void query_age(google::protobuf::RpcController* controller,
-                       const ::queryAgeReq* request,
-                       ::queryAgeRes* response,
-                       ::google::protobuf::Closure* done) {
+  void query_age(google::protobuf::RpcController *controller,
+                 const ::queryAgeReq *request,
+                 ::queryAgeRes *response,
+                 ::google::protobuf::Closure *done)
+  {
 
-    AppInfoLog << "QueryServiceImpl.query_age, req={"<< request->ShortDebugString() << "}";
+    AppInfoLog << "QueryServiceImpl.query_age, req={" << request->ShortDebugString() << "}";
     // AppInfoLog << "QueryServiceImpl.query_age, sleep 6 s begin";
     // sleep(6);
     // AppInfoLog << "QueryServiceImpl.query_age, sleep 6 s end";
@@ -66,31 +70,40 @@ class QueryServiceImpl : public QueryService {
     AppDebugLog << "end i = " << i;
     g_cor_mutex.unlock();
 
-    if (done) {
+    if (done)
+    {
       done->Run();
     }
     // printf("response = %s\n", response->ShortDebugString().c_str());
 
-    AppInfoLog << "QueryServiceImpl.query_age, res={"<< response->ShortDebugString() << "}";
-
+    AppInfoLog << "QueryServiceImpl.query_age, res={" << response->ShortDebugString() << "}";
   }
-
 };
 
+int main(int argc, char *argv[])
+{
 
-int main(int argc, char* argv[]) {
-  if (argc != 2) {
+  struct stat attr;
+
+  auto config = "../conf/test_tinypb_server.xml";
+
+  if (::lstat(config, &attr) != 0 && argc != 2)
+  {
     printf("Start TinyRPC server error, input argc is not 2!");
     printf("Start TinyRPC server like this: \n");
     printf("./server a.xml\n");
-    return 0;
   }
 
-  tinyrpc::InitConfig(argv[1]);
+  if (argc == 2)
+  {
+    config = argv[1];
+  }
+
+  tinyrpc::InitConfig(config);
 
   REGISTER_SERVICE(QueryServiceImpl);
 
   tinyrpc::StartRpcServer();
-  
+
   return 0;
 }
