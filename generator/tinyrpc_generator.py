@@ -1,10 +1,11 @@
-#!/usr/bin/python3.7
+#!/usr/bin/python3.8
 
 import string
 import sys
 import os
 import getopt
 import traceback
+import re
 
 from string import Template
 from datetime import datetime
@@ -49,13 +50,27 @@ def generate_framework_code():
     origin_text = file.read()
     
     # parse all rpc interface method from pb.h file
-    begin = origin_text.find('virtual ~')
-    i1 = origin_text[begin:].find('~') 
-    i2 = origin_text[begin:].find('(') 
-    service_name = origin_text[begin + i1 + 1 : begin + i2]
+    # begin = origin_text.find('virtual ~')
+    # i1 = origin_text[begin:].find('~') 
+    # i2 = origin_text[begin:].find('(') 
+    # service_name = origin_text[begin + i1 + 1 : begin + i2]
+
+    # find the service_name by '*_stub'
+    service_name = ''
+    pattern = r'\b(\w+_Stub)\b'
+    matches = re.search(pattern, origin_text)
+    start_pos = 0
+    if matches:
+        service_name = matches[0][:-5]
+        start_pos  = matches.start()
+        print("Stub class name is " + service_name)
+    else:
+        print("Stub class name not found.")
+
+
     print("service name is " + service_name)
 
-    origin_text = origin_text[begin + i2: ] 
+    origin_text = origin_text[start_pos: ] 
     method_list = []
 
     i1 = 0
