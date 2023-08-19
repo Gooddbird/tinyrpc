@@ -195,6 +195,11 @@ std::stringstream& LogEvent::getStringStream() {
   return m_ss;
 }
 
+
+std::string LogEvent::toString() {
+  return getStringStream().str();
+}
+
 void LogEvent::log() {
   m_ss << "\n";
   if (m_level >= gRpcConfig->m_log_level && m_type == RPC_LOG) {
@@ -226,6 +231,10 @@ Logger::~Logger() {
   flush();
   pthread_join(m_async_rpc_logger->m_thread, NULL);
   pthread_join(m_async_app_logger->m_thread, NULL);
+}
+
+Logger* Logger::GetLogger() {
+  return gRpcLogger.get();
 }
 
 void Logger::init(const char* file_name, const char* file_path, int max_size, int sync_inteval) {

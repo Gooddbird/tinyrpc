@@ -21,6 +21,20 @@ namespace tinyrpc {
 
 extern tinyrpc::Config::ptr gRpcConfig;
 
+template<typename... Args>
+std::string formatString(const char* str, Args&&... args) {
+
+  int size = snprintf(nullptr, 0, str, args...);
+
+  std::string result;
+  if (size > 0) {
+    result.resize(size);
+    snprintf(&result[0], size + 1, str, args...);
+  }
+
+  return result;
+}
+
 
 #define DebugLog \
 	if (tinyrpc::OpenLog() && tinyrpc::LogLevel::DEBUG >= tinyrpc::gRpcConfig->m_log_level) \
@@ -39,21 +53,33 @@ extern tinyrpc::Config::ptr gRpcConfig;
 		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::ERROR, __FILE__, __LINE__, __func__, tinyrpc::LogType::RPC_LOG))).getStringStream()
 
 
-#define AppDebugLog \
-	if (tinyrpc::OpenLog() && tinyrpc::LogLevel::DEBUG >= tinyrpc::gRpcConfig->m_app_log_level) \
-		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::DEBUG, __FILE__, __LINE__, __func__, tinyrpc::LogType::APP_LOG))).getStringStream()
+#define AppDebugLog(str, ...) \
+  if (tinyrpc::OpenLog() && tinyrpc::LogLevel::DEBUG >= tinyrpc::gRpcConfig->m_app_log_level) \
+  { \
+    tinyrpc::Logger::GetLogger()->pushAppLog(tinyrpc::LogEvent(tinyrpc::LogLevel::DEBUG, __FILE__, __LINE__, __func__, tinyrpc::LogType::APP_LOG).toString() \
+      + "[" + std::string(__FILE__) + ":" + std::to_string(__LINE__) + "]\t" + tinyrpc::formatString(str, ##__VA_ARGS__) + "\n");\
+  } \
 
-#define AppInfoLog \
-	if (tinyrpc::OpenLog() && tinyrpc::LogLevel::INFO >= tinyrpc::gRpcConfig->m_app_log_level) \
-		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::INFO, __FILE__, __LINE__, __func__, tinyrpc::LogType::APP_LOG))).getStringStream()
+#define AppInfoLog(str, ...) \
+  if (tinyrpc::OpenLog() && tinyrpc::LogLevel::INFO>= tinyrpc::gRpcConfig->m_app_log_level) \
+  { \
+    tinyrpc::Logger::GetLogger()->pushAppLog(tinyrpc::LogEvent(tinyrpc::LogLevel::INFO, __FILE__, __LINE__, __func__, tinyrpc::LogType::APP_LOG).toString() \
+      + "[" + std::string(__FILE__) + ":" + std::to_string(__LINE__) + "]\t" + tinyrpc::formatString(str, ##__VA_ARGS__) + "\n");\
+  } \
 
-#define AppWarnLog \
-	if (tinyrpc::OpenLog() && tinyrpc::LogLevel::WARN >= tinyrpc::gRpcConfig->m_app_log_level) \
-		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::WARN, __FILE__, __LINE__, __func__, tinyrpc::LogType::APP_LOG))).getStringStream()
+#define AppWarnLog(str, ...) \
+  if (tinyrpc::OpenLog() && tinyrpc::LogLevel::WARN>= tinyrpc::gRpcConfig->m_app_log_level) \
+  { \
+    tinyrpc::Logger::GetLogger()->pushAppLog(tinyrpc::LogEvent(tinyrpc::LogLevel::WARN, __FILE__, __LINE__, __func__, tinyrpc::LogType::APP_LOG).toString() \
+      + "[" + std::string(__FILE__) + ":" + std::to_string(__LINE__) + "]\t" + tinyrpc::formatString(str, ##__VA_ARGS__) + "\n");\
+  } \
 
-#define AppErrorLog \
-	if (tinyrpc::OpenLog() && tinyrpc::LogLevel::ERROR >= tinyrpc::gRpcConfig->m_app_log_level) \
-		tinyrpc::LogTmp(tinyrpc::LogEvent::ptr(new tinyrpc::LogEvent(tinyrpc::LogLevel::ERROR, __FILE__, __LINE__, __func__, tinyrpc::LogType::APP_LOG))).getStringStream()
+#define AppErrorLog(str, ...) \
+  if (tinyrpc::OpenLog() && tinyrpc::LogLevel::ERROR>= tinyrpc::gRpcConfig->m_app_log_level) \
+  { \
+    tinyrpc::Logger::GetLogger()->pushAppLog(tinyrpc::LogEvent(tinyrpc::LogLevel::ERROR, __FILE__, __LINE__, __func__, tinyrpc::LogType::APP_LOG).toString() \
+      + "[" + std::string(__FILE__) + ":" + std::to_string(__LINE__) + "]\t" + tinyrpc::formatString(str, ##__VA_ARGS__) + "\n");\
+  } \
 
 
 
@@ -79,6 +105,8 @@ class LogEvent {
 	~LogEvent();
 
 	std::stringstream& getStringStream();
+
+	std::string toString();
 
 	void log();
 
@@ -155,6 +183,9 @@ class AsyncLogger {
 };
 
 class Logger {
+
+ public:
+	static Logger* GetLogger();
  public:
   typedef std::shared_ptr<Logger> ptr;
 
@@ -162,7 +193,7 @@ class Logger {
 	~Logger();
 
 	void init(const char* file_name, const char* file_path, int max_size, int sync_inteval);
-	void log();
+
 	void pushRpcLog(const std::string& log_msg);
 	void pushAppLog(const std::string& log_msg);
 	void loopFunc();

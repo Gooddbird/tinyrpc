@@ -24,14 +24,14 @@ class BlockCallHttpServlet : public tinyrpc::HttpServlet {
   ~BlockCallHttpServlet() = default;
 
   void handle(tinyrpc::HttpRequest* req, tinyrpc::HttpResponse* res) {
-    AppDebugLog << "BlockCallHttpServlet get request ";
-    AppDebugLog << "BlockCallHttpServlet success recive http request, now to get http response";
+    AppDebugLog("BlockCallHttpServlet get request");
+    AppDebugLog("BlockCallHttpServlet success recive http request, now to get http response");
     setHttpCode(res, tinyrpc::HTTP_OK);
     setHttpContentType(res, "text/html;charset=utf-8");
 
     queryAgeReq rpc_req;
     queryAgeRes rpc_res;
-    AppDebugLog << "now to call QueryServer TinyRPC server to query who's id is " << req->m_query_maps["id"];
+    AppDebugLog ("now to call QueryServer TinyRPC server to query who's id is %s", req->m_query_maps["id"].c_str());
     rpc_req.set_id(std::atoi(req->m_query_maps["id"].c_str()));
 
     tinyrpc::TinyPbRpcChannel channel(addr);
@@ -40,12 +40,11 @@ class BlockCallHttpServlet : public tinyrpc::HttpServlet {
     tinyrpc::TinyPbRpcController rpc_controller;
     rpc_controller.SetTimeout(5000);
 
-    AppDebugLog << "BlockCallHttpServlet end to call RPC";
+    AppDebugLog("BlockCallHttpServlet end to call RPC");
     stub.query_age(&rpc_controller, &rpc_req, &rpc_res, NULL);
-    AppDebugLog << "BlockCallHttpServlet end to call RPC";
+    AppDebugLog("BlockCallHttpServlet end to call RPC");
 
     if (rpc_controller.ErrorCode() != 0) {
-      AppDebugLog << "failed to call QueryServer rpc server";
       char buf[512];
       sprintf(buf, html, "failed to call QueryServer rpc server");
       setHttpBody(res, std::string(buf));
@@ -55,7 +54,7 @@ class BlockCallHttpServlet : public tinyrpc::HttpServlet {
     if (rpc_res.ret_code() != 0) {
       std::stringstream ss;
       ss << "QueryServer rpc server return bad result, ret = " << rpc_res.ret_code() << ", and res_info = " << rpc_res.res_info();
-      AppDebugLog << ss.str();
+      AppDebugLog(ss.str().c_str());
       char buf[512];
       sprintf(buf, html, ss.str().c_str());
       setHttpBody(res, std::string(buf));
@@ -83,20 +82,20 @@ class NonBlockCallHttpServlet: public tinyrpc::HttpServlet {
   ~NonBlockCallHttpServlet() = default;
 
   void handle(tinyrpc::HttpRequest* req, tinyrpc::HttpResponse* res) {
-    AppInfoLog << "NonBlockCallHttpServlet get request";
-    AppDebugLog << "NonBlockCallHttpServlet success recive http request, now to get http response";
+    AppInfoLog("NonBlockCallHttpServlet get request");
+    AppDebugLog("NonBlockCallHttpServlet success recive http request, now to get http response");
     setHttpCode(res, tinyrpc::HTTP_OK);
     setHttpContentType(res, "text/html;charset=utf-8");
 
     std::shared_ptr<queryAgeReq> rpc_req = std::make_shared<queryAgeReq>();
     std::shared_ptr<queryAgeRes> rpc_res = std::make_shared<queryAgeRes>();
-    AppDebugLog << "now to call QueryServer TinyRPC server to query who's id is " << req->m_query_maps["id"];
+    AppDebugLog("now to call QueryServer TinyRPC server to query who's id is %s", req->m_query_maps["id"].c_str());
     rpc_req->set_id(std::atoi(req->m_query_maps["id"].c_str()));
 
     std::shared_ptr<tinyrpc::TinyPbRpcController> rpc_controller = std::make_shared<tinyrpc::TinyPbRpcController>();
     rpc_controller->SetTimeout(10000);
 
-    AppDebugLog << "NonBlockCallHttpServlet begin to call RPC async";
+    AppDebugLog("NonBlockCallHttpServlet begin to call RPC async");
 
 
     tinyrpc::TinyPbRpcAsyncChannel::ptr async_channel = 
@@ -104,7 +103,7 @@ class NonBlockCallHttpServlet: public tinyrpc::HttpServlet {
 
     auto cb = [rpc_res]() {
       printf("call succ, res = %s\n", rpc_res->ShortDebugString().c_str());
-      AppDebugLog << "NonBlockCallHttpServlet async call end, res=" << rpc_res->ShortDebugString();
+      AppDebugLog("NonBlockCallHttpServlet async call end, res=%s", rpc_res->ShortDebugString().c_str());
     };
 
     std::shared_ptr<tinyrpc::TinyPbRpcClosure> closure = std::make_shared<tinyrpc::TinyPbRpcClosure>(cb); 
@@ -113,13 +112,13 @@ class NonBlockCallHttpServlet: public tinyrpc::HttpServlet {
     QueryService_Stub stub(async_channel.get());
 
     stub.query_age(rpc_controller.get(), rpc_req.get(), rpc_res.get(), NULL);
-    AppDebugLog << "NonBlockCallHttpServlet async end, now you can to some another thing";
+    AppDebugLog("NonBlockCallHttpServlet async end, now you can to some another thing");
 
     async_channel->wait();
-    AppDebugLog << "wait() back, now to check is rpc call succ";
+    AppDebugLog("wait() back, now to check is rpc call succ");
 
     if (rpc_controller->ErrorCode() != 0) {
-      AppDebugLog << "failed to call QueryServer rpc server";
+      AppDebugLog("failed to call QueryServer rpc server");
       char buf[512];
       sprintf(buf, html, "failed to call QueryServer rpc server");
       setHttpBody(res, std::string(buf));
@@ -129,7 +128,6 @@ class NonBlockCallHttpServlet: public tinyrpc::HttpServlet {
     if (rpc_res->ret_code() != 0) {
       std::stringstream ss;
       ss << "QueryServer rpc server return bad result, ret = " << rpc_res->ret_code() << ", and res_info = " << rpc_res->res_info();
-      AppDebugLog << ss.str();
       char buf[512];
       sprintf(buf, html, ss.str().c_str());
       setHttpBody(res, std::string(buf));
@@ -156,7 +154,7 @@ class QPSHttpServlet : public tinyrpc::HttpServlet {
   ~QPSHttpServlet() = default;
 
   void handle(tinyrpc::HttpRequest* req, tinyrpc::HttpResponse* res) {
-    AppDebugLog << "QPSHttpServlet get request";
+    AppDebugLog("QPSHttpServlet get request");
     setHttpCode(res, tinyrpc::HTTP_OK);
     setHttpContentType(res, "text/html;charset=utf-8");
 
@@ -165,7 +163,7 @@ class QPSHttpServlet : public tinyrpc::HttpServlet {
     char buf[512];
     sprintf(buf, html, ss.str().c_str());
     setHttpBody(res, std::string(buf));
-    AppDebugLog << ss.str();
+    AppDebugLog(ss.str().c_str());
   }
 
   std::string getServletName() {
