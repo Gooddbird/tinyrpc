@@ -39,8 +39,7 @@ class BusinessException : public std::exception {
 
   BusinessException(long long code, const std::string& err_info, const std::string& file_name, int line):
       m_error_code(code), m_error_info(err_info), m_file_name(file_name), m_line(line) {
-
-    AppInfoLog << "[" << file_name << ":" << line << "] throw BusinessException: {code: " << m_error_code << ", errinfo:" << m_error_info << "}";
+    AppInfoLog("[%s:%d] throw BusinessException: {code: %d, error info %s}", file_name.c_str(), line, m_error_code, m_error_info.c_str());
   }
 
   ~BusinessException() {

@@ -24,18 +24,11 @@ class QueryServiceImpl : public QueryService {
                        ::queryNameRes* response,
                        ::google::protobuf::Closure* done) {
     
-    AppInfoLog << "QueryServiceImpl.query_name, req={"<< request->ShortDebugString() << "}";
-
-    // DebugLog << "========================";
-    // DebugLog << "this is query_name func";
-    // DebugLog << "first begin to sleep 6s";
-    // sleep(6);
-    // DebugLog << "sleep 6s end";
-
+    AppInfoLog("QueryServiceImpl.query_name, req={%s}", request->ShortDebugString().c_str());
     response->set_id(request->id());
     response->set_name("ikerli");
 
-    AppInfoLog << "QueryServiceImpl.query_name, req={"<< request->ShortDebugString() << "}, res={" << response->ShortDebugString() << "}";
+    AppInfoLog("QueryServiceImpl.query_name, res={%s}", response->ShortDebugString().c_str());
 
     if (done) {
       done->Run();
@@ -48,7 +41,7 @@ class QueryServiceImpl : public QueryService {
                        ::queryAgeRes* response,
                        ::google::protobuf::Closure* done) {
 
-    AppInfoLog << "QueryServiceImpl.query_age, req={"<< request->ShortDebugString() << "}";
+    AppInfoLog("QueryServiceImpl.query_age, req={%s}", request->ShortDebugString().c_str());
     // AppInfoLog << "QueryServiceImpl.query_age, sleep 6 s begin";
     // sleep(6);
     // AppInfoLog << "QueryServiceImpl.query_age, sleep 6 s end";
@@ -60,10 +53,10 @@ class QueryServiceImpl : public QueryService {
     response->set_age(100100111);
 
     g_cor_mutex.lock();
-    AppDebugLog << "begin i = " << i;
+    AppDebugLog("begin i = %d", i);
     sleep(1);
     i++;
-    AppDebugLog << "end i = " << i;
+    AppDebugLog("end i = %d", i);
     g_cor_mutex.unlock();
 
     if (done) {
@@ -71,7 +64,7 @@ class QueryServiceImpl : public QueryService {
     }
     // printf("response = %s\n", response->ShortDebugString().c_str());
 
-    AppInfoLog << "QueryServiceImpl.query_age, res={"<< response->ShortDebugString() << "}";
+    AppInfoLog("QueryServiceImpl.query_age, res={%s}", response->ShortDebugString().c_str());
 
   }
 
