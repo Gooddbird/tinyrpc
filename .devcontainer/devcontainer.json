@@ -1,22 +1,19 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/cpp-mariadb
+// README at: https://github.com/devcontainers/templates/tree/main/src/cpp
 {
 	"name": "TinyRPC",
-	"dockerComposeFile": "docker-compose.yml",
-	"service": "app",
-	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-	"features": {
-		// "ghcr.io/devcontainers-contrib/features/protoc-asdf:1":{},
-		// "ghcr.io/balazs23/devcontainers-features/bazel:1":{},
-		"ghcr.io/devcontainers-contrib/features/apt-get-packages:1": {}
+	"build": {
+		"dockerfile": "Dockerfile"
 	}
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// This is the recommended way to access the container from the host
-	// "forwardPorts": [3306],
+	// "forwardPorts": [],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "gcc -v",
 
 	// Configure tool-specific properties.
 	// "customizations": {},

@@ -11,7 +11,7 @@ set(PATH_BIN bin)
 set(PATH_TESTCASES testcases)
 
 include_directories(${PROJECT_SOURCE_DIR})
-include_directories(/usr/include/mysql-cppconn-8/jdbc)
+include_directories(/usr/include)
 # *.cc
 aux_source_directory(${PROJECT_SOURCE_DIR}/tinyrpc/comm COMM)
 aux_source_directory(${PROJECT_SOURCE_DIR}/tinyrpc/coroutine COR)

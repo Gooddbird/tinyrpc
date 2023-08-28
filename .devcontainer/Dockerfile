@@ -34,3 +34,6 @@ RUN chmod +x /tmp/install-protobuf.sh && /tmp/install-protobuf.sh && rm -f /tmp/
 ARG NUM_COMPILE_JOBS="3"
 COPY ./tinyxml.sh /tmp/
 RUN chmod +x /tmp/tinyxml.sh && /tmp/tinyxml.sh && rm -f /tmp/tinyxml.sh
+
+COPY ./install-mysql.sh /tmp/
+RUN chmod +x /tmp/install-mysql.sh && /tmp/install-mysql.sh && rm -f /tmp/install-mysql.sh
