@@ -3,6 +3,7 @@
 
 #include <google/protobuf/stubs/callback.h>
 #include <functional>
+#include <memory>
 
 
 namespace tinyrpc {
