@@ -10,12 +10,14 @@
 #include "tinyrpc/comm/start.h"
 #include "test_tinypb_server.pb.h"
 
+#include <sys/stat.h>
 
 static int i = 0;
 tinyrpc::CoroutineMutex g_cor_mutex;
 
-class QueryServiceImpl : public QueryService {
- public:
+class QueryServiceImpl : public QueryService
+{
+public:
   QueryServiceImpl() {}
   ~QueryServiceImpl() {}
 
@@ -30,18 +32,21 @@ class QueryServiceImpl : public QueryService {
 
     AppInfoLog("QueryServiceImpl.query_name, res={%s}", response->ShortDebugString().c_str());
 
-    if (done) {
+
+    if (done)
+    {
       done->Run();
     }
-
   }
 
-  void query_age(google::protobuf::RpcController* controller,
-                       const ::queryAgeReq* request,
-                       ::queryAgeRes* response,
-                       ::google::protobuf::Closure* done) {
+  void query_age(google::protobuf::RpcController *controller,
+                 const ::queryAgeReq *request,
+                 ::queryAgeRes *response,
+                 ::google::protobuf::Closure *done)
+  {
 
     AppInfoLog("QueryServiceImpl.query_age, req={%s}", request->ShortDebugString().c_str());
+
     // AppInfoLog << "QueryServiceImpl.query_age, sleep 6 s begin";
     // sleep(6);
     // AppInfoLog << "QueryServiceImpl.query_age, sleep 6 s end";
@@ -59,31 +64,39 @@ class QueryServiceImpl : public QueryService {
     AppDebugLog("end i = %d", i);
     g_cor_mutex.unlock();
 
-    if (done) {
+    if (done)
+    {
       done->Run();
     }
     // printf("response = %s\n", response->ShortDebugString().c_str());
-
     AppInfoLog("QueryServiceImpl.query_age, res={%s}", response->ShortDebugString().c_str());
-
   }
-
 };
 
+int main(int argc, char *argv[])
+{
 
-int main(int argc, char* argv[]) {
-  if (argc != 2) {
+  struct stat attr;
+
+  auto config = "../conf/test_tinypb_server.xml";
+
+  if (::lstat(config, &attr) != 0 && argc != 2)
+  {
     printf("Start TinyRPC server error, input argc is not 2!");
     printf("Start TinyRPC server like this: \n");
     printf("./server a.xml\n");
-    return 0;
   }
 
-  tinyrpc::InitConfig(argv[1]);
+  if (argc == 2)
+  {
+    config = argv[1];
+  }
+
+  tinyrpc::InitConfig(config);
 
   REGISTER_SERVICE(QueryServiceImpl);
 
   tinyrpc::StartRpcServer();
-  
+
   return 0;
 }

@@ -5,8 +5,8 @@ FROM mcr.microsoft.com/devcontainers/cpp:0-debian-11
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install curl
 
-COPY ./install-mariadb.sh /tmp/
-RUN chmod +x /tmp/install-mariadb.sh && /tmp/install-mariadb.sh && rm -f /tmp/install-mariadb.sh
+# COPY ./install-mariadb.sh /tmp/
+# RUN chmod +x /tmp/install-mariadb.sh && /tmp/install-mariadb.sh && rm -f /tmp/install-mariadb.sh
 
 ARG REINSTALL_CMAKE_VERSION_FROM_SOURCE="3.21.5"
 
@@ -34,3 +34,6 @@ RUN chmod +x /tmp/install-protobuf.sh && /tmp/install-protobuf.sh && rm -f /tmp/
 ARG NUM_COMPILE_JOBS="3"
 COPY ./tinyxml.sh /tmp/
 RUN chmod +x /tmp/tinyxml.sh && /tmp/tinyxml.sh && rm -f /tmp/tinyxml.sh
+
+COPY ./install-mysql.sh /tmp/
+RUN chmod +x /tmp/install-mysql.sh && /tmp/install-mysql.sh && rm -f /tmp/install-mysql.sh

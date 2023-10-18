@@ -48,13 +48,12 @@
   </server>
 
   <database>
-    <db_key name="test_db_key1">
-      <!-- <ip>127.0.0.1</ip> -->
-      <ip>192.168.245.7</ip>
+    <db_key name="entrytask">
+      <ip>10.53.48.90</ip>
       <port>3306</port>
       <user>root</user>
-      <passwd>Ikerli20220517!!</passwd>
-      <select_db></select_db>
+      <passwd>123456</passwd>
+      <select_db>userinfo</select_db>
       <char_set>utf8mb4</char_set>
     </db_key>
   </database>

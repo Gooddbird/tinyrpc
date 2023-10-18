@@ -11,6 +11,7 @@ set(PATH_BIN bin)
 set(PATH_TESTCASES testcases)
 
 include_directories(${PROJECT_SOURCE_DIR})
+include_directories(/usr/include)
 # *.cc
 aux_source_directory(${PROJECT_SOURCE_DIR}/tinyrpc/comm COMM)
 aux_source_directory(${PROJECT_SOURCE_DIR}/tinyrpc/coroutine COR)
@@ -31,6 +32,9 @@ if (${PROTOBUF_FOUND})
 else ()
     message(FATAL_ERROR "Cannot find Protobuf")
 endif ()
+
+find_package(Boost REQUIRED)
+find_library(MYSQLCPPCONN_LIBRARY mysqlcppconn)
 
 set(tinyxml /usr/lib/libtinyxml.a)
 
@@ -80,6 +84,16 @@ set(
 add_executable(test_coroutine ${test_coroutine})
 target_link_libraries(test_coroutine ${LIBS})
 install(TARGETS test_coroutine DESTINATION ${PATH_BIN})
+
+# db tool
+set(
+    db_tool
+    ${PROJECT_SOURCE_DIR}/${PATH_TESTCASES}/db_tool.cc
+)
+add_executable(db_tool ${db_tool})
+target_link_libraries(db_tool ${LIBS})
+target_link_libraries(db_tool ${MYSQLCPPCONN_LIBRARY})
+install(TARGETS db_tool DESTINATION ${PATH_BIN})
 
 # install *.h
 add_subdirectory(tinyrpc/comm)

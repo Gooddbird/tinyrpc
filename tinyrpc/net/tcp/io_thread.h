@@ -10,90 +10,87 @@
 #include "tinyrpc/net/tcp/tcp_connection_time_wheel.h"
 #include "tinyrpc/coroutine/coroutine.h"
 
+namespace tinyrpc
+{
 
-namespace tinyrpc {
+  class TcpServer;
 
-class TcpServer;
+  class IOThread
+  {
 
-class IOThread {
+  public:
+    typedef std::shared_ptr<IOThread> ptr;
+    IOThread();
 
- public:
-  
-  typedef std::shared_ptr<IOThread> ptr;
- 	IOThread();
+    ~IOThread();
 
-	~IOThread();  
+    Reactor *getReactor();
 
-  Reactor* getReactor();
+    void addClient(TcpConnection *tcp_conn);
 
-  void addClient(TcpConnection* tcp_conn);
+    pthread_t getPthreadId();
 
-  pthread_t getPthreadId();
+    void setThreadIndex(const int index);
 
-  void setThreadIndex(const int index);
+    int getThreadIndex();
 
-  int getThreadIndex();
+    sem_t *getStartSemaphore();
 
-  sem_t* getStartSemaphore();
+  public:
+    static IOThread *GetCurrentIOThread();
 
+  private:
+    static void *main(void *arg);
 
- public:
-  static IOThread* GetCurrentIOThread();
+  private:
+    Reactor *m_reactor{nullptr};
+    pthread_t m_thread{0};
+    pid_t m_tid{-1};
+    TimerEvent::ptr m_timer_event{nullptr};
+    int m_index{-1};
 
- private:
- 	static void* main(void* arg);
+    sem_t m_init_semaphore;
 
- private:
- 	Reactor* m_reactor {nullptr};
-	pthread_t m_thread {0};
-	pid_t m_tid {-1};
-  TimerEvent::ptr m_timer_event {nullptr};
-  int m_index {-1};
+    sem_t m_start_semaphore;
+  };
 
-  sem_t m_init_semaphore;
+  class IOThreadPool
+  {
 
-  sem_t m_start_semaphore;
+  public:
+    typedef std::shared_ptr<IOThreadPool> ptr;
 
-};
+    IOThreadPool(int size);
 
-class IOThreadPool {
+    void start();
 
- public:
-  typedef std::shared_ptr<IOThreadPool> ptr;
+    IOThread *getIOThread();
 
-  IOThreadPool(int size);
+    int getIOThreadPoolSize();
 
-  void start();
+    void broadcastTask(std::function<void()> cb);
 
-  IOThread* getIOThread();
+    void addTaskByIndex(int index, std::function<void()> cb);
 
-  int getIOThreadPoolSize();
+    void addCoroutineToRandomThread(Coroutine::ptr cor, bool self = false);
 
-  void broadcastTask(std::function<void()> cb);
+    // add a coroutine to random thread in io thread pool
+    // self = false, means random thread cann't be current thread
+    // please free cor, or causes memory leak
+    // call returnCoroutine(cor) to free coroutine
+    Coroutine::ptr addCoroutineToRandomThread(std::function<void()> cb, bool self = false);
 
-  void addTaskByIndex(int index, std::function<void()> cb);
+    Coroutine::ptr addCoroutineToThreadByIndex(int index, std::function<void()> cb, bool self = false);
 
-  void addCoroutineToRandomThread(Coroutine::ptr cor, bool self = false);
+    void addCoroutineToEachThread(std::function<void()> cb);
 
-  // add a coroutine to random thread in io thread pool
-  // self = false, means random thread cann't be current thread
-  // please free cor, or causes memory leak
-  // call returnCoroutine(cor) to free coroutine
-  Coroutine::ptr addCoroutineToRandomThread(std::function<void()> cb, bool self = false);
+  private:
+    int m_size{0};
 
-  Coroutine::ptr addCoroutineToThreadByIndex(int index, std::function<void()> cb, bool self = false);
+    std::atomic<int> m_index{-1};
 
-  void addCoroutineToEachThread(std::function<void()> cb);
-
- private:
-  int m_size {0};
-
-  std::atomic<int> m_index {-1};
-
-  std::vector<IOThread::ptr> m_io_threads;
-  
-};
-
+    std::vector<IOThread::ptr> m_io_threads;
+  };
 
 }
 

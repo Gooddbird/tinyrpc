@@ -9,7 +9,7 @@
 
 void test_client() {
 
-  tinyrpc::IPAddress::ptr addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 39999);
+  tinyrpc::IPAddress::ptr addr = std::make_shared<tinyrpc::IPAddress>("127.0.0.1", 20000);
 
   tinyrpc::TinyPbRpcChannel channel(addr);
   QueryService_Stub stub(&channel);
