@@ -175,6 +175,7 @@ void Coroutine::Yield() {
   Coroutine* co = t_cur_coroutine;
   t_cur_coroutine = t_main_coroutine;
   t_cur_run_time = NULL;
+  co->setIsInCoFunc(false);
   coctx_swap(&(co->m_coctx), &(t_main_coroutine->m_coctx));
   // DebugLog << "swap back";
 }
@@ -192,8 +193,8 @@ void Coroutine::Resume(Coroutine* co) {
     ErrorLog << "main coroutine is nullptr";
     return;
   }
-  if (!co || !co->m_can_resume) {
-    ErrorLog << "pending coroutine is nullptr or can_resume is false";
+  if (!co || !co->m_can_resume || co->getIsInCoFunc()) {
+    ErrorLog << "pending coroutine is nullptr or can_resume is false or is in CoFunction";
     return;
   }
 
