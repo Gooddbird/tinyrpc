@@ -7,11 +7,12 @@
 #include "tinyrpc/coroutine/coroutine_hook.h"
 #include "tinyrpc/coroutine/coroutine.h"
 #include "tinyrpc/net/mutex.h"
+#include "tinyrpc/net/reactor.h"
 
 
 tinyrpc::Coroutine::ptr cor;
 tinyrpc::Coroutine::ptr cor2;
-
+static thread_local int num;
 class Test {
 
  public:
@@ -32,9 +33,10 @@ void fun1() {
   std::cout << "cor1 ---- sleep 5s end, now back coroutine lock" << std::endl;
 
   test_.m_coroutine_mutex.unlock();
-
+  std::cout<<"num is "<<num<<std::endl;
   tinyrpc::Coroutine::Yield();
   std::cout << "cor1 ---- fun1 coroutine back, now end" << std::endl;
+  std::cout<<"num is "<<num<<std::endl;
 
 }
 
@@ -52,6 +54,7 @@ void fun2() {
 
 
 void* thread1_func(void*) {
+  num = 1;
   std::cout << "thread 1 begin" << std::endl;
   std::cout << "now begin to resume fun1 coroutine in thread 1" << std::endl;
   tinyrpc::Coroutine::Resume(cor.get());
@@ -61,11 +64,13 @@ void* thread1_func(void*) {
 }
 
 void* thread2_func(void*) {
+  num = 2;
   tinyrpc::Coroutine::GetCurrentCoroutine();
   std::cout << "thread 2 begin" << std::endl;
-  std::cout << "now begin to resume fun1 coroutine in thread 2" << std::endl;
+  std::cout << "now begin to resume fun2 coroutine in thread 2" << std::endl;
   tinyrpc::Coroutine::Resume(cor2.get());
-  std::cout << "now fun1 coroutine back in thread 2" << std::endl;
+  std::cout << "now fun2 coroutine back in thread 2" << std::endl;
+  tinyrpc::Coroutine::Resume(cor.get());
   std::cout << "thread 2 end" << std::endl;
   return NULL;
 }
@@ -87,6 +92,6 @@ int main(int argc, char* argv[]) {
   thread1_func(NULL);
 
   pthread_join(thread2, NULL);
-
+  tinyrpc::Reactor::GetReactor()->loop();
   std::cout << "main end" << std::endl;
 }

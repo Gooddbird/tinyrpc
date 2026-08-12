@@ -11,6 +11,8 @@
 #include "tinyrpc/net/tcp/tcp_connection_time_wheel.h"
 #include "tinyrpc/net/tcp/abstract_slot.h"
 #include "tinyrpc/net/timer.h"
+#include "tinyrpc/net/ftp/ftp_define.h"
+#include "tinyrpc/net/redis/redis_data.h"
 
 namespace tinyrpc {
 
@@ -183,6 +185,10 @@ void TcpConnection::execute() {
     std::shared_ptr<AbstractData> data;
     if (m_codec->getProtocalType() == TinyPb_Protocal) {
       data = std::make_shared<TinyPbStruct>();
+    } else if (m_codec->getProtocalType() == Ftp_Protocal) {
+      data = std::make_shared<FtpCommand>();
+    } else if (m_codec->getProtocalType() == Redis_Protocal) {
+      data = std::make_shared<RedisCommand>();
     } else {
       data = std::make_shared<HttpRequest>();
     }

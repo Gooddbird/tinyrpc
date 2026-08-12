@@ -4,7 +4,7 @@ project(tinyrpc)
 SET(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 enable_language(ASM)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -std=c++11 -Wall -Wno-deprecated -Wno-unused-but-set-variable")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -std=c++17 -Wall -Wno-deprecated -Wno-unused-but-set-variable")
 
 set(PATH_LIB lib)
 set(PATH_BIN bin)
@@ -18,10 +18,12 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/tinyrpc/net NET)
 aux_source_directory(${PROJECT_SOURCE_DIR}/tinyrpc/net/http HTTP)
 aux_source_directory(${PROJECT_SOURCE_DIR}/tinyrpc/net/tcp TCP)
 aux_source_directory(${PROJECT_SOURCE_DIR}/tinyrpc/net/tinypb TINYPB)
+aux_source_directory(${PROJECT_SOURCE_DIR}/tinyrpc/net/ftp FTP)
+# aux_source_directory(${PROJECT_SOURCE_DIR}/tinyrpc/net/redis REDIS)
 
 set(COXTX ${PROJECT_SOURCE_DIR}/tinyrpc/coroutine/coctx_swap.S)
 
-add_library(tinyrpc ${COMM} ${COR} ${NET} ${HTTP} ${TCP} ${TINYPB} ${COXTX})
+add_library(tinyrpc ${COMM} ${COR} ${NET} ${HTTP} ${TCP} ${TINYPB} ${FTP} ${REDIS} ${COXTX})
 install(TARGETS tinyrpc DESTINATION ${PATH_LIB})
 
 
@@ -32,7 +34,7 @@ else ()
     message(FATAL_ERROR "Cannot find Protobuf")
 endif ()
 
-set(tinyxml /usr/lib/libtinyxml.a)
+set(tinyxml /home/cmcc/tinyxml/libtinyxml.a)
 
 set(LIBS
     tinyrpc
@@ -81,6 +83,24 @@ add_executable(test_coroutine ${test_coroutine})
 target_link_libraries(test_coroutine ${LIBS})
 install(TARGETS test_coroutine DESTINATION ${PATH_BIN})
 
+# test_ftp_server
+set(
+    test_ftp_server
+    ${PROJECT_SOURCE_DIR}/${PATH_TESTCASES}/test_ftp_server.cc
+)
+add_executable(test_ftp_server ${test_ftp_server})
+target_link_libraries(test_ftp_server ${LIBS})
+install(TARGETS test_ftp_server DESTINATION ${PATH_BIN})
+
+# test_redis_server
+set(
+    test_redis_server
+    ${PROJECT_SOURCE_DIR}/${PATH_TESTCASES}/test_redis_server.cc
+)
+add_executable(test_redis_server ${test_redis_server})
+target_link_libraries(test_redis_server ${LIBS})
+install(TARGETS test_redis_server DESTINATION ${PATH_BIN})
+
 # install *.h
 add_subdirectory(tinyrpc/comm)
 add_subdirectory(tinyrpc/coroutine)
@@ -88,3 +108,5 @@ add_subdirectory(tinyrpc/net)
 add_subdirectory(tinyrpc/net/http)
 add_subdirectory(tinyrpc/net/tcp)
 add_subdirectory(tinyrpc/net/tinypb)
+add_subdirectory(tinyrpc/net/ftp)
+add_subdirectory(tinyrpc/net/redis)

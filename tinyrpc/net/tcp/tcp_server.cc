@@ -13,6 +13,10 @@
 #include "tinyrpc/net/http/http_codec.h"
 #include "tinyrpc/net/http/http_dispatcher.h"
 #include "tinyrpc/net/tinypb/tinypb_rpc_dispatcher.h"
+#include "tinyrpc/net/ftp/ftp_codec.h"
+#include "tinyrpc/net/ftp/ftp_dispatcher.h"
+// #include "tinyrpc/net/redis/redis_codec.h"
+// #include "tinyrpc/net/redis/redis_dispatcher.h"
 
 
 namespace tinyrpc {
@@ -118,7 +122,17 @@ TcpServer::TcpServer(NetAddress::ptr addr, ProtocalType type /*= TinyPb_Protocal
 		m_dispatcher = std::make_shared<HttpDispacther>();
 		m_codec = std::make_shared<HttpCodeC>();
 		m_protocal_type = Http_Protocal;
-	} else {
+	} else if (type == Ftp_Protocal) {
+		m_dispatcher = std::make_shared<FtpDispatcher>();
+		m_codec = std::make_shared<FtpCodeC>();
+		m_protocal_type = Ftp_Protocal;
+	} 
+	// else if (type == Redis_Protocal) {
+	// 	m_dispatcher = std::make_shared<RedisDispatcher>();
+	// 	m_codec = std::make_shared<RedisCodeC>();
+	// 	m_protocal_type = Redis_Protocal;
+	// } 
+	else {
 		m_dispatcher = std::make_shared<TinyPbRpcDispacther>();
 		m_codec = std::make_shared<TinyPbCodeC>();
 		m_protocal_type = TinyPb_Protocal;
@@ -170,6 +184,14 @@ void TcpServer::MainAcceptCorFunc() {
 		TcpConnection::ptr conn = addClient(io_thread, fd);
 		conn->initServer();
 		DebugLog << "tcpconnection address is " << conn.get() << ", and fd is" << fd;
+
+    // FTP protocol: server speaks first, send 220 welcome before the connection
+    // coroutine starts its input() loop, otherwise client deadlocks waiting for greeting
+    if (m_protocal_type == Ftp_Protocal) {
+      const char* welcome = "220 Welcome to tinyrpc FTP server\r\n";
+      write_hook(fd, welcome, strlen(welcome));
+      DebugLog << "ftp send welcome to fd[" << fd << "]";
+    }
 
     // auto cb = [io_thread, conn]() mutable {
     //   io_thread->addClient(conn.get());

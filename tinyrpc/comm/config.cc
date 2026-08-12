@@ -7,7 +7,8 @@
 #include "tinyrpc/net/tcp/tcp_server.h"
 #include "tinyrpc/net/net_address.h"
 #include <tinyxml/tinyxml.h>
-
+#include "tinyrpc/net/ftp/ftp_server.h"
+// #include "tinyrpc/net/redis/redis_server.h"
 
 
 namespace tinyrpc {
@@ -240,7 +241,22 @@ void Config::readConf() {
 
   if (protocal == "HTTP") {
     gRpcServer = std::make_shared<TcpServer>(addr, Http_Protocal);
-  } else {
+  } else if(protocal == "FTP") {
+    std::string root_dir = std::string(net_node->FirstChildElement("root_dir")->GetText());
+    if (root_dir.empty()) {
+      root_dir = "/";
+    }
+    gRpcServer = std::make_shared<FtpServer>(addr, root_dir);
+  } 
+  // else if(protocal == "REDIS") {
+  //   std::string config_file_path = std::string(net_node->FirstChildElement("config_file_path")->GetText());
+  //   if (config_file_path.empty()) {
+  //     config_file_path = "./redis_config.json";
+  //   }
+  //   gRpcServer = std::make_shared<RedisServer>(addr, config_file_path);
+  //   gRpcServer->start();
+  // } 
+  else {
     gRpcServer = std::make_shared<TcpServer>(addr, TinyPb_Protocal);
   }
 
