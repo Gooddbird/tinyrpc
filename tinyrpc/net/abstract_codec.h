@@ -11,7 +11,9 @@ namespace tinyrpc {
 
 enum ProtocalType {
   TinyPb_Protocal = 1,
-  Http_Protocal = 2
+  Http_Protocal = 2,
+  Ftp_Protocal = 3,
+  Redis_Protocal = 4
 };
 
 class AbstractCodeC {

@@ -91,7 +91,7 @@ class TcpServer {
 
   void ClearClientTimerFunc();
 
- private:
+ protected:
   
   NetAddress::ptr m_addr;
 

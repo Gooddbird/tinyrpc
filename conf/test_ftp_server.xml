@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+  <server>
+    <ip>0.0.0.0</ip>
+    <port>2121</port>
+    <protocal>FTP</protocal>
+    <root_dir>/</root_dir>
+  </server>
+   <log>
+    <!--identify path of log file-->
+    <log_path>./</log_path>
+    <log_prefix>test_ftp_server</log_prefix>
+
+    <!--identify max size of single log file, MB-->
+    <log_max_file_size>5</log_max_file_size>
+
+    <!--log level: DEBUG < INFO < WARN < ERROR < NONE(don't print log)-->
+    <rpc_log_level>DEBUG</rpc_log_level>
+    <app_log_level>DEBUG</app_log_level>
+
+    <!--inteval that put log info to async logger, ms-->
+    <log_sync_inteval>500</log_sync_inteval>
+  </log>
+  <time_wheel>
+    <bucket_num>200</bucket_num>
+
+    <!--inteval that destroy bad TcpConnection, s-->
+    <inteval>10</inteval>
+  </time_wheel>
+  <coroutine>
+    <coroutine_stack_size>131072</coroutine_stack_size>
+    <coroutine_pool_size>1000</coroutine_pool_size>
+  </coroutine>
+  <database>
+    <ip>127.0.0.1</ip>
+    <port>3306</port>
+    <user>root</user>
+    <password></password>
+    <db_name>test</db_name>
+    <db_num>1</db_num>
+  </database>
+  <msg_req_len>20</msg_req_len>
+  <max_connect_timeout>75</max_connect_timeout>
+  <iothread_num>2</iothread_num>
+  <timewheel>
+    <bucket_num>5</bucket_num>
+    <inteval>6</inteval>
+  </timewheel>
+</root>

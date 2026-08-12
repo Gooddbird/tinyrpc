@@ -68,6 +68,8 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
   AbstractCodeC::ptr getCodec() const;
 
+  int getFd() const { return m_fd; }
+
   bool getResPackageData(const std::string& msg_req, TinyPbStruct::pb_ptr& pb_struct);
 
   void registerToTimeWheel();
