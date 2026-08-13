@@ -241,12 +241,6 @@ Logger* Logger::GetLogger() {
 void Logger::init(const char* file_name, const char* file_path, int max_size, int sync_inteval) {
   if (!m_is_init) {
     m_sync_inteval = sync_inteval;
-    for (int i = 0 ; i < 1000000; ++i) {
-      m_app_buffer.push_back("");
-      m_buffer.push_back("");
-    }
-    // m_app_buffer.resize(1000000);
-    // m_buffer.resize(1000000);
 
     m_async_rpc_logger = std::make_shared<AsyncLogger>(file_name, file_path, max_size, RPC_LOG);
     m_async_app_logger = std::make_shared<AsyncLogger>(file_name, file_path, max_size, APP_LOG);
@@ -335,10 +329,15 @@ void* AsyncLogger::excute(void* arg) {
     while (ptr->m_tasks.empty() && !ptr->m_stop) {
       pthread_cond_wait(&(ptr->m_condition), ptr->m_mutex.getMutex());
     }
+    bool is_stop = ptr->m_stop;
+    if(is_stop && ptr->m_tasks.empty()) {
+        lock.unlock();
+        break;
+    }
+
     std::vector<std::string> tmp;
     tmp.swap(ptr->m_tasks.front());
     ptr->m_tasks.pop();
-    bool is_stop = ptr->m_stop;
     lock.unlock();
 
     timeval now;
@@ -408,8 +407,9 @@ void* AsyncLogger::excute(void* arg) {
     }
 
   }
-  if (!ptr->m_file_handle) {
+  if (ptr->m_file_handle) {
     fclose(ptr->m_file_handle);
+    ptr->m_file_handle = nullptr;
   }
 
   return nullptr;
