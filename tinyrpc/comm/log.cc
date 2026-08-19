@@ -408,8 +408,9 @@ void* AsyncLogger::excute(void* arg) {
     }
 
   }
-  if (!ptr->m_file_handle) {
-    fclose(ptr->m_file_handle);
+  if (ptr->m_file_handle) {
+	fclose(ptr->m_file_handle);
+	ptr->m_file_handle = nullptr;
   }
 
   return nullptr;
