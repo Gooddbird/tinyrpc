@@ -335,6 +335,9 @@ void* AsyncLogger::excute(void* arg) {
     while (ptr->m_tasks.empty() && !ptr->m_stop) {
       pthread_cond_wait(&(ptr->m_condition), ptr->m_mutex.getMutex());
     }
+    if(ptr->m_tasks.empty() && ptr->m_stop) {
+      break;
+    }
     std::vector<std::string> tmp;
     tmp.swap(ptr->m_tasks.front());
     ptr->m_tasks.pop();
