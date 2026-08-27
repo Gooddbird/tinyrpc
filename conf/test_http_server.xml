@@ -15,6 +15,13 @@
 
     <!--inteval that put log info to async logger, ms-->
     <log_sync_inteval>500</log_sync_inteval>
+
+    <!--truncate log file-->
+    <truncate_log_file>true</truncate_log_file>
+
+    <!--log buffer capacity-->
+    <rpc_log_buffer_capacity>8192</rpc_log_buffer_capacity>
+    <app_log_buffer_capacity>8192</app_log_buffer_capacity>
   </log>
 
   <coroutine>

@@ -47,6 +47,9 @@ class Config {
   LogLevel m_log_level {LogLevel::DEBUG};
   LogLevel m_app_log_level {LogLevel::DEBUG};
   int m_log_sync_inteval {500};
+  bool m_truncate_log_file {false};
+  int m_rpc_log_buffer_capacity {0};
+  int m_app_log_buffer_capacity {0};
 
   // coroutine params
   int m_cor_stack_size {0};

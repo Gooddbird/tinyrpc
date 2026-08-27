@@ -241,12 +241,14 @@ Logger* Logger::GetLogger() {
 void Logger::init(const char* file_name, const char* file_path, int max_size, int sync_inteval) {
   if (!m_is_init) {
     m_sync_inteval = sync_inteval;
-    for (int i = 0 ; i < 1000000; ++i) {
-      m_app_buffer.push_back("");
-      m_buffer.push_back("");
-    }
+    // for (int i = 0 ; i < 1000000; ++i) {
+    //   m_app_buffer.push_back("");
+    //   m_buffer.push_back("");
+    // }
     // m_app_buffer.resize(1000000);
     // m_buffer.resize(1000000);
+    m_app_buffer.reserve(gRpcConfig->m_app_log_buffer_capacity);
+    m_buffer.reserve(gRpcConfig->m_rpc_log_buffer_capacity);
 
     m_async_rpc_logger = std::make_shared<AsyncLogger>(file_name, file_path, max_size, RPC_LOG);
     m_async_app_logger = std::make_shared<AsyncLogger>(file_name, file_path, max_size, APP_LOG);
@@ -271,11 +273,13 @@ void Logger::start() {
 	
 void Logger::loopFunc() {
   std::vector<std::string> app_tmp;
+  app_tmp.reserve(gRpcConfig->m_app_log_buffer_capacity);
   Mutex::Lock lock1(m_app_buff_mutex);
   app_tmp.swap(m_app_buffer);
   lock1.unlock();
   
   std::vector<std::string> tmp;
+  tmp.reserve(gRpcConfig->m_rpc_log_buffer_capacity);
   Mutex::Lock lock2(m_buff_mutex);
   tmp.swap(m_buffer);
   lock2.unlock();
@@ -284,13 +288,13 @@ void Logger::loopFunc() {
   m_async_app_logger->push(app_tmp);
 }
 
-void Logger::pushRpcLog(const std::string& msg) {
+void Logger::pushRpcLog(std::string msg) {
   Mutex::Lock lock(m_buff_mutex);
   m_buffer.push_back(std::move(msg));
   lock.unlock();
 }
 
-void Logger::pushAppLog(const std::string& msg) {
+void Logger::pushAppLog(std::string msg) {
   Mutex::Lock lock(m_app_buff_mutex);
   m_app_buffer.push_back(std::move(msg));
   lock.unlock();
@@ -335,6 +339,9 @@ void* AsyncLogger::excute(void* arg) {
     while (ptr->m_tasks.empty() && !ptr->m_stop) {
       pthread_cond_wait(&(ptr->m_condition), ptr->m_mutex.getMutex());
     }
+    if(ptr->m_tasks.empty() && ptr->m_stop) {
+      break;
+    }
     std::vector<std::string> tmp;
     tmp.swap(ptr->m_tasks.front());
     ptr->m_tasks.pop();
@@ -371,7 +378,7 @@ void* AsyncLogger::excute(void* arg) {
         fclose(ptr->m_file_handle);
       }
 
-      ptr->m_file_handle = fopen(full_file_name.c_str(), "a");
+      ptr->m_file_handle = fopen(full_file_name.c_str(), gRpcConfig->m_truncate_log_file ? "w" : "a");
       if(ptr->m_file_handle == nullptr) {
         printf("open fail errno = %d reason = %s \n", errno, strerror(errno));
       }
@@ -388,7 +395,7 @@ void* AsyncLogger::excute(void* arg) {
       full_file_name = ss2.str();
 
       // printf("open file %s", full_file_name.c_str());
-      ptr->m_file_handle = fopen(full_file_name.c_str(), "a");
+      ptr->m_file_handle = fopen(full_file_name.c_str(), gRpcConfig->m_truncate_log_file ? "w" : "a");
       ptr->m_need_reopen = false;
     }
 
@@ -408,7 +415,7 @@ void* AsyncLogger::excute(void* arg) {
     }
 
   }
-  if (!ptr->m_file_handle) {
+  if (ptr->m_file_handle) {
     fclose(ptr->m_file_handle);
   }
 
@@ -421,7 +428,7 @@ void* AsyncLogger::excute(void* arg) {
 void AsyncLogger::push(std::vector<std::string>& buffer) {
   if (!buffer.empty()) {
     Mutex::Lock lock(m_mutex);
-    m_tasks.push(buffer);
+    m_tasks.push(std::move(buffer));
     lock.unlock();
     pthread_cond_signal(&m_condition);
   }

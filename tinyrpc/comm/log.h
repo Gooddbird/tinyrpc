@@ -194,8 +194,8 @@ class Logger {
 
 	void init(const char* file_name, const char* file_path, int max_size, int sync_inteval);
 
-	void pushRpcLog(const std::string& log_msg);
-	void pushAppLog(const std::string& log_msg);
+	void pushRpcLog(std::string log_msg);
+	void pushAppLog(std::string log_msg);
 	void loopFunc();
 
 	void flush();
