@@ -78,6 +78,30 @@ void Config::readLogConfig(TiXmlElement* log_node) {
 
   m_log_sync_inteval = std::atoi(node->GetText());
 
+  node = log_node->FirstChildElement("truncate_log_file");
+  if(!node || !node->GetText()) {
+    printf("start tinyrpc server error! read config file [%s] error, cannot read [truncate_log_file] xml node\n", m_file_path.c_str());
+    exit(0);
+  }
+
+  m_truncate_log_file = node->GetText() == std::string("true");
+
+  node = log_node->FirstChildElement("rpc_log_buffer_capacity");
+  if(!node || !node->GetText()) {
+    printf("start tinyrpc server error! read config file [%s] error, cannot read [rpc_log_buffer_capacity] xml node\n", m_file_path.c_str());
+    exit(0);
+  }
+
+  m_rpc_log_buffer_capacity = std::atoi(node->GetText());
+
+  node = log_node->FirstChildElement("app_log_buffer_capacity");
+  if(!node || !node->GetText()) {
+    printf("start tinyrpc server error! read config file [%s] error, cannot read [app_log_buffer_capacity] xml node\n", m_file_path.c_str());
+    exit(0);
+  }
+
+  m_app_log_buffer_capacity = std::atoi(node->GetText());
+
   gRpcLogger = std::make_shared<Logger>();
   gRpcLogger->init(m_log_prefix.c_str(), m_log_path.c_str(), m_log_max_size, m_log_sync_inteval);
 
